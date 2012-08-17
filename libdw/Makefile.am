@@ -35,8 +35,8 @@ AM_CPPFLAGS += -I$(srcdir)/../libelf
 VERSION = 1
 
 lib_LIBRARIES = libdw.a
-noinst_LIBRARIES = libdw_pic.a
-noinst_PROGRAMS = $(noinst_LIBRARIES:_pic.a=.so)
+noinst_LIBRARIES = libdw_pic.a libdw_static_pic.a
+noinst_PROGRAMS = libdw.so
 
 include_HEADERS = dwarf.h
 pkginclude_HEADERS = libdw.h
@@ -88,6 +88,20 @@ libdw_a_SOURCES = dwarf_begin.c dwarf_begin_elf.c dwarf_end.c dwarf_getelf.c \
 		  dwarf_getlocation_die.c dwarf_getlocation_attr.c \
 		  dwarf_getalt.c dwarf_setalt.c
 
+# Minimal library with symbols needed by those libebl backends that we
+# ship statically.  This is so that e.g. strip doesn't end up bringing
+# in the whole of libdw, and depending on libbz2, liblzma, etc.
+libdw_static_pic_a_SOURCES = libdw_form.c dwarf_child.c dwarf_attr.c \
+		dwarf_attr_integrate.c dwarf_formref_die.c dwarf_error.c \
+		dwarf_tag.c dwarf_formref.c \
+		dwarf_abbrev_hash.c dwarf_sig8_hash.c \
+		dwarf_formudata.c libdw_findcu.c dwarf_offdie.c \
+		dwarf_getabbrev.c dwarf_nextcu.c libdw_alloc.c \
+		dwarf_hasattr_integrate.c dwarf_hasattr.c \
+		dwarf_aggregate_size.c dwarf_siblingof.c dwarf_formsdata.c \
+		dwarf_srclang.c dwarf_formflag.c dwarf_diecu.c \
+		dwarf_bytesize.c dwarf_bitsize.c
+
 if MAINTAINER_MODE
 BUILT_SOURCES = $(srcdir)/known-dwarf.h
 MAINTAINERCLEANFILES = $(srcdir)/known-dwarf.h
@@ -98,10 +112,13 @@ endif
 
 libdw_pic_a_SOURCES =
 am_libdw_pic_a_OBJECTS = $(libdw_a_SOURCES:.c=.os)
+am_libdw_static_pic_a_OBJECTS = $(libdw_static_pic_a_SOURCES:.c=.os)
 
 libdw_so_SOURCES =
 libdw.so$(EXEEXT): $(srcdir)/libdw.map libdw_pic.a ../libdwelf/libdwelf_pic.a \
 	  ../libdwfl/libdwfl_pic.a ../libebl/libebl.a \
+	  ../backends/libebl_static_pic.a \
+	  ../libcpu/libcpu_static_pic.a \
 	  ../libelf/libelf.so
 # The rpath is necessary for libebl because its $ORIGIN use will
 # not fly in a setuid executable that links in libdw.

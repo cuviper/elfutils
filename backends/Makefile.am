@@ -40,10 +40,36 @@ libebl_pic = libebl_i386_pic.a libebl_sh_pic.a libebl_x86_64_pic.a    \
 	     libebl_ppc64_pic.a libebl_s390_pic.a libebl_tilegx_pic.a
 noinst_LIBRARIES = $(libebl_pic)
 noinst_DATA = $(libebl_pic:_pic.a=.so)
+lib_LIBRARIES = libebl_static_pic.a
 
 
 libelf = ../libelf/libelf.so
 libdw = ../libdw/libdw.so
+
+# The following is minimal set of backends that we link with libdw to
+# avoid dlopen. Note repeats files below because some backends reuse
+# each others files.
+static_SRCS = i386_init.c i386_symbol.c i386_corenote.c i386_cfi.c \
+	     i386_retval.c i386_regs.c i386_auxv.c i386_syscall.c \
+	     i386_initreg.c \
+	     x86_64_init.c x86_64_symbol.c x86_64_corenote.c x86_64_cfi.c \
+	     x86_64_retval.c x86_64_regs.c x86_64_syscall.c \
+	     x86_64_initreg.c \
+	     ia64_init.c ia64_symbol.c ia64_regs.c ia64_retval.c \
+	     aarch64_init.c aarch64_regs.c aarch64_symbol.c   \
+	     aarch64_corenote.c aarch64_retval.c aarch64_cfi.c \
+	     aarch64_initreg.c \
+	     ppc_init.c ppc_symbol.c ppc_retval.c ppc_regs.c \
+	     ppc_corenote.c ppc_auxv.c ppc_attrs.c ppc_syscall.c \
+	     ppc_cfi.c ppc_initreg.c \
+	     ppc64_init.c ppc64_symbol.c ppc64_retval.c ppc64_corenote.c \
+	     ppc64_resolve_sym.c \
+	     s390_init.c s390_symbol.c s390_regs.c s390_retval.c \
+	     s390_corenote.c s390x_corenote.c s390_cfi.c s390_initreg.c \
+	     s390_unwind.c
+
+libebl_static_pic_a_SOURCES = $(static_SRCS)
+am_libebl_static_pic_a_OBJECTS = $(static_SRCS:.c=.os)
 
 i386_SRCS = i386_init.c i386_symbol.c i386_corenote.c i386_cfi.c \
 	    i386_retval.c i386_regs.c i386_auxv.c i386_syscall.c \

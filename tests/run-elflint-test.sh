@@ -30,9 +30,6 @@ testrun ${abs_top_builddir}/src/elflint -q testfile32
 testfiles testfile33
 testrun ${abs_top_builddir}/src/elflint -q testfile33
 
-testfiles testfile42
-testrun ${abs_top_builddir}/src/elflint -q --gnu-ld testfile42
-
 testfiles testfile46
 testrun ${abs_top_builddir}/src/elflint -q testfile46
 

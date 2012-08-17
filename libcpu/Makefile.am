@@ -36,9 +36,11 @@ LEX_OUTPUT_ROOT = lex.$(<F:lex.l=)
 AM_YFLAGS = -p$(<F:parse.y=)
 
 noinst_LIBRARIES = libcpu_i386.a libcpu_x86_64.a
+lib_LIBRARIES = libcpu_static_pic.a
 
 libcpu_i386_a_SOURCES = i386_disasm.c i386_dis.h
 libcpu_x86_64_a_SOURCES = x86_64_disasm.c x86_64_dis.h
+libcpu_static_pic_a_SOURCES = $(libcpu_i386_a_SOURCES) $(libcpu_x86_64_a_SOURCES)
 
 i386_gendis_SOURCES = i386_gendis.c i386_lex.l i386_parse.y
 

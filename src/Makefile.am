@@ -79,7 +79,8 @@ libasm = ../libasm/libasm.so
 libdw = ../libdw/libdw.so
 libelf = ../libelf/libelf.so
 endif
-libebl = ../libebl/libebl.a
+libebl = ../libebl/libebl.a ../backends/libebl_static_pic.a ../libcpu/libcpu_static_pic.a
+libdw_static = ../libdw/libdw_static_pic.a
 libeu = ../lib/libeu.a
 
 if DEMANGLE
@@ -89,22 +90,22 @@ endif
 # XXX While the file is not finished, don't warn about this
 ldgeneric_no_Wunused = yes
 
-readelf_LDADD = $(libdw) $(libebl) $(libelf) $(libeu) -ldl
+readelf_LDADD = $(libdw) $(libebl) $(libelf) $(libeu)
 nm_LDADD = $(libdw) $(libebl) $(libelf) $(libeu) -ldl \
 	   $(demanglelib)
 size_LDADD = $(libelf) $(libeu)
-strip_LDADD = $(libebl) $(libelf) $(libeu) -ldl
-ld_LDADD = $(libebl) $(libelf) $(libeu) -ldl
+strip_LDADD = $(libebl) $(libdw_static) $(libelf) $(libeu) -ldl
+ld_LDADD = $(libebl) $(libdw_static) $(libelf) $(libeu) -ldl
 if NATIVE_LD
 # -ldl is always needed for libebl.
 ld_LDADD += libld_elf.a
 endif
 ld_LDFLAGS = -rdynamic
-elflint_LDADD  = $(libebl) $(libelf) $(libeu) -ldl
+elflint_LDADD  = $(libebl) $(libdw_static) $(libelf) $(libeu) -ldl
 findtextrel_LDADD = $(libdw) $(libelf)
 addr2line_LDADD = $(libdw) $(libelf)
-elfcmp_LDADD = $(libebl) $(libelf) -ldl
-objdump_LDADD  = $(libasm) $(libebl) $(libelf) $(libeu) -ldl
+elfcmp_LDADD = $(libebl) $(libdw_static) $(libelf) -ldl
+objdump_LDADD  = $(libasm) $(libebl) $(libdw_static) $(libelf) $(libeu) -ldl
 ranlib_LDADD = libar.a $(libelf) $(libeu)
 strings_LDADD = $(libelf) $(libeu)
 ar_LDADD = libar.a $(libelf) $(libeu)
