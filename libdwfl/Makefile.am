@@ -39,6 +39,7 @@ noinst_LIBRARIES += libdwfl_pic.a
 
 pkginclude_HEADERS = libdwfl.h
 
+libdwfl_a_CFLAGS = -fpic -fvisibility=hidden $(AM_CFLAGS)
 libdwfl_a_SOURCES = dwfl_begin.c dwfl_end.c dwfl_error.c dwfl_version.c \
 		    dwfl_module.c dwfl_report_elf.c relocate.c \
 		    dwfl_module_build_id.c dwfl_module_report_build_id.c \

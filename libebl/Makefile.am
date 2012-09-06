@@ -57,6 +57,7 @@ gen_SOURCES = eblopenbackend.c eblclosebackend.c eblstrtab.c \
 	      eblstother.c eblinitreg.c ebldwarftoregno.c eblnormalizepc.c \
 	      eblunwind.c eblresolvesym.c eblcheckreloctargettype.c
 
+libebl_a_CFLAGS = -fvisibility=hidden $(AM_CFLAGS)
 libebl_a_SOURCES = $(gen_SOURCES)
 
 noinst_HEADERS = libeblP.h ebl-hooks.h

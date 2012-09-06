@@ -38,6 +38,7 @@ noinst_LIBRARIES = libasm_pic.a
 noinst_PROGRAMS = $(noinst_LIBRARIES:_pic.a=.so)
 pkginclude_HEADERS = libasm.h
 
+libasm_a_CFLAGS = -fpic -fvisibility=hidden $(AM_CFLAGS)
 libasm_a_SOURCES = asm_begin.c asm_abort.c asm_end.c asm_error.c \
 		   asm_getelf.c asm_newscn.c asm_newscn_ingrp.c \
 		   asm_newsubscn.c asm_newsym.c asm_newcomsym.c \

@@ -26,7 +26,7 @@ if test -f $archive; then
     echo -n "Extracting symbols... $ac_c"
 
     # The files we are looking at.
-    for f in ${abs_top_builddir}/libelf/*.o; do
+    for f in ${abs_top_builddir}/libelf/libelf_a-*.o; do
 	testrun ${abs_builddir}/arextract $archive `basename $f` arextract.test || exit 1
 	cmp $f arextract.test || {
 	    echo "Extraction of $1 failed"
