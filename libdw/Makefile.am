@@ -104,7 +104,7 @@ libdw_static_pic_a_SOURCES = libdw_form.c dwarf_child.c dwarf_attr.c \
 		dwarf_hasattr_integrate.c dwarf_hasattr.c \
 		dwarf_aggregate_size.c dwarf_siblingof.c dwarf_formsdata.c \
 		dwarf_srclang.c dwarf_formflag.c dwarf_diecu.c \
-		dwarf_bytesize.c dwarf_bitsize.c
+		dwarf_bytesize.c dwarf_bitsize.c dwarf_peel_type.c
 
 if MAINTAINER_MODE
 BUILT_SOURCES = $(srcdir)/known-dwarf.h
