@@ -25,32 +25,7 @@
 #
 # gcc -m32 -c testfileppc32attrs.s
 
-testfiles testfilearm testfileppc32attrs.o
-
-testrun_compare ${abs_top_builddir}/src/readelf -A testfilearm <<\EOF
-
-Object attributes section [27] '.ARM.attributes' of 53 bytes at offset 0x718:
-  Owner          Size
-  aeabi            52
-    File:          42
-      CPU_name: 7-A
-      CPU_arch: v7
-      CPU_arch_profile: Application
-      ARM_ISA_use: Yes
-      THUMB_ISA_use: Thumb-2
-      VFP_arch: VFPv3-D16
-      ABI_PCS_wchar_t: 4
-      ABI_FP_rounding: Needed
-      ABI_FP_denormal: Needed
-      ABI_FP_exceptions: Needed
-      ABI_FP_number_model: IEEE 754
-      ABI_align8_needed: Yes
-      ABI_align8_preserved: Yes, except leaf SP
-      ABI_enum_size: int
-      ABI_HardFP_use: SP and DP
-      ABI_VFP_args: VFP registers
-      CPU_unaligned_access: v6
-EOF
+testfiles testfileppc32attrs.o
 
 testrun_compare ${abs_top_builddir}/src/readelf -A testfileppc32attrs.o <<\EOF
 
