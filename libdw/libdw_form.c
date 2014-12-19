@@ -1,5 +1,5 @@
 /* Helper functions for form handling.
-   Copyright (C) 2003-2009 Red Hat, Inc.
+   Copyright (C) 2003-2009, 2014 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2003.
 
@@ -39,10 +39,11 @@
 
 size_t
 internal_function
-__libdw_form_val_compute_len (Dwarf *dbg, struct Dwarf_CU *cu,
-			      unsigned int form, const unsigned char *valp)
+__libdw_form_val_compute_len (struct Dwarf_CU *cu, unsigned int form,
+			      const unsigned char *valp)
 {
-  const unsigned char *saved;
+  const unsigned char *startp = valp;
+  const unsigned char *endp = cu->endp;
   Dwarf_Word u128;
   size_t result;
 
@@ -66,49 +67,65 @@ __libdw_form_val_compute_len (Dwarf *dbg, struct Dwarf_CU *cu,
       break;
 
     case DW_FORM_block1:
+      if (unlikely ((size_t) (endp - startp) < 1))
+	goto invalid;
       result = *valp + 1;
       break;
 
     case DW_FORM_block2:
-      result = read_2ubyte_unaligned (dbg, valp) + 2;
+      if (unlikely ((size_t) (endp - startp) < 2))
+	goto invalid;
+      result = read_2ubyte_unaligned (cu->dbg, valp) + 2;
       break;
 
     case DW_FORM_block4:
-      result = read_4ubyte_unaligned (dbg, valp) + 4;
+      if (unlikely ((size_t) (endp - startp) < 4))
+	goto invalid;
+      result = read_4ubyte_unaligned (cu->dbg, valp) + 4;
       break;
 
     case DW_FORM_block:
     case DW_FORM_exprloc:
-      saved = valp;
-      get_uleb128 (u128, valp);
-      result = u128 + (valp - saved);
+      get_uleb128 (u128, valp, endp);
+      result = u128 + (valp - startp);
       break;
 
     case DW_FORM_string:
-      result = strlen ((char *) valp) + 1;
-      break;
+      {
+	const unsigned char *endstrp = memchr (valp, '\0',
+					       (size_t) (endp - startp));
+	if (unlikely (endstrp == NULL))
+	  goto invalid;
+	result = (size_t) (endstrp - startp) + 1;
+	break;
+      }
 
     case DW_FORM_sdata:
     case DW_FORM_udata:
     case DW_FORM_ref_udata:
-      saved = valp;
-      get_uleb128 (u128, valp);
-      result = valp - saved;
+      get_uleb128 (u128, valp, endp);
+      result = valp - startp;
       break;
 
     case DW_FORM_indirect:
-      saved = valp;
-      get_uleb128 (u128, valp);
+      get_uleb128 (u128, valp, endp);
       // XXX Is this really correct?
-      result = __libdw_form_val_len (dbg, cu, u128, valp);
+      result = __libdw_form_val_len (cu, u128, valp);
       if (result != (size_t) -1)
-	result += valp - saved;
+	result += valp - startp;
+      else
+        return (size_t) -1;
       break;
 
     default:
+      goto invalid;
+    }
+
+  if (unlikely (result > (size_t) (endp - startp)))
+    {
+    invalid:
       __libdw_seterrno (DWARF_E_INVALID_DWARF);
-      result = (size_t) -1l;
-      break;
+      result = (size_t) -1;
     }
 
   return result;

@@ -1,3 +1,72 @@
+2014-12-18  Ulrich Drepper  <drepper@gmail.com>
+
+	* Makefile.am: Suppress output of textrel_check command.
+
+2014-11-22  Mark Wielaard  <mjw@redhat.com>
+
+	* ppc64_symbol.c (ppc64_bss_plt_p): Remove ehdr argument.
+	* ppc_symbol.c (find_dyn_got): Likewise. Use elf_getphdrnum.
+	(ppc_check_special_symbol): Call find_dyn_got without ehdr.
+	(ppc_bss_plt_p): Remove ehdr argument.
+
+2014-11-17  Mark Wielaard  <mjw@redhat.com>
+
+	* ppc64_init.c (ppc64_init): Check section name is not NULL.
+
+2014-10-06  Mark Wielaard  <mjw@redhat.com>
+
+	* libebl_CPU.h (dwarf_peel_type): Removed.
+	(dwarf_peeled_die_type): Use libdw dwarf_peel_type.
+
+2014-07-18  Kyle McMartin  <kyle@redhat.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* aarch64_initreg.c: Check HAVE_SYS_USER_REGS.
+	(aarch64_set_initial_registers_tid): Use user_regs_struct and
+	user_fpsimd_struct.
+	* arm_initreg.c: Check HAVE_SYS_USER_REGS.
+	(arm_set_initial_registers_tid): Use user_regs_struct in compat mode.
+
+2014-07-04  Menanteau Guy  <menantea@linux.vnet.ibm.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* ppc64_init.c (ppc64_init): Hook check_st_other_bits.
+	* ppc64_reloc.def: TLSGD, TLSLD, TOCSAVE, ADDR16_HIGH, ADDR16_HIGHA,
+	TPREL16_HIGH, TPREL16_HIGHA, DTPREL16_HIGH, DTPREL16_HIGHA, JMP_IREL,
+	IRELATIVE, REL16, REL16_LO, REL16_HI and REL16_HA.
+	* ppc64_symbol.c (ppc64_dynamic_tag_name): Recognize DT_PPC64_OPT.
+	(ppc64_dynamic_tag_check): Likewise.
+	(ppc64_check_st_other_bits): New function.
+
+2014-07-04  Mark Wielaard  <mjw@redhat.com>
+
+	* aarch64_retval.c (aarch64_return_value_location): Handle
+	DW_ATE_boolean.
+
+2014-06-18  Mark Wielaard  <mjw@redhat.com>
+
+	* libebl_CPU.h (dwarf_peel_type): Remove DW_TAG_mutable_type
+	handling.
+
+2014-06-17  Mark Wielaard  <mjw@redhat.com>
+
+	* arm_init.c (arm_init): Set func_addr_mask.
+
+2014-06-20  Petr Machata  <pmachata@redhat.com>
+
+	* alpha_retval.c (alpha_return_value_location): Call
+	dwarf_peeled_die_type instead of inlining equivalent code.
+	* arm_retval.c (arm_return_value_location): Likewise.
+	* i386_retval.c (i386_return_value_location): Likewise.
+	* ia64_retval.c (ia64_return_value_location): Likewise.
+	* ppc64_retval.c (ppc64_return_value_location): Likewise.
+	* ppc_retval.c (ppc_return_value_location): Likewise.
+	* s390_retval.c (s390_return_value_location): Likewise.
+	* sh_retval.c (sh_return_value_location): Likewise.
+	* sparc_retval.c (sparc_return_value_location): Likewise.
+	* tilegx_retval.c (tilegx_return_value_location): Likewise.
+	* x86_64_retval.c (x86_64_return_value_location): Likewise.
+
 2014-05-19  Mark Wielaard  <mjw@redhat.com>
 
 	* arm_init.c (arm_init): Hook check_reloc_target_type.

@@ -337,8 +337,8 @@ file_read_elf (int fildes, void *map_address, unsigned char *e_ident,
 	      elf->state.elf32.scns.data[cnt].shdr.e32 =
 		&elf->state.elf32.shdr[cnt];
 	      if (likely (elf->state.elf32.shdr[cnt].sh_offset < maxsize)
-		  && likely (maxsize - elf->state.elf32.shdr[cnt].sh_offset
-			     <= elf->state.elf32.shdr[cnt].sh_size))
+		  && likely (elf->state.elf32.shdr[cnt].sh_size
+			     <= maxsize - elf->state.elf32.shdr[cnt].sh_offset))
 		elf->state.elf32.scns.data[cnt].rawdata_base =
 		  elf->state.elf32.scns.data[cnt].data_base =
 		  ((char *) map_address + offset
@@ -412,8 +412,8 @@ file_read_elf (int fildes, void *map_address, unsigned char *e_ident,
 	  elf->state.elf64.ehdr = ehdr;
 
 	  if (unlikely (ehdr->e_shoff >= maxsize)
-	      || unlikely (ehdr->e_shoff
-			   + scncnt * sizeof (Elf32_Shdr) > maxsize))
+	      || unlikely (maxsize - ehdr->e_shoff
+			   < scncnt * sizeof (Elf64_Shdr)))
 	    goto free_and_out;
 	  elf->state.elf64.shdr
 	    = (Elf64_Shdr *) ((char *) ehdr + ehdr->e_shoff);
@@ -428,8 +428,8 @@ file_read_elf (int fildes, void *map_address, unsigned char *e_ident,
 	      elf->state.elf64.scns.data[cnt].shdr.e64 =
 		&elf->state.elf64.shdr[cnt];
 	      if (likely (elf->state.elf64.shdr[cnt].sh_offset < maxsize)
-		  && likely (maxsize - elf->state.elf64.shdr[cnt].sh_offset
-			     <= elf->state.elf64.shdr[cnt].sh_size))
+		  && likely (elf->state.elf64.shdr[cnt].sh_size
+			     <= maxsize - elf->state.elf64.shdr[cnt].sh_offset))
 		elf->state.elf64.scns.data[cnt].rawdata_base =
 		  elf->state.elf64.scns.data[cnt].data_base =
 		  ((char *) map_address + offset
@@ -550,9 +550,12 @@ read_unmmaped_file (int fildes, off_t offset, size_t maxsize, Elf_Cmd cmd,
 				    maxsize),
 			       offset);
   if (unlikely (nread == -1))
-    /* We cannot even read the head of the file.  Maybe FILDES is associated
-       with an unseekable device.  This is nothing we can handle.  */
-    return NULL;
+    {
+      /* We cannot even read the head of the file.  Maybe FILDES is associated
+	 with an unseekable device.  This is nothing we can handle.  */
+      __libelf_seterrno (ELF_E_INVALID_FILE);
+      return NULL;
+    }
 
   /* See what kind of object we have here.  */
   Elf_Kind kind = determine_kind (mem.header, nread);
@@ -670,7 +673,8 @@ read_long_names (Elf *elf)
     {
       if (elf->map_address != NULL)
 	{
-	  if (offset + sizeof (struct ar_hdr) > elf->maximum_size)
+	  if ((size_t) offset > elf->maximum_size
+	      || elf->maximum_size - offset < sizeof (struct ar_hdr))
 	    return NULL;
 
 	  /* The data is mapped.  */
@@ -704,11 +708,15 @@ read_long_names (Elf *elf)
       char *runp;
 
       if (elf->map_address != NULL)
-	/* Simply copy it over.  */
-	elf->state.ar.long_names = (char *) memcpy (newp,
-						    elf->map_address + offset
-						    + sizeof (struct ar_hdr),
-						    len);
+	{
+	  if (len > elf->maximum_size - offset - sizeof (struct ar_hdr))
+	    goto too_much;
+	  /* Simply copy it over.  */
+	  elf->state.ar.long_names = (char *) memcpy (newp,
+						      elf->map_address + offset
+						      + sizeof (struct ar_hdr),
+						      len);
+	}
       else
 	{
 	  if (unlikely ((size_t) pread_retry (elf->fildes, newp, len,
@@ -716,6 +724,7 @@ read_long_names (Elf *elf)
 					      + sizeof (struct ar_hdr))
 			!= len))
 	    {
+	    too_much:
 	      /* We were not able to read all data.  */
 	      free (newp);
 	      elf->state.ar.long_names = NULL;
@@ -730,10 +739,14 @@ read_long_names (Elf *elf)
       runp = newp;
       while (1)
         {
+	  char *startp = runp;
 	  runp = (char *) memchr (runp, '/', newp + len - runp);
 	  if (runp == NULL)
-	    /* This was the last entry.  */
-	    break;
+	    {
+	      /* This was the last entry.  Clear any left overs.  */
+	      memset (startp, '\0', newp + len - startp);
+	      break;
+	    }
 
 	  /* NUL-terminate the string.  */
 	  *runp = '\0';
@@ -764,8 +777,10 @@ __libelf_next_arhdr_wrlock (elf)
   if (elf->map_address != NULL)
     {
       /* See whether this entry is in the file.  */
-      if (unlikely (elf->state.ar.offset + sizeof (struct ar_hdr)
-		    > elf->start_offset + elf->maximum_size))
+      if (unlikely ((size_t) elf->state.ar.offset
+		    > elf->start_offset + elf->maximum_size
+		    || (elf->start_offset + elf->maximum_size
+			- elf->state.ar.offset) < sizeof (struct ar_hdr)))
 	{
 	  /* This record is not anymore in the file.  */
 	  __libelf_seterrno (ELF_E_RANGE);
@@ -796,7 +811,7 @@ __libelf_next_arhdr_wrlock (elf)
     }
 
   /* Copy the raw name over to a NUL terminated buffer.  */
-  *((char *) __mempcpy (elf->state.ar.raw_name, ar_hdr->ar_name, 16)) = '\0';
+  *((char *) mempcpy (elf->state.ar.raw_name, ar_hdr->ar_name, 16)) = '\0';
 
   elf_ar_hdr = &elf->state.ar.elf_ar_hdr;
 
@@ -892,7 +907,7 @@ __libelf_next_arhdr_wrlock (elf)
       const char *string = ar_hdr->FIELD;				      \
       if (ar_hdr->FIELD[sizeof (ar_hdr->FIELD) - 1] != ' ')		      \
 	{								      \
-	  *((char *) __mempcpy (buf, ar_hdr->FIELD, sizeof (ar_hdr->FIELD)))  \
+	  *((char *) mempcpy (buf, ar_hdr->FIELD, sizeof (ar_hdr->FIELD)))  \
 	    = '\0';							      \
 	  string = buf;							      \
 	}								      \
@@ -908,6 +923,12 @@ __libelf_next_arhdr_wrlock (elf)
   INT_FIELD (ar_gid);
   INT_FIELD (ar_mode);
   INT_FIELD (ar_size);
+
+  /* Truncated file?  */
+  size_t maxsize;
+  maxsize = elf->maximum_size - elf->state.ar.offset - sizeof (struct ar_hdr);
+  if ((size_t) elf_ar_hdr->ar_size > maxsize)
+    elf_ar_hdr->ar_size = maxsize;
 
   return 0;
 }

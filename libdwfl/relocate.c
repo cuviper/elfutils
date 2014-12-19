@@ -38,6 +38,12 @@ internal_function
 __libdwfl_relocate_value (Dwfl_Module *mod, Elf *elf, size_t *shstrndx,
 			  Elf32_Word shndx, GElf_Addr *value)
 {
+  /* No adjustment needed for section zero, it is never loaded.
+     Handle it first, just in case the ELF file has strange section
+     zero flags set.  */
+  if (shndx == 0)
+    return DWFL_E_NOERROR;
+
   Elf_Scn *refscn = elf_getscn (elf, shndx);
   GElf_Shdr refshdr_mem, *refshdr = gelf_getshdr (refscn, &refshdr_mem);
   if (refshdr == NULL)
@@ -200,7 +206,8 @@ resolve_symbol (Dwfl_Module *referer, struct reloc_symtab_cache *symtab,
 	  symtab->symstrdata = elf_getdata (elf_getscn (symtab->symelf,
 							symtab->strtabndx),
 					    NULL);
-	  if (unlikely (symtab->symstrdata == NULL))
+	  if (unlikely (symtab->symstrdata == NULL
+			|| symtab->symstrdata->d_buf == NULL))
 	    return DWFL_E_LIBELF;
 	}
       if (unlikely (sym->st_name >= symtab->symstrdata->d_size))
@@ -297,6 +304,46 @@ relocate_section (Dwfl_Module *mod, Elf *relocated, const GElf_Ehdr *ehdr,
   if (tdata == NULL)
     return DWFL_E_LIBELF;
 
+  /* If either the section that needs the relocation applied, or the
+     section that the relocations come from overlap one of the ehdrs,
+     shdrs or phdrs data then we refuse to do the relocations.  It
+     isn't illegal for ELF section data to overlap the header data,
+     but updating the (relocation) data might corrupt the in-memory
+     libelf headers causing strange corruptions or errors.  */
+  size_t ehsize = gelf_fsize (relocated, ELF_T_EHDR, 1, EV_CURRENT);
+  if (unlikely (shdr->sh_offset < ehsize
+		|| tshdr->sh_offset < ehsize))
+    return DWFL_E_BADELF;
+
+  GElf_Off shdrs_start = ehdr->e_shoff;
+  size_t shnums;
+  if (elf_getshdrnum (relocated, &shnums) < 0)
+    return DWFL_E_LIBELF;
+  /* Overflows will have been checked by elf_getshdrnum/get|rawdata.  */
+  size_t shentsize = gelf_fsize (relocated, ELF_T_SHDR, 1, EV_CURRENT);
+  GElf_Off shdrs_end = shdrs_start + shnums * shentsize;
+  if (unlikely ((shdrs_start < shdr->sh_offset + shdr->sh_size
+		 && shdr->sh_offset < shdrs_end)
+		|| (shdrs_start < tshdr->sh_offset + tshdr->sh_size
+		    && tshdr->sh_offset < shdrs_end)))
+    return DWFL_E_BADELF;
+
+  GElf_Off phdrs_start = ehdr->e_phoff;
+  size_t phnums;
+  if (elf_getphdrnum (relocated, &phnums) < 0)
+    return DWFL_E_LIBELF;
+  if (phdrs_start != 0 && phnums != 0)
+    {
+      /* Overflows will have been checked by elf_getphdrnum/get|rawdata.  */
+      size_t phentsize = gelf_fsize (relocated, ELF_T_PHDR, 1, EV_CURRENT);
+      GElf_Off phdrs_end = phdrs_start + phnums * phentsize;
+      if (unlikely ((phdrs_start < shdr->sh_offset + shdr->sh_size
+		     && shdr->sh_offset < phdrs_end)
+		    || (phdrs_start < tshdr->sh_offset + tshdr->sh_size
+			&& tshdr->sh_offset < phdrs_end)))
+	return DWFL_E_BADELF;
+    }
+
   /* Apply one relocation.  Returns true for any invalid data.  */
   Dwfl_Error relocate (GElf_Addr offset, const GElf_Sxword *addend,
 		       int rtype, int symndx)
@@ -365,7 +412,7 @@ relocate_section (Dwfl_Module *mod, Elf *relocated, const GElf_Ehdr *ehdr,
 	return DWFL_E_BADRELTYPE;
       }
 
-    if (offset + size > tdata->d_size)
+    if (offset > tdata->d_size || tdata->d_size - offset < size)
       return DWFL_E_BADRELOFF;
 
 #define DO_TYPE(NAME, Name) GElf_##Name Name;

@@ -1,5 +1,5 @@
 /* Test program for unwinding of frames.
-   Copyright (C) 2013 Red Hat, Inc.
+   Copyright (C) 2013, 2014 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -98,7 +98,8 @@ callback_verify (pid_t tid, unsigned frameno, Dwarf_Addr pc,
   {
     case 0:
       if (! reduce_frameno && symname
-	       && strcmp (symname, "__kernel_vsyscall") == 0)
+	       && (strcmp (symname, "__kernel_vsyscall") == 0
+		   || strcmp (symname, "__libc_do_syscall") == 0))
 	reduce_frameno = true;
       else
 	assert (symname && strcmp (symname, "raise") == 0);
@@ -147,6 +148,13 @@ frame_callback (Dwfl_Frame *state, void *frame_arg)
   int *framenop = frame_arg;
   Dwarf_Addr pc;
   bool isactivation;
+
+  if (*framenop > 16)
+    {
+      error (0, 0, "Too many frames: %d\n", *framenop);
+      return DWARF_CB_ABORT;
+    }
+
   if (! dwfl_frame_pc (state, &pc, &isactivation))
     {
       error (0, 0, "%s", dwfl_errmsg (-1));
@@ -459,6 +467,9 @@ main (int argc __attribute__ ((unused)), char **argv)
     };
   (void) argp_parse (&argp, argc, argv, 0, NULL, &dwfl);
   assert (dwfl != NULL);
+  /* We want to make sure the dwfl was properly attached.  */
+  if (dwfl_pid (dwfl) < 0)
+    error (2, 0, "dwfl_pid: %s", dwfl_errmsg (-1));
   dump (dwfl);
   dwfl_end (dwfl);
   return 0;

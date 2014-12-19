@@ -1,5 +1,5 @@
 /* This file defines standard DWARF types, structures, and macros.
-   Copyright (C) 2000-2011 Red Hat, Inc.
+   Copyright (C) 2000-2011, 2014 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -87,7 +87,7 @@ enum
     DW_TAG_unspecified_type = 0x3b,
     DW_TAG_partial_unit = 0x3c,
     DW_TAG_imported_unit = 0x3d,
-    DW_TAG_mutable_type = 0x3e,
+    /* 0x3e reserved.  */
     DW_TAG_condition = 0x3f,
     DW_TAG_shared_type = 0x40,
     DW_TAG_type_unit = 0x41,
@@ -221,6 +221,9 @@ enum
     DW_AT_enum_class = 0x6d,
     DW_AT_linkage_name = 0x6e,
 
+    /* DWARF5 attribute values.  */
+    DW_AT_noreturn = 0x87,
+
     DW_AT_lo_user = 0x2000,
 
     DW_AT_MIPS_fde = 0x2001,
@@ -267,6 +270,7 @@ enum
     DW_AT_GNU_all_call_sites = 0x2117,
     DW_AT_GNU_all_source_call_sites = 0x2118,
     DW_AT_GNU_macros = 0x2119,
+    DW_AT_GNU_deleted = 0x211a,
 
     DW_AT_hi_user = 0x3fff
   };
@@ -582,6 +586,10 @@ enum
     DW_LANG_D = 0x0013,		     /* D */
     DW_LANG_Python = 0x0014,	     /* Python */
     DW_LANG_Go = 0x0016,	     /* Go */
+    DW_LANG_C_plus_plus_11 = 0x001a, /* ISO C++:2011 */
+    DW_LANG_C11 = 0x001d,	     /* ISO C:2011 */
+    DW_LANG_C_plus_plus_14 = 0x0021, /* ISO C++:2014 */
+
 
     DW_LANG_lo_user = 0x8000,
     DW_LANG_Mips_Assembler = 0x8001, /* Assembler */

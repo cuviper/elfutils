@@ -1,3 +1,141 @@
+2014-12-19  Mark Wielaard  <mjw@redhat.com>
+
+	* run-deleted.sh: Don't check libfunc on ppc64.
+
+2014-12-19  Mark Wielaard  <mjw@redhat.com>
+
+	* vdsosyms.c (vdso_seen): Removed.
+	(vdso_syms): New global.
+	(module_callback): Set and check vdso_syms.
+	(main): Return value depends on vdso_syms.
+
+2014-12-19  Mark Wielaard  <mjw@redhat.com>
+
+	* backtrace-subr.sh (check_native_unsupported): Relax special ARM
+	grep a little.
+	* run-deleted.sh: Call check_native_unsupported.
+
+2014-12-18  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (EXTRA_DIST): Add testfile-macros-0xff.bz2.
+
+2014-12-12  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (deleted_lib_so_CFLAGS): Add
+	-fasynchronous-unwind-tables.
+
+2014-12-11  Josh Stone  <jistone@redhat.com>
+
+	* run-addr2line-i-lex-test.sh: New test.
+	* testfile-lex-inlines.bz2: New testfile.
+	* Makefile.am (EXTRA_DIST): Add run-addr2line-i-lex-test.sh and
+	testfile-lex-inlines.bz2.
+	(TESTS): Add run-addr2line-i-lex-test.sh.
+
+2014-12-10  Josh Stone  <jistone@redhat.com>
+
+	* run-addr2line-i-test.sh: Test 0x5f0 to make sure linkage_name is
+	preferred over the plain die name.
+
+2014-12-02  Petr Machata  <pmachata@redhat.com>
+
+	* dwarf-getmacros.c (mac): Skip over DW_MACINFO_undef,
+	DW_MACRO_GNU_undef_indirect opcodes.  Add a default branch.
+	(main): Initialize off to DWARF_GETMACROS_START when an extra
+	command line argument is passed.
+	* testfile-macros-0xff.bz2: New test case.
+	* testfile-macros-0xff.s: New file (source for the above).
+	* run-dwarf-getmacros.sh: Add two tests.
+
+2014-11-27  Mark Wielaard  <mjw@redhat.com>
+
+	* vdsosyms.c (main): Call dwfl_linux_proc_attach.
+
+2014-11-21  Mark Wielaard  <mjw@redhat.com>
+
+	* run-readelf-A.sh: New test.
+	* testfileppc32attrs.o.bz2: New test file.
+	* Makefile.am (TESTS): Add run-readelf-A.sh.
+	(EXTRA_DIST): Add run-readelf-A.sh and testfileppc32attrs.o.bz2.
+
+2014-11-10  Mark Wielaard  <mjw@redhat.com>
+
+	* vdsosyms.c: New test.
+	* Makefile.am (check_PROGRAMS): Add vdsosyms.
+	(TESTS): Likewise.
+	(vdsosyms_LDADD): New variable.
+
+2014-09-10  Petr Machata  <pmachata@redhat.com>
+
+	* dwarf-getmacros.c: Update to use the new macro iteration
+	interfaces.
+	* run-dwarf-getmacros.sh: Adjust, add a test that uses
+	testfile-macros.
+
+2014-10-06  Mark Wielaard  <mjw@redhat.com>
+
+	* run-aggregate-size.sh: Add testfile-sizes3.o test case.
+	* testfile-sizes3.o.bz2: New test file.
+	* Makefile.am (EXTRA_DIST): Add testfile-sizes3.o.bz2.
+
+2014-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	* run-deleted.sh: Unset VALGRIND_CMD before running deleted.
+
+2014-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (check_PROGRAMS): Add aggregate_size.c.
+	(TESTS): Add run-aggregate-size.sh.
+	(EXTRA_DIST): Add run-aggregate-size.sh, testfile-sizes1.o.bz2
+	and testfile-sizes2.o.bz2.
+	(aggregate_size_LDADD): New variable.
+	* aggregate_size.c: New file.
+	* run-aggregate-size.sh: New test.
+	* testfile-sizes1.o.bz2: New test file.
+	* testfile-sizes2.o.bz2: Likewise.
+
+2014-09-26  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	Support NT_FILE for locating files.
+	* Makefile.am (TESTS): Add run-linkmap-cut.sh.
+	(EXTRA_DIST): Add run-linkmap-cut.sh, linkmap-cut-lib.so.bz2,
+	linkmap-cut.bz2 and linkmap-cut.core.bz2 .
+	* linkmap-cut-lib.so.bz2: New file.
+	* linkmap-cut.bz2: New file.
+	* linkmap-cut.core.bz2: New file.
+	* run-linkmap-cut.sh: New file.
+	* run-unstrip-n.sh: Update its expected output.
+
+2014-08-28  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* Makefile.am (check_PROGRAMS): Add deleted and deleted-lib.so.
+	(TESTS, EXTRA_DIST): Add run-deleted.sh.
+	(deleted_LDADD, deleted_lib_so_LDFLAGS, deleted_lib_so_CFLAGS): New.
+	* deleted-lib.c: New file.
+	* deleted.c: New file.
+	* run-deleted.sh: New file.
+
+2014-06-15  Mark Wielaard  <mjw@redhat.com>
+
+	* backtrace.c (frame_callback): Error on seeing more than 16 frames.
+
+2014-06-13  Mark Wielaard  <mjw@redhat.com>
+
+	* backtrace.c (callback_verify): Accept "__libc_do_syscall" as first
+	frame symname.
+
+2014-06-13  Mark Wielaard  <mjw@redhat.com>
+
+	* backtrace-subr.sh (check_native_unsupported): New function.
+	(check_native): Call it.
+	(check_native_core): Likewise.
+	* run-backtrace-dwarf.sh: Likewise.
+
+2014-06-11  Mark Wielaard  <mjw@redhat.com>
+
+	* backtrace.c (main): Check that Dwfl was attached by calling
+	dwfl_pid and printing the error when it is not.
+
 2014-05-18  Mark Wielaard  <mjw@redhat.com>
 
 	* testfile-backtrace-demangle.cc (cxxfunc): Make non-static.

@@ -1,5 +1,5 @@
 /* Print information from ELF file in human-readable form.
-   Copyright (C) 2005, 2006, 2007, 2009, 2011, 2012 Red Hat, Inc.
+   Copyright (C) 2005, 2006, 2007, 2009, 2011, 2012, 2014 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2005.
 
@@ -389,7 +389,7 @@ show_relocs_x (Ebl *ebl, GElf_Shdr *shdr, Elf_Data *symdata,
 					   ? xndx : sym->st_shndx),
 			       &destshdr_mem);
 
-      if (shdr == NULL)
+      if (shdr == NULL || destshdr == NULL)
 	printf ("<%s %ld>",
 		gettext ("INVALID SECTION"),
 		(long int) (sym->st_shndx == SHN_XINDEX
@@ -418,7 +418,8 @@ show_relocs_rel (Ebl *ebl, GElf_Shdr *shdr, Elf_Data *data,
 		 Elf_Data *symdata, Elf_Data *xndxdata, size_t symstrndx,
 		 size_t shstrndx)
 {
-  int nentries = shdr->sh_size / shdr->sh_entsize;
+  size_t sh_entsize = gelf_fsize (ebl->elf, ELF_T_REL, 1, EV_CURRENT);
+  int nentries = shdr->sh_size / sh_entsize;
 
   for (int cnt = 0; cnt < nentries; ++cnt)
     {
@@ -438,7 +439,8 @@ show_relocs_rela (Ebl *ebl, GElf_Shdr *shdr, Elf_Data *data,
 		  Elf_Data *symdata, Elf_Data *xndxdata, size_t symstrndx,
 		  size_t shstrndx)
 {
-  int nentries = shdr->sh_size / shdr->sh_entsize;
+  size_t sh_entsize = gelf_fsize (ebl->elf, ELF_T_RELA, 1, EV_CURRENT);
+  int nentries = shdr->sh_size / sh_entsize;
 
   for (int cnt = 0; cnt < nentries; ++cnt)
     {
@@ -460,13 +462,13 @@ section_match (Elf *elf, uint32_t scnndx, GElf_Shdr *shdr, size_t shstrndx)
     return true;
 
   struct section_list *runp = section_list;
+  const char *name = elf_strptr (elf, shstrndx, shdr->sh_name);
 
   do
     {
       if (runp->is_name)
 	{
-	  if (strcmp (runp->name,
-		      elf_strptr (elf, shstrndx, shdr->sh_name)) == 0)
+	  if (name && strcmp (runp->name, name) == 0)
 	    return true;
 	}
       else
@@ -506,6 +508,8 @@ show_relocs (Ebl *ebl, const char *fname, uint32_t shstrndx)
 	  GElf_Shdr *destshdr = gelf_getshdr (elf_getscn (ebl->elf,
 							  shdr->sh_info),
 					      &destshdr_mem);
+	  if (unlikely (destshdr == NULL))
+	    continue;
 
 	  printf (gettext ("\nRELOCATION RECORDS FOR [%s]:\n"
 			   "%-*s TYPE                 VALUE\n"),
@@ -522,6 +526,8 @@ show_relocs (Ebl *ebl, const char *fname, uint32_t shstrndx)
 	  GElf_Shdr symshdr_mem;
 	  GElf_Shdr *symshdr = gelf_getshdr (symscn, &symshdr_mem);
 	  Elf_Data *symdata = elf_getdata (symscn, NULL);
+	  if (unlikely (symshdr == NULL || symdata == NULL))
+	    continue;
 
 	  /* Search for the optional extended section index table.  */
 	  Elf_Data *xndxdata = NULL;

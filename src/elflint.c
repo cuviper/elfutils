@@ -768,12 +768,18 @@ section [%2d] '%s': symbol %zu: function in COMMON section is nonsense\n"),
 	    {
 	      GElf_Addr sh_addr = (ehdr->e_type == ET_REL ? 0
 				   : destshdr->sh_addr);
+	      GElf_Addr st_value;
+	      if (GELF_ST_TYPE (sym->st_info) == STT_FUNC
+		  || (GELF_ST_TYPE (sym->st_info) == STT_GNU_IFUNC))
+		st_value = sym->st_value & ebl_func_addr_mask (ebl);
+	      else
+		st_value = sym->st_value;
 	      if (GELF_ST_TYPE (sym->st_info) != STT_TLS)
 		{
 		  if (! ebl_check_special_symbol (ebl, ehdr, sym, name,
 						  destshdr))
 		    {
-		      if (sym->st_value - sh_addr > destshdr->sh_size)
+		      if (st_value - sh_addr > destshdr->sh_size)
 			{
 			  /* GNU ld has severe bugs.  When it decides to remove
 			     empty sections it leaves symbols referencing them
@@ -793,12 +799,13 @@ section [%2d] '%s': symbol %zu: function in COMMON section is nonsense\n"),
 				  && strcmp (name, "__fini_array_end") != 0
 				  && strcmp (name, "__bss_start") != 0
 				  && strcmp (name, "__bss_start__") != 0
-				  && strcmp (name, "__TMC_END__") != 0))
+				  && strcmp (name, "__TMC_END__") != 0
+				  && strcmp (name, ".TOC.") != 0))
 			    ERROR (gettext ("\
 section [%2d] '%s': symbol %zu: st_value out of bounds\n"),
 				   idx, section_name (ebl, idx), cnt);
 			}
-		      else if ((sym->st_value - sh_addr
+		      else if ((st_value - sh_addr
 				+ sym->st_size) > destshdr->sh_size)
 			ERROR (gettext ("\
 section [%2d] '%s': symbol %zu does not fit completely in referenced section [%2d] '%s'\n"),
@@ -818,12 +825,12 @@ section [%2d] '%s': symbol %zu: referenced section [%2d] '%s' does not have SHF_
 		    {
 		      /* For object files the symbol value must fall
 			 into the section.  */
-		      if (sym->st_value > destshdr->sh_size)
+		      if (st_value > destshdr->sh_size)
 			ERROR (gettext ("\
 section [%2d] '%s': symbol %zu: st_value out of bounds of referenced section [%2d] '%s'\n"),
 			       idx, section_name (ebl, idx), cnt,
 			       (int) xndx, section_name (ebl, xndx));
-		      else if (sym->st_value + sym->st_size
+		      else if (st_value + sym->st_size
 			       > destshdr->sh_size)
 			ERROR (gettext ("\
 section [%2d] '%s': symbol %zu does not fit completely in referenced section [%2d] '%s'\n"),
@@ -852,20 +859,20 @@ section [%2d] '%s': symbol %zu: TLS symbol but no TLS program header entry\n"),
 			}
 		      else
 			{
-			  if (sym->st_value
+			  if (st_value
 			      < destshdr->sh_offset - phdr->p_offset)
 			    ERROR (gettext ("\
 section [%2d] '%s': symbol %zu: st_value short of referenced section [%2d] '%s'\n"),
 				   idx, section_name (ebl, idx), cnt,
 				   (int) xndx, section_name (ebl, xndx));
-			  else if (sym->st_value
+			  else if (st_value
 				   > (destshdr->sh_offset - phdr->p_offset
 				      + destshdr->sh_size))
 			    ERROR (gettext ("\
 section [%2d] '%s': symbol %zu: st_value out of bounds of referenced section [%2d] '%s'\n"),
 				   idx, section_name (ebl, idx), cnt,
 				   (int) xndx, section_name (ebl, xndx));
-			  else if (sym->st_value + sym->st_size
+			  else if (st_value + sym->st_size
 				   > (destshdr->sh_offset - phdr->p_offset
 				      + destshdr->sh_size))
 			    ERROR (gettext ("\
@@ -3259,7 +3266,7 @@ section [%2d] '%s': offset %zu: unterminated vendor name string\n"),
 	    unsigned const char *chunk = q;
 
 	    unsigned int subsection_tag;
-	    get_uleb128 (subsection_tag, q);
+	    get_uleb128 (subsection_tag, q, p);
 
 	    if (q >= p)
 	      {
@@ -3314,13 +3321,13 @@ section [%2d] '%s': offset %zu: attribute subsection has unexpected tag %u\n"),
 		while (chunk < q)
 		  {
 		    unsigned int tag;
-		    get_uleb128 (tag, chunk);
+		    get_uleb128 (tag, chunk, q);
 
 		    uint64_t value = 0;
 		    const unsigned char *r = chunk;
 		    if (tag == 32 || (tag & 1) == 0)
 		      {
-			get_uleb128 (value, r);
+			get_uleb128 (value, r, q);
 			if (r > q)
 			  {
 			    ERROR (gettext ("\
@@ -3525,7 +3532,7 @@ cannot get section header for section [%2zu] '%s': %s\n"),
 
 		GElf_Word good_type = special_sections[s].type;
 		if (IS_KNOWN_SPECIAL (s, ".plt", false)
-		    && ebl_bss_plt_p (ebl, ehdr))
+		    && ebl_bss_plt_p (ebl))
 		  good_type = SHT_NOBITS;
 
 		/* In a debuginfo file, any normal section can be SHT_NOBITS.

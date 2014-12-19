@@ -1,3 +1,153 @@
+2014-12-19  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getdwarf.c (find_symtab): Always try find_dynsym last.
+
+2014-12-19  Mark Wielaard  <mjw@redhat.com>
+
+	* elf-from-memory.c (handle_segment): Remove palign sanity check.
+
+2014-12-18  Mark Wielaard  <mjw@redhat.com>
+
+	* relocate.c (resolve_symbol): Make sure symstrdata->d_buf != NULL.
+
+2014-12-13  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getdwarf.c (find_dynsym): elf_getdata_rawchunk takes
+	a size_t, make sure it doesn't overflow.
+
+2014-12-13  Mark Wielaard  <mjw@redhat.com>
+
+	* cu.c (cudie_offset): Make sure Dwarf_Off difference doesn't
+	wrap around before returning as int.
+
+2014-12-11  Josh Stone  <jistone@redhat.com>
+
+	* dwfl_module_getsrc.c (dwfl_module_getsrc): Return the *last* line
+	record <= addr, rather than returning immediately on matches.
+
+2014-12-09  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_segment_report_module.c (handle_file_note): Check count doesn't
+	overflow.
+
+2014-12-07  Mark Wielaard  <mjw@redhat.com>
+
+	* relocate.c (relocate_section): Sanity check section overlap against
+	actually used ehsize, shentsize and phentsize.
+
+2014-12-07  Mark Wielaard  <mjw@redhat.com>
+
+	* offline.c (dwfl_offline_section_address): Assert shndx is not zero.
+	* relocate.c (__libdwfl_relocate_value): Don't relocate against
+	section zero.
+
+2014-11-29  Mark Wielaard  <mjw@redhat.com>
+
+	* relocate.c (relocate_section): Check relocation section and target
+	section data don't overlap any of the ELF headers.
+	(relocate): Check for offset + size overflow.
+
+2014-11-22  Mark Wielaard  <mjw@redhat.com>
+
+	* link_map.c (consider_executable): Use elf_getphdrnum.
+	(dwfl_link_map_report): Likewise.
+
+2014-11-18  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getdwarf.c (find_symtab): Sanity check the data buffer,
+	number of symbols and first_global before use.
+
+2014-11-14  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getdwarf.c (load_symtab): Don't use tables which have
+	a zero sh_entsize.
+
+2014-11-10  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getdwarf.c (find_dynsym): New inner function
+	translate_offs that takes an adjust argument. Try finding
+	the symbol table with and without adjusting to main_bias.
+
+2014-09-26  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	Support NT_FILE for locating files.
+	* core-file.c (dwfl_core_file_report): New variables note_file and
+	note_file_size, set them and pass them to dwfl_segment_report_module.
+	* dwfl_segment_report_module.c: Include common.h and fcntl.h.
+	(buf_has_data, buf_read_ulong, handle_file_note): New functions.
+	(invalid_elf): New function from code of dwfl_segment_report_module.
+	(dwfl_segment_report_module): Add parameters note_file and
+	note_file_size.  New variables elf and fd, clean them up in finish.
+	Move some code to invalid_elf.  Call handle_file_note, if it found
+	a name verify the file by invalid_elf.  Protect elf and fd against
+	cleanup by finish if we found the file for new Dwfl_Module.
+	* libdwflP.h (dwfl_segment_report_module): Add parameters note_file and
+	note_file_size.
+
+2014-09-23  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_segment_report_module.c (dwfl_segment_report_module):
+	Extract ei_class, ei_data and e_type early and use the result.
+
+2014-09-18  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* dwfl_build_id_find_elf.c (dwfl_build_id_find_elf): Use IS_EXECUTABLE.
+	* dwfl_segment_report_module.c (dwfl_segment_report_module): Set
+	IS_EXECUTABLE.
+	* libdwflP.h (struct Dwfl_Module): New field is_executable.
+
+2014-08-28  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* dwfl_module_getdwarf.c (find_offsets): Add parameter main_bias, use
+	it.
+	(find_dynsym): Pass the new parameter main_bias.
+
+2014-08-14  Mark Wielaard  <mjw@redhat.com>
+
+	* linux-kernel-modules.c (check-suffix): Also TRY .ko.xz.
+
+2014-07-24  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	Fix report_r_debug for prelinked libraries.
+	* link_map.c (report_r_debug): Comment out variable l_addr.
+	Use instead new variable base recalculated from l_ld.
+
+2014-06-24  Kurt Roeckx  <kurt@roeckx.be>
+
+	* linux-pid-attach.c: Make it build on non linux hosts.
+
+2014-06-17  Mark Wielaard  <mjw@redhat.com>
+
+	* frame_unwind.c (handle_cfi): Use ebl_func_addr_mask.
+	* dwfl_module_getsym.c (__libdwfl_getsym): Likewise.
+
+2014-06-15  Mark Wielaard  <mjw@redhat.com>
+
+	* linux-core-attach.c (core_memory_read): Use libdw/memory-access.h
+	macros read_4ubyte_unaligned_noncvt and read_8ubyte_unaligned_noncvt
+	to read possibly unaligned data.
+	(core_next_thread): Likewise.
+	(core_set_initial_registers): Likewise.
+	(dwfl_core_file_attach): Likewise.
+
+2014-06-11  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_frame.c (__libdwfl_process_free): Reset dwfl->attacherr.
+	(dwfl_attach_state): Set dwfl->attacherr.
+	(dwfl_pid): Check and return dwfl->attacherr if set.
+	(dwfl_getthreads): Likewise.
+	(getthread): Likewise.
+	* libdwflP.h: Add DWFL_E_NO_CORE_FILE.
+	(struct Dwfl): Add attacherr field.
+	* linux-core-attach.c (dwfl_core_file_attach): Set dwfl->attacherr.
+	Don't assert if ELF file is not ET_CORE, just return error.
+	* linux-pid-attach.c (dwfl_linux_proc_attach): Set dwfl->attacherr.
+
+2014-06-10  Mark Wielaard  <mjw@redhat.com>
+
+	* argp-std.c (parse_opt): Ignore errors from dwfl_core_file_attach
+	or dwfl_linux_proc_attach.
+
 2014-05-15  Mark Wielaard  <mjw@redhat.com>
 
 	* linux-proc-maps.c (grovel_auxv): Close fd on error.

@@ -1,5 +1,5 @@
 /* Report modules by examining dynamic linker data structures.
-   Copyright (C) 2008-2013 Red Hat, Inc.
+   Copyright (C) 2008-2014 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -321,7 +321,11 @@ report_r_debug (uint_fast8_t elfclass, uint_fast8_t elfdata,
       if (read_addrs (next, 4))
 	return release_buffer (-1);
 
-      GElf_Addr l_addr = addrs[0];
+      /* Unused: l_addr is the difference between the address in memory
+         and the ELF file when the core was created. We need to
+         recalculate the difference below because the ELF file we use
+         might be differently pre-linked.  */
+      // GElf_Addr l_addr = addrs[0];
       GElf_Addr l_name = addrs[1];
       GElf_Addr l_ld = addrs[2];
       next = addrs[3];
@@ -432,11 +436,14 @@ report_r_debug (uint_fast8_t elfclass, uint_fast8_t elfdata,
 
 		  if (valid)
 		    {
+		      // It is like l_addr but it handles differently prelinked
+		      // files at core dumping vs. core loading time.
+		      GElf_Addr base = l_ld - elf_dynamic_vaddr;
 		      if (r_debug_info_module == NULL)
 			{
 			  // XXX hook for sysroot
 			  mod = __libdwfl_report_elf (dwfl, basename (name),
-						      name, fd, elf, l_addr,
+						      name, fd, elf, base,
 						      true, true);
 			  if (mod != NULL)
 			    {
@@ -444,7 +451,7 @@ report_r_debug (uint_fast8_t elfclass, uint_fast8_t elfdata,
 			      fd = -1;
 			    }
 			}
-		      else if (__libdwfl_elf_address_range (elf, l_addr, true,
+		      else if (__libdwfl_elf_address_range (elf, base, true,
 							    true, NULL, NULL,
 						    &r_debug_info_module->start,
 						    &r_debug_info_module->end,
@@ -526,7 +533,11 @@ consider_executable (Dwfl_Module *mod, GElf_Addr at_phdr, GElf_Addr at_entry,
      address where &r_debug was written at runtime.  */
   GElf_Xword align = mod->dwfl->segment_align;
   GElf_Addr d_val_vaddr = 0;
-  for (uint_fast16_t i = 0; i < ehdr.e_phnum; ++i)
+  size_t phnum;
+  if (elf_getphdrnum (mod->main.elf, &phnum) != 0)
+    return 0;
+
+  for (size_t i = 0; i < phnum; ++i)
     {
       GElf_Phdr phdr_mem;
       GElf_Phdr *phdr = gelf_getphdr (mod->main.elf, i, &phdr_mem);
@@ -806,7 +817,15 @@ dwfl_link_map_report (Dwfl *dwfl, const void *auxv, size_t auxv_size,
 		  __libdwfl_seterrno (DWFL_E_LIBELF);
 		  return false;
 		}
-	      if (ehdr->e_phnum != phnum || ehdr->e_phentsize != phent)
+	      size_t e_phnum;
+	      if (elf_getphdrnum (elf, &e_phnum) != 0)
+		{
+		  elf_end (elf);
+		  close (fd);
+		  __libdwfl_seterrno (DWFL_E_LIBELF);
+		  return false;
+		}
+	      if (e_phnum != phnum || ehdr->e_phentsize != phent)
 		{
 		  elf_end (elf);
 		  close (fd);

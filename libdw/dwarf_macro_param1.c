@@ -1,5 +1,5 @@
 /* Return first macro parameter.
-   Copyright (C) 2005 Red Hat, Inc.
+   Copyright (C) 2005, 2014 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2005.
 
@@ -40,7 +40,9 @@ dwarf_macro_param1 (Dwarf_Macro *macro, Dwarf_Word *paramp)
   if (macro == NULL)
     return -1;
 
-  *paramp = macro->param1;
+  Dwarf_Attribute param;
+  if (dwarf_macro_param (macro, 0, &param) != 0)
+    return -1;
 
-  return 0;
+  return dwarf_formudata (&param, paramp);
 }

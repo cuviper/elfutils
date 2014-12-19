@@ -301,3 +301,24 @@ ELFUTILS_0.159 {
     dwelf_elf_gnu_debuglink;
     dwelf_elf_gnu_build_id;
 } ELFUTILS_0.158;
+
+ELFUTILS_0.160 {
+  global:
+    dwarf_cu_getdwarf;
+    dwarf_cu_die;
+} ELFUTILS_0.159;
+
+ELFUTILS_0.161 {
+  global:
+    dwarf_peel_type;
+
+    # Replaced ELFUTILS_0.144 version.  Both versions point to the
+    # same implementation, but users of the new symbol version can
+    # presume that it uses dwarf_peel_type.
+    dwarf_aggregate_size;
+
+    dwarf_getmacros_off;
+    dwarf_macro_getsrcfiles;
+    dwarf_macro_getparamcnt;
+    dwarf_macro_param;
+} ELFUTILS_0.160;

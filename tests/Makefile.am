@@ -50,7 +50,7 @@ check_PROGRAMS = arextract arsymtest newfile saridx scnnames sectiondump \
 		  test-elf_cntl_gelf_getshdr dwflsyms dwfllines \
 		  dwfl-report-elf-align varlocs backtrace backtrace-child \
 		  backtrace-data backtrace-dwarf debuglink debugaltlink \
-		  buildid
+		  buildid deleted deleted-lib.so aggregate_size vdsosyms
 
 asm_TESTS = asm-tst1 asm-tst2 asm-tst3 asm-tst4 asm-tst5 \
 	    asm-tst6 asm-tst7 asm-tst8 asm-tst9
@@ -101,7 +101,8 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-test-archive64.sh run-readelf-vmcoreinfo.sh \
 	run-readelf-mixed-corenote.sh run-dwfllines.sh \
 	run-dwfl-report-elf-align.sh run-addr2line-test.sh \
-	run-addr2line-i-test.sh run-varlocs.sh run-funcretval.sh \
+	run-addr2line-i-test.sh run-addr2line-i-lex-test.sh \
+	run-varlocs.sh run-funcretval.sh \
 	run-backtrace-native.sh run-backtrace-data.sh run-backtrace-dwarf.sh \
 	run-backtrace-native-biarch.sh run-backtrace-native-core.sh \
 	run-backtrace-native-core-biarch.sh run-backtrace-core-x86_64.sh \
@@ -109,7 +110,8 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-backtrace-core-s390x.sh run-backtrace-core-s390.sh \
 	run-backtrace-core-aarch64.sh \
 	run-backtrace-demangle.sh run-stack-d-test.sh run-stack-i-test.sh \
-	run-readelf-dwz-multi.sh run-allfcts-multi.sh
+	run-readelf-dwz-multi.sh run-allfcts-multi.sh run-deleted.sh \
+	run-linkmap-cut.sh run-aggregate-size.sh vdsosyms run-readelf-A.sh
 
 if !BIARCH
 export ELFUTILS_DISABLE_BIARCH = 1
@@ -187,6 +189,7 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     testfile45.S.bz2 testfile45.expect.bz2 run-disasm-x86-64.sh \
 	     testfile46.bz2 testfile47.bz2 testfile48.bz2 testfile48.debug.bz2 \
 	     testfile49.bz2 testfile50.bz2 testfile51.bz2 \
+	     testfile-macros-0xff.bz2 \
 	     run-readelf-macro.sh testfilemacro.bz2 \
 	     run-readelf-loc.sh testfileloc.bz2 \
 	     run-readelf-aranges.sh run-readelf-line.sh testfilefoobarbaz.bz2 \
@@ -242,6 +245,7 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     testfilenolines.bz2 test-core-lib.so.bz2 test-core.core.bz2 \
 	     test-core.exec.bz2 run-addr2line-test.sh \
 	     run-addr2line-i-test.sh testfile-inlines.bz2 \
+	     run-addr2line-i-lex-test.sh testfile-lex-inlines.bz2 \
 	     testfileppc32.bz2 testfileppc64.bz2 \
 	     testfiles390.bz2 testfiles390x.bz2 \
 	     testfilearm.bz2 testfileaarch64.bz2 \
@@ -271,7 +275,12 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     testfile-backtrace-demangle.core.bz2 \
 	     run-stack-d-test.sh run-stack-i-test.sh \
 	     testfiledwarfinlines.bz2 testfiledwarfinlines.core.bz2 \
-	     run-readelf-zdebug.sh testfile-debug.bz2 testfile-zdebug.bz2
+	     run-readelf-zdebug.sh testfile-debug.bz2 testfile-zdebug.bz2 \
+	     run-deleted.sh run-linkmap-cut.sh linkmap-cut-lib.so.bz2 \
+	     linkmap-cut.bz2 linkmap-cut.core.bz2 \
+	     run-aggregate-size.sh testfile-sizes1.o.bz2 testfile-sizes2.o.bz2 \
+	     testfile-sizes3.o.bz2 \
+	     run-readelf-A.sh testfileppc32attrs.o.bz2
 
 if USE_VALGRIND
 valgrind_cmd='valgrind -q --error-exitcode=1 --run-libc-freeres=no'
@@ -408,6 +417,11 @@ backtrace_dwarf_LDADD = $(libdw) $(libelf)
 debuglink_LDADD = $(libdw) $(libelf)
 debugaltlink_LDADD = $(libdw) $(libelf)
 buildid_LDADD = $(libdw) $(libelf)
+deleted_LDADD = ./deleted-lib.so
+deleted_lib_so_LDFLAGS = -shared -rdynamic
+deleted_lib_so_CFLAGS = -fPIC -fasynchronous-unwind-tables
+aggregate_size_LDADD = $(libdw) $(libelf)
+vdsosyms_LDADD = $(libdw) $(libelf)
 
 if GCOV
 check: check-am coverage

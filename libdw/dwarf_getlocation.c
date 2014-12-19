@@ -1,5 +1,5 @@
 /* Return location expression list.
-   Copyright (C) 2000-2010, 2013 Red Hat, Inc.
+   Copyright (C) 2000-2010, 2013, 2014 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2000.
 
@@ -57,6 +57,10 @@ attr_ok (Dwarf_Attribute *attr)
     case DW_AT_return_addr:
     case DW_AT_static_link:
     case DW_AT_segment:
+    case DW_AT_GNU_call_site_value:
+    case DW_AT_GNU_call_site_data_value:
+    case DW_AT_GNU_call_site_target:
+    case DW_AT_GNU_call_site_target_clobbered:
       break;
 
     default:
@@ -100,7 +104,8 @@ store_implicit_value (Dwarf *dbg, void **cache, Dwarf_Op *op)
   struct loc_block_s *block = libdw_alloc (dbg, struct loc_block_s,
 					   sizeof (struct loc_block_s), 1);
   const unsigned char *data = (const unsigned char *) (uintptr_t) op->number2;
-  (void) __libdw_get_uleb128 (&data); // Ignored, equal to op->number.
+  // Ignored, equal to op->number.  And data length already checked.
+  (void) __libdw_get_uleb128 (&data, data + len_leb128 (Dwarf_Word));
   block->addr = op;
   block->data = (unsigned char *) data;
   block->length = op->number;
@@ -390,28 +395,28 @@ __libdw_intern_expression (Dwarf *dbg, bool other_byte_order,
 	case DW_OP_piece:
 	case DW_OP_GNU_convert:
 	case DW_OP_GNU_reinterpret:
-	  /* XXX Check size.  */
-	  get_uleb128 (newloc->number, data);
+	  get_uleb128 (newloc->number, data, end_data);
 	  break;
 
 	case DW_OP_consts:
 	case DW_OP_breg0 ... DW_OP_breg31:
 	case DW_OP_fbreg:
-	  /* XXX Check size.  */
-	  get_sleb128 (newloc->number, data);
+	  get_sleb128 (newloc->number, data, end_data);
 	  break;
 
 	case DW_OP_bregx:
-	  /* XXX Check size.  */
-	  get_uleb128 (newloc->number, data);
-	  get_sleb128 (newloc->number2, data);
+	  get_uleb128 (newloc->number, data, end_data);
+	  if (unlikely (data >= end_data))
+	    goto invalid;
+	  get_sleb128 (newloc->number2, data, end_data);
 	  break;
 
 	case DW_OP_bit_piece:
 	case DW_OP_GNU_regval_type:
-	  /* XXX Check size.  */
-	  get_uleb128 (newloc->number, data);
-	  get_uleb128 (newloc->number2, data);
+	  get_uleb128 (newloc->number, data, end_data);
+	  if (unlikely (data >= end_data))
+	    goto invalid;
+	  get_uleb128 (newloc->number2, data, end_data);
 	  break;
 
 	case DW_OP_implicit_value:
@@ -422,8 +427,7 @@ __libdw_intern_expression (Dwarf *dbg, bool other_byte_order,
 
 	  /* start of block inc. len.  */
 	  newloc->number2 = (Dwarf_Word) (uintptr_t) data;
-	  /* XXX Check size.  */
-	  get_uleb128 (newloc->number, data); /* Block length.  */
+	  get_uleb128 (newloc->number, data, end_data); /* Block length.  */
 	  if (unlikely ((Dwarf_Word) (end_data - data) < newloc->number))
 	    goto invalid;
 	  data += newloc->number;		/* Skip the block.  */
@@ -434,23 +438,22 @@ __libdw_intern_expression (Dwarf *dbg, bool other_byte_order,
 	  if (__libdw_read_offset_inc (dbg, sec_index, &data, ref_size,
 				       &newloc->number, IDX_debug_info, 0))
 	    return -1;
-	  /* XXX Check size.  */
-	  get_uleb128 (newloc->number2, data); /* Byte offset.  */
+	  if (unlikely (data >= end_data))
+	    goto invalid;
+	  get_uleb128 (newloc->number2, data, end_data); /* Byte offset.  */
 	  break;
 
 	case DW_OP_GNU_deref_type:
-	  if (unlikely (data >= end_data))
+	  if (unlikely (data + 1 >= end_data))
 	    goto invalid;
 	  newloc->number = *data++;
-	  get_uleb128 (newloc->number2, data);
+	  get_uleb128 (newloc->number2, data, end_data);
 	  break;
 
 	case DW_OP_GNU_const_type:
 	  {
 	    size_t size;
-
-	    /* XXX Check size.  */
-	    get_uleb128 (newloc->number, data);
+	    get_uleb128 (newloc->number, data, end_data);
 	    if (unlikely (data >= end_data))
 	      goto invalid;
 
@@ -551,6 +554,14 @@ static int
 getlocation (struct Dwarf_CU *cu, const Dwarf_Block *block,
 	     Dwarf_Op **llbuf, size_t *listlen, int sec_index)
 {
+  /* Empty location expressions don't have any ops to intern.
+     Note that synthetic empty_cu doesn't have an associated DWARF dbg.  */
+  if (block->length == 0)
+    {
+      *listlen = 0;
+      return 0;
+    }
+
   return __libdw_intern_expression (cu->dbg, cu->dbg->other_byte_order,
 				    cu->address_size, (cu->version == 2
 						       ? cu->address_size

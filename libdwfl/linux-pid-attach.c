@@ -290,13 +290,23 @@ dwfl_linux_proc_attach (Dwfl *dwfl, pid_t pid, bool assume_ptrace_stopped)
 {
   char buffer[36];
   FILE *procfile;
+  int err = 0; /* The errno to return and set for dwfl->attcherr.  */
 
   /* Make sure to report the actual PID (thread group leader) to
      dwfl_attach_state.  */
   snprintf (buffer, sizeof (buffer), "/proc/%ld/status", (long) pid);
   procfile = fopen (buffer, "r");
   if (procfile == NULL)
-    return errno;
+    {
+      err = errno;
+    fail:
+      if (dwfl->process == NULL && dwfl->attacherr == DWFL_E_NOERROR)
+	{
+	  errno = err;
+	  dwfl->attacherr = __libdwfl_canon_error (DWFL_E_ERRNO);
+	}
+      return err;
+    }
 
   char *line = NULL;
   size_t linelen = 0;
@@ -317,19 +327,26 @@ dwfl_linux_proc_attach (Dwfl *dwfl, pid_t pid, bool assume_ptrace_stopped)
   fclose (procfile);
 
   if (pid == 0)
-    return ESRCH;
+    {
+      err = ESRCH;
+      goto fail;
+    }
 
   char dirname[64];
   int i = snprintf (dirname, sizeof (dirname), "/proc/%ld/task", (long) pid);
   assert (i > 0 && i < (ssize_t) sizeof (dirname) - 1);
   DIR *dir = opendir (dirname);
   if (dir == NULL)
-    return errno;
+    {
+      err = errno;
+      goto fail;
+    }
   struct __libdwfl_pid_arg *pid_arg = malloc (sizeof *pid_arg);
   if (pid_arg == NULL)
     {
       closedir (dir);
-      return ENOMEM;
+      err = ENOMEM;
+      goto fail;
     }
   pid_arg->dir = dir;
   pid_arg->tid_attached = 0;
@@ -379,6 +396,16 @@ pid_getthread (Dwfl *dwfl __attribute__ ((unused)),
   return false;
 }
 
+bool
+internal_function
+__libdwfl_ptrace_attach (pid_t tid __attribute__ ((unused)),
+			 bool *tid_was_stoppedp __attribute__ ((unused)))
+{
+  errno = ENOSYS;
+  __libdwfl_seterrno (DWFL_E_ERRNO);
+  return false;
+}
+
 static bool
 pid_memory_read (Dwfl *dwfl __attribute__ ((unused)),
                  Dwarf_Addr addr __attribute__ ((unused)),
@@ -402,6 +429,13 @@ pid_set_initial_registers (Dwfl_Thread *thread __attribute__ ((unused)),
 static void
 pid_detach (Dwfl *dwfl __attribute__ ((unused)),
 	    void *dwfl_arg __attribute__ ((unused)))
+{
+}
+
+void
+internal_function
+__libdwfl_ptrace_detach (pid_t tid __attribute__ ((unused)),
+			 bool tid_was_stopped __attribute__ ((unused)))
 {
 }
 

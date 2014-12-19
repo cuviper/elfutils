@@ -91,7 +91,8 @@ typedef struct Dwfl_Process Dwfl_Process;
   DWFL_ERROR (ATTACH_STATE_CONFLICT, N_("Dwfl already has attached state"))   \
   DWFL_ERROR (NO_ATTACH_STATE, N_("Dwfl has no attached state"))	      \
   DWFL_ERROR (NO_UNWIND, N_("Unwinding not supported for this architecture")) \
-  DWFL_ERROR (INVALID_ARGUMENT, N_("Invalid argument"))
+  DWFL_ERROR (INVALID_ARGUMENT, N_("Invalid argument"))			      \
+  DWFL_ERROR (NO_CORE_FILE, N_("Not an ET_CORE ELF file"))
 
 #define DWFL_ERROR(name, text) DWFL_E_##name,
 typedef enum { DWFL_ERRORS DWFL_E_NUM } Dwfl_Error;
@@ -110,6 +111,7 @@ struct Dwfl
   Dwfl_Module *modulelist;    /* List in order used by full traversals.  */
 
   Dwfl_Process *process;
+  Dwfl_Error attacherr;      /* Previous error attaching process.  */
 
   GElf_Addr offline_next_address;
 
@@ -209,6 +211,7 @@ struct Dwfl_Module
 
   int segment;			/* Index of first segment table entry.  */
   bool gc;			/* Mark/sweep flag.  */
+  bool is_executable;		/* Use Dwfl::executable_for_core?  */
 };
 
 /* This holds information common for all the threads/tasks/TIDs of one process
@@ -657,6 +660,8 @@ extern int dwfl_segment_report_module (Dwfl *dwfl, int ndx, const char *name,
 				       void *memory_callback_arg,
 				       Dwfl_Module_Callback *read_eagerly,
 				       void *read_eagerly_arg,
+				       const void *note_file,
+				       size_t note_file_size,
 				       const struct r_debug_info *r_debug_info);
 
 /* Report a module for entry in the dynamic linker's struct link_map list.

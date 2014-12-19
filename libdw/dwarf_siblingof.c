@@ -1,5 +1,5 @@
 /* Return sibling of given DIE.
-   Copyright (C) 2003-2010 Red Hat, Inc.
+   Copyright (C) 2003-2010, 2014 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2003.
 
@@ -62,8 +62,7 @@ dwarf_siblingof (die, result)
   /* That's the address we start looking.  */
   unsigned char *addr = this_die.addr;
   /* End of the buffer.  */
-  unsigned char *endp
-    = ((unsigned char *) cu_data (sibattr.cu)->d_buf + sibattr.cu->end);
+  unsigned char *endp = sibattr.cu->endp;
 
   /* Search for the beginning of the next die on this level.  We
      must not return the dies for children of the given die.  */
@@ -72,7 +71,7 @@ dwarf_siblingof (die, result)
       /* Find the end of the DIE or the sibling attribute.  */
       addr = __libdw_find_attr (&this_die, DW_AT_sibling, &sibattr.code,
 				&sibattr.form);
-      if (sibattr.code == DW_AT_sibling)
+      if (addr != NULL && sibattr.code == DW_AT_sibling)
 	{
 	  Dwarf_Off offset;
 	  sibattr.valp = addr;
@@ -81,8 +80,7 @@ dwarf_siblingof (die, result)
 	    return -1;
 
 	  /* Compute the next address.  */
-	  addr = ((unsigned char *) cu_data (sibattr.cu)->d_buf
-		  + sibattr.cu->start + offset);
+	  addr = sibattr.cu->startp + offset;
 	}
       else if (unlikely (addr == NULL)
 	       || unlikely (this_die.abbrev == DWARF_END_ABBREV))

@@ -39,6 +39,14 @@
 
 #define len_leb128(var) ((8 * sizeof (var) + 6) / 7)
 
+static inline size_t
+__libdw_max_len_leb128 (const unsigned char *addr, const unsigned char *end)
+{
+  const size_t type_len = len_leb128 (uint64_t);
+  const size_t pointer_len = likely (addr < end) ? end - addr : 0;
+  return likely (type_len <= pointer_len) ? type_len : pointer_len;
+}
+
 #define get_uleb128_step(var, addr, nth)				      \
   do {									      \
     unsigned char __b = *(addr)++;					      \
@@ -48,20 +56,24 @@
   } while (0)
 
 static inline uint64_t
-__libdw_get_uleb128 (const unsigned char **addrp)
+__libdw_get_uleb128 (const unsigned char **addrp, const unsigned char *end)
 {
   uint64_t acc = 0;
+
   /* Unroll the first step to help the compiler optimize
      for the common single-byte case.  */
   get_uleb128_step (acc, *addrp, 0);
-  for (unsigned int i = 1; i < len_leb128 (acc); ++i)
+
+  const size_t max = __libdw_max_len_leb128 (*addrp - 1, end);
+  for (size_t i = 1; i < max; ++i)
     get_uleb128_step (acc, *addrp, i);
   /* Other implementations set VALUE to UINT_MAX in this
      case.  So we better do this as well.  */
   return UINT64_MAX;
 }
 
-#define get_uleb128(var, addr) ((var) = __libdw_get_uleb128 (&(addr)))
+/* Note, addr needs to me smaller than end. */
+#define get_uleb128(var, addr, end) ((var) = __libdw_get_uleb128 (&(addr), end))
 
 /* The signed case is similar, but we sign-extend the result.  */
 
@@ -78,18 +90,23 @@ __libdw_get_uleb128 (const unsigned char **addrp)
   } while (0)
 
 static inline int64_t
-__libdw_get_sleb128 (const unsigned char **addrp)
+__libdw_get_sleb128 (const unsigned char **addrp, const unsigned char *end)
 {
   int64_t acc = 0;
-  /* Unrolling 0 like uleb128 didn't prove to benefit optimization.  */
-  for (unsigned int i = 0; i < len_leb128 (acc); ++i)
+
+  /* Unroll the first step to help the compiler optimize
+     for the common single-byte case.  */
+  get_sleb128_step (acc, *addrp, 0);
+
+  const size_t max = __libdw_max_len_leb128 (*addrp - 1, end);
+  for (size_t i = 1; i < max; ++i)
     get_sleb128_step (acc, *addrp, i);
   /* Other implementations set VALUE to INT_MAX in this
      case.  So we better do this as well.  */
   return INT64_MAX;
 }
 
-#define get_sleb128(var, addr) ((var) = __libdw_get_sleb128 (&(addr)))
+#define get_sleb128(var, addr, end) ((var) = __libdw_get_sleb128 (&(addr), end))
 
 
 /* We use simple memory access functions in case the hardware allows it.
@@ -219,17 +236,6 @@ read_8sbyte_unaligned_1 (bool other_byte_order, const void *p)
 #endif	/* allow unaligned */
 
 
-#define read_ubyte_unaligned(Nbytes, Dbg, Addr) \
-  ((Nbytes) == 2 ? read_2ubyte_unaligned (Dbg, Addr)			      \
-   : (Nbytes) == 4 ? read_4ubyte_unaligned (Dbg, Addr)			      \
-   : read_8ubyte_unaligned (Dbg, Addr))
-
-#define read_sbyte_unaligned(Nbytes, Dbg, Addr) \
-  ((Nbytes) == 2 ? read_2sbyte_unaligned (Dbg, Addr)			      \
-   : (Nbytes) == 4 ? read_4sbyte_unaligned (Dbg, Addr)			      \
-   : read_8sbyte_unaligned (Dbg, Addr))
-
-
 #define read_2ubyte_unaligned_inc(Dbg, Addr) \
   ({ uint16_t t_ = read_2ubyte_unaligned (Dbg, Addr);			      \
      Addr = (__typeof (Addr)) (((uintptr_t) (Addr)) + 2);		      \
@@ -258,14 +264,9 @@ read_8sbyte_unaligned_1 (bool other_byte_order, const void *p)
      t_; })
 
 
-#define read_ubyte_unaligned_inc(Nbytes, Dbg, Addr) \
-  ((Nbytes) == 2 ? read_2ubyte_unaligned_inc (Dbg, Addr)		      \
-   : (Nbytes) == 4 ? read_4ubyte_unaligned_inc (Dbg, Addr)		      \
-   : read_8ubyte_unaligned_inc (Dbg, Addr))
-
-#define read_sbyte_unaligned_inc(Nbytes, Dbg, Addr) \
-  ((Nbytes) == 2 ? read_2sbyte_unaligned_inc (Dbg, Addr)		      \
-   : (Nbytes) == 4 ? read_4sbyte_unaligned_inc (Dbg, Addr)		      \
-   : read_8sbyte_unaligned_inc (Dbg, Addr))
+#define read_addr_unaligned_inc(Nbytes, Dbg, Addr)			\
+  (assert ((Nbytes) == 4 || (Nbytes) == 8),				\
+    ((Nbytes) == 4 ? read_4ubyte_unaligned_inc (Dbg, Addr)		\
+     : read_8ubyte_unaligned_inc (Dbg, Addr)))
 
 #endif	/* memory-access.h */

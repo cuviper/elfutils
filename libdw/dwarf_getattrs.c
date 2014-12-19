@@ -1,5 +1,5 @@
 /* Get attributes of the DIE.
-   Copyright (C) 2004, 2005, 2008, 2009 Red Hat, Inc.
+   Copyright (C) 2004, 2005, 2008, 2009, 2014 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2004.
 
@@ -44,17 +44,12 @@ dwarf_getattrs (Dwarf_Die *die, int (*callback) (Dwarf_Attribute *, void *),
   if (unlikely (offset == 1))
     return 1;
 
-  const unsigned char *die_addr = die->addr;
+  const unsigned char *die_addr;
 
-  /* Get the abbreviation code.  */
-  unsigned int u128;
-  get_uleb128 (u128, die_addr);
+  /* Find the abbreviation entry.  */
+  Dwarf_Abbrev *abbrevp = __libdw_dieabbrev (die, &die_addr);
 
-  if (die->abbrev == NULL)
-    /* Find the abbreviation.  */
-    die->abbrev = __libdw_findabbrev (die->cu, u128);
-
-  if (unlikely (die->abbrev == DWARF_END_ABBREV))
+  if (unlikely (abbrevp == DWARF_END_ABBREV))
     {
     invalid_dwarf:
       __libdw_seterrno (DWARF_E_INVALID_DWARF);
@@ -62,26 +57,28 @@ dwarf_getattrs (Dwarf_Die *die, int (*callback) (Dwarf_Attribute *, void *),
     }
 
   /* This is where the attributes start.  */
-  const unsigned char *attrp = die->abbrev->attrp;
-  const unsigned char *const offset_attrp = die->abbrev->attrp + offset;
+  const unsigned char *attrp = abbrevp->attrp;
+  const unsigned char *const offset_attrp = abbrevp->attrp + offset;
 
   /* Go over the list of attributes.  */
   Dwarf *dbg = die->cu->dbg;
+  const unsigned char *endp;
+  endp = ((const unsigned char *) dbg->sectiondata[IDX_debug_abbrev]->d_buf
+	  + dbg->sectiondata[IDX_debug_abbrev]->d_size);
   while (1)
     {
       /* Are we still in bounds?  */
-      if (unlikely (attrp
-		    >= ((unsigned char *) dbg->sectiondata[IDX_debug_abbrev]->d_buf
-			+ dbg->sectiondata[IDX_debug_abbrev]->d_size)))
+      if (unlikely (attrp >= endp))
 	goto invalid_dwarf;
 
       /* Get attribute name and form.  */
       Dwarf_Attribute attr;
       const unsigned char *remembered_attrp = attrp;
 
-      // XXX Fix bound checks
-      get_uleb128 (attr.code, attrp);
-      get_uleb128 (attr.form, attrp);
+      get_uleb128 (attr.code, attrp, endp);
+      if (unlikely (attrp >= endp))
+	goto invalid_dwarf;
+      get_uleb128 (attr.form, attrp, endp);
 
       /* We can stop if we found the attribute with value zero.  */
       if (attr.code == 0 && attr.form == 0)
@@ -104,20 +101,18 @@ dwarf_getattrs (Dwarf_Die *die, int (*callback) (Dwarf_Attribute *, void *),
 	    /* Return the offset of the start of the attribute, so that
 	       dwarf_getattrs() can be restarted from this point if the
 	       caller so desires.  */
-	    return remembered_attrp - die->abbrev->attrp;
+	    return remembered_attrp - abbrevp->attrp;
 	}
 
       /* Skip over the rest of this attribute (if there is any).  */
       if (attr.form != 0)
 	{
-	  size_t len = __libdw_form_val_len (dbg, die->cu, attr.form,
-					     die_addr);
-
+	  size_t len = __libdw_form_val_len (die->cu, attr.form, die_addr);
 	  if (unlikely (len == (size_t) -1l))
 	    /* Something wrong with the file.  */
 	    return -1l;
 
-	  // XXX We need better boundary checks.
+	  // __libdw_form_val_len will have done a bounds check.
 	  die_addr += len;
 	}
     }

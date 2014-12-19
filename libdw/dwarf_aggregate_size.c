@@ -1,5 +1,5 @@
 /* Compute size of an aggregate type from DWARF.
-   Copyright (C) 2010 Red Hat, Inc.
+   Copyright (C) 2010, 2014 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -37,8 +37,13 @@
 static Dwarf_Die *
 get_type (Dwarf_Die *die, Dwarf_Attribute *attr_mem, Dwarf_Die *type_mem)
 {
-  return INTUSE(dwarf_formref_die)
+  Dwarf_Die *type = INTUSE(dwarf_formref_die)
     (INTUSE(dwarf_attr_integrate) (die, DW_AT_type, attr_mem), type_mem);
+
+  if (INTUSE(dwarf_peel_type) (type, type) != 0)
+    return NULL;
+
+  return type;
 }
 
 static int
@@ -98,12 +103,16 @@ array_size (Dwarf_Die *die, Dwarf_Word *size,
 		    case DW_LANG_C:
 		    case DW_LANG_C89:
 		    case DW_LANG_C99:
+		    case DW_LANG_C11:
 		    case DW_LANG_C_plus_plus:
+		    case DW_LANG_C_plus_plus_11:
+		    case DW_LANG_C_plus_plus_14:
 		    case DW_LANG_ObjC:
 		    case DW_LANG_ObjC_plus_plus:
 		    case DW_LANG_Java:
 		    case DW_LANG_D:
 		    case DW_LANG_UPC:
+		    case DW_LANG_Go:
 		      lower = 0;
 		      break;
 
@@ -198,13 +207,20 @@ aggregate_size (Dwarf_Die *die, Dwarf_Word *size, Dwarf_Die *type_mem)
 
   switch (INTUSE(dwarf_tag) (die))
     {
-    case DW_TAG_typedef:
     case DW_TAG_subrange_type:
       return aggregate_size (get_type (die, &attr_mem, type_mem),
 			     size, type_mem); /* Tail call.  */
 
     case DW_TAG_array_type:
       return array_size (die, size, &attr_mem, type_mem);
+
+    /* Assume references and pointers have pointer size if not given an
+       explicit DW_AT_byte_size.  */
+    case DW_TAG_pointer_type:
+    case DW_TAG_reference_type:
+    case DW_TAG_rvalue_reference_type:
+      *size = die->cu->address_size;
+      return 0;
     }
 
   /* Most types must give their size directly.  */
@@ -217,6 +233,12 @@ dwarf_aggregate_size (die, size)
      Dwarf_Word *size;
 {
   Dwarf_Die type_mem;
+
+  if (INTUSE (dwarf_peel_type) (die, die) != 0)
+    return -1;
+
   return aggregate_size (die, size, &type_mem);
 }
 INTDEF (dwarf_aggregate_size)
+OLD_VERSION (dwarf_aggregate_size, ELFUTILS_0.144)
+NEW_VERSION (dwarf_aggregate_size, ELFUTILS_0.161)

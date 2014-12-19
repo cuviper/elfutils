@@ -427,10 +427,9 @@ show_sysv (Elf *elf, const char *prefix, const char *fname,
 	INTERNAL_ERROR (fullname);
 
       /* Ignore all sections which are not used at runtime.  */
-      if ((shdr->sh_flags & SHF_ALLOC) != 0)
-	maxlen = MAX (maxlen,
-		      (int) strlen (elf_strptr (elf, shstrndx,
-						shdr->sh_name)));
+      const char *name = elf_strptr (elf, shstrndx, shdr->sh_name);
+      if (name != NULL && (shdr->sh_flags & SHF_ALLOC) != 0)
+	maxlen = MAX (maxlen, (int) strlen (name));
     }
 
   fputs_unlocked (fname, stdout);
@@ -601,14 +600,13 @@ show_bsd_totals (void)
 static void
 show_segments (Elf *elf, const char *fullname)
 {
-  GElf_Ehdr ehdr_mem;
-  GElf_Ehdr *ehdr = gelf_getehdr (elf, &ehdr_mem);
-  if (ehdr == NULL)
+  size_t phnum;
+  if (elf_getphdrnum (elf, &phnum) != 0)
     INTERNAL_ERROR (fullname);
 
   GElf_Off total = 0;
   bool first = true;
-  for (size_t cnt = 0; cnt < ehdr->e_phnum; ++cnt)
+  for (size_t cnt = 0; cnt < phnum; ++cnt)
     {
       GElf_Phdr phdr_mem;
       GElf_Phdr *phdr;

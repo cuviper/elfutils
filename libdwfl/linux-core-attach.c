@@ -1,5 +1,5 @@
 /* Get Dwarf Frame state for target core file.
-   Copyright (C) 2013 Red Hat, Inc.
+   Copyright (C) 2013, 2014 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -29,6 +29,8 @@
 #include "libdwflP.h"
 #include <fcntl.h>
 #include "system.h"
+
+#include "../libdw/memory-access.h"
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -83,12 +85,10 @@ core_memory_read (Dwfl *dwfl, Dwarf_Addr addr, Dwarf_Word *result,
 	  return false;
 	}
       assert (data->d_size == bytes);
-      /* FIXME: Currently any arch supported for unwinding supports
-	 unaligned access.  */
       if (bytes == 8)
-	*result = *(const uint64_t *) data->d_buf;
+	*result = read_8ubyte_unaligned_noncvt (data->d_buf);
       else
-	*result = *(const uint32_t *) data->d_buf;
+	*result = read_4ubyte_unaligned_noncvt (data->d_buf);
       return true;
     }
   __libdwfl_seterrno (DWFL_E_ADDR_OUTOFRANGE);
@@ -150,7 +150,7 @@ core_next_thread (Dwfl *dwfl __attribute__ ((unused)), void *dwfl_arg,
 	  break;
       if (item == items + nitems)
 	continue;
-      uint32_t val32 = *(const uint32_t *) (desc + item->offset);
+      uint32_t val32 = read_4ubyte_unaligned_noncvt (desc + item->offset);
       val32 = (elf_getident (core, NULL)[EI_DATA] == ELFDATA2MSB
 		? be32toh (val32) : le32toh (val32));
       pid_t tid = (int32_t) val32;
@@ -201,7 +201,7 @@ core_set_initial_registers (Dwfl_Thread *thread, void *thread_arg_voidp)
   assert (item < items + nitems);
   pid_t tid;
   {
-    uint32_t val32 = *(const uint32_t *) (desc + item->offset);
+    uint32_t val32 = read_4ubyte_unaligned_noncvt (desc + item->offset);
     val32 = (elf_getident (core, NULL)[EI_DATA] == ELFDATA2MSB
 	     ? be32toh (val32) : le32toh (val32));
     tid = (int32_t) val32;
@@ -218,14 +218,14 @@ core_set_initial_registers (Dwfl_Thread *thread, void *thread_arg_voidp)
       switch (gelf_getclass (core) == ELFCLASS32 ? 32 : 64)
       {
 	case 32:;
-	  uint32_t val32 = *(const uint32_t *) (desc + item->offset);
+	  uint32_t val32 = read_4ubyte_unaligned_noncvt (desc + item->offset);
 	  val32 = (elf_getident (core, NULL)[EI_DATA] == ELFDATA2MSB
 		   ? be32toh (val32) : le32toh (val32));
 	  /* Do a host width conversion.  */
 	  pc = val32;
 	  break;
 	case 64:;
-	  uint64_t val64 = *(const uint64_t *) (desc + item->offset);
+	  uint64_t val64 = read_8ubyte_unaligned_noncvt (desc + item->offset);
 	  val64 = (elf_getident (core, NULL)[EI_DATA] == ELFDATA2MSB
 		   ? be64toh (val64) : le64toh (val64));
 	  pc = val64;
@@ -259,7 +259,7 @@ core_set_initial_registers (Dwfl_Thread *thread, void *thread_arg_voidp)
 	  switch (regloc->bits)
 	  {
 	    case 32:;
-	      uint32_t val32 = *(const uint32_t *) reg_desc;
+	      uint32_t val32 = read_4ubyte_unaligned_noncvt (reg_desc);
 	      reg_desc += sizeof val32;
 	      val32 = (elf_getident (core, NULL)[EI_DATA] == ELFDATA2MSB
 		       ? be32toh (val32) : le32toh (val32));
@@ -267,7 +267,7 @@ core_set_initial_registers (Dwfl_Thread *thread, void *thread_arg_voidp)
 	      val = val32;
 	      break;
 	    case 64:;
-	      uint64_t val64 = *(const uint64_t *) reg_desc;
+	      uint64_t val64 = read_8ubyte_unaligned_noncvt (reg_desc);
 	      reg_desc += sizeof val64;
 	      val64 = (elf_getident (core, NULL)[EI_DATA] == ELFDATA2MSB
 		       ? be64toh (val64) : le64toh (val64));
@@ -309,33 +309,41 @@ static const Dwfl_Thread_Callbacks core_thread_callbacks =
 int
 dwfl_core_file_attach (Dwfl *dwfl, Elf *core)
 {
+  Dwfl_Error err = DWFL_E_NOERROR;
   Ebl *ebl = ebl_openbackend (core);
   if (ebl == NULL)
     {
-      __libdwfl_seterrno (DWFL_E_LIBEBL);
+      err = DWFL_E_LIBEBL;
+    fail_err:
+      if (dwfl->process == NULL && dwfl->attacherr == DWFL_E_NOERROR)
+	dwfl->attacherr = __libdwfl_canon_error (err);
+      __libdwfl_seterrno (err);
       return -1;
     }
   size_t nregs = ebl_frame_nregs (ebl);
   if (nregs == 0)
     {
-      __libdwfl_seterrno (DWFL_E_NO_UNWIND);
+      err = DWFL_E_NO_UNWIND;
+    fail:
       ebl_closebackend (ebl);
-      return -1;
+      goto fail_err;
     }
   GElf_Ehdr ehdr_mem, *ehdr = gelf_getehdr (core, &ehdr_mem);
   if (ehdr == NULL)
     {
-      __libdwfl_seterrno (DWFL_E_LIBELF);
-      ebl_closebackend (ebl);
-      return -1;
+      err = DWFL_E_LIBELF;
+      goto fail;
     }
-  assert (ehdr->e_type == ET_CORE);
+  if (ehdr->e_type != ET_CORE)
+    {
+      err = DWFL_E_NO_CORE_FILE;
+      goto fail;
+    }
   size_t phnum;
   if (elf_getphdrnum (core, &phnum) < 0)
     {
-      __libdwfl_seterrno (DWFL_E_LIBELF);
-      ebl_closebackend (ebl);
-      return -1;
+      err = DWFL_E_LIBELF;
+      goto fail;
     }
   pid_t pid = -1;
   Elf_Data *note_data = NULL;
@@ -351,8 +359,8 @@ dwfl_core_file_attach (Dwfl *dwfl, Elf *core)
     }
   if (note_data == NULL)
     {
-      ebl_closebackend (ebl);
-      return DWFL_E_LIBELF;
+      err = DWFL_E_LIBELF;
+      goto fail;
     }
   size_t offset = 0;
   GElf_Nhdr nhdr;
@@ -384,7 +392,7 @@ dwfl_core_file_attach (Dwfl *dwfl, Elf *core)
 	  break;
       if (item == items + nitems)
 	continue;
-      uint32_t val32 = *(const uint32_t *) (desc + item->offset);
+      uint32_t val32 = read_4ubyte_unaligned_noncvt (desc + item->offset);
       val32 = (elf_getident (core, NULL)[EI_DATA] == ELFDATA2MSB
 		? be32toh (val32) : le32toh (val32));
       pid = (int32_t) val32;
@@ -394,16 +402,14 @@ dwfl_core_file_attach (Dwfl *dwfl, Elf *core)
   if (pid == -1)
     {
       /* No valid NT_PRPSINFO recognized in this CORE.  */
-      __libdwfl_seterrno (DWFL_E_BADELF);
-      ebl_closebackend (ebl);
-      return -1;
+      err = DWFL_E_BADELF;
+      goto fail;
     }
   struct core_arg *core_arg = malloc (sizeof *core_arg);
   if (core_arg == NULL)
     {
-      __libdwfl_seterrno (DWFL_E_NOMEM);
-      ebl_closebackend (ebl);
-      return -1;
+      err = DWFL_E_NOMEM;
+      goto fail;
     }
   core_arg->core = core;
   core_arg->note_data = note_data;

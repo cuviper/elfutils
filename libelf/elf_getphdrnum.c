@@ -1,5 +1,5 @@
 /* Return number of program headers in the ELF file.
-   Copyright (C) 2010 Red Hat, Inc.
+   Copyright (C) 2010, 2014 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -62,10 +62,18 @@ __elf_getphdrnum_rdlock (elf, dst)
      /* If there are no section headers, perhaps this is really just 65536
 	written without PN_XNUM support.  Either that or it's bad data.  */
 
-     if (likely (scns->cnt > 0))
-       *dst = (elf->class == ELFCLASS32
-	       ? scns->data[0].shdr.e32->sh_info
-	       : scns->data[0].shdr.e64->sh_info);
+     if (elf->class == ELFCLASS32)
+       {
+	 if (likely (scns->cnt > 0
+		     && elf->state.elf32.scns.data[0].shdr.e32 != NULL))
+	   *dst = scns->data[0].shdr.e32->sh_info;
+       }
+     else
+       {
+	 if (likely (scns->cnt > 0
+		     && elf->state.elf64.scns.data[0].shdr.e64 != NULL))
+	   *dst = scns->data[0].shdr.e64->sh_info;
+       }
    }
 
  return 0;
@@ -89,6 +97,39 @@ elf_getphdrnum (elf, dst)
 
   rwlock_rdlock (elf->lock);
   result = __elf_getphdrnum_rdlock (elf, dst);
+
+  /* Do some sanity checking to make sure phnum and phoff are consistent.  */
+  Elf64_Off off = (elf->class == ELFCLASS32
+		   ? elf->state.elf32.ehdr->e_phoff
+		   : elf->state.elf64.ehdr->e_phoff);
+  if (unlikely (off == 0))
+    {
+      *dst = 0;
+      goto out;
+    }
+
+  if (unlikely (off >= elf->maximum_size))
+    {
+      __libelf_seterrno (ELF_E_INVALID_DATA);
+      result = -1;
+      goto out;
+    }
+
+  /* Check for too many sections.  */
+  size_t phdr_size = (elf->class == ELFCLASS32
+		      ? sizeof (Elf32_Phdr) : sizeof (Elf64_Phdr));
+  if (unlikely (*dst > SIZE_MAX / phdr_size))
+    {
+      __libelf_seterrno (ELF_E_INVALID_DATA);
+      result = -1;
+      goto out;
+    }
+
+  /* Truncated file?  Don't return more than can be indexed.  */
+  if (unlikely (elf->maximum_size - off < *dst * phdr_size))
+    *dst = (elf->maximum_size - off) / phdr_size;
+
+out:
   rwlock_unlock (elf->lock);
 
   return result;

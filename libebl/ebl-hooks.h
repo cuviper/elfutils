@@ -132,7 +132,7 @@ bool EBLHOOK(check_special_symbol) (Elf *, GElf_Ehdr *, const GElf_Sym *,
 bool EBLHOOK(check_st_other_bits) (unsigned char st_other);
 
 /* Check if backend uses a bss PLT in this file.  */
-bool EBLHOOK(bss_plt_p) (Elf *, GElf_Ehdr *);
+bool EBLHOOK(bss_plt_p) (Elf *);
 
 /* Return location expression to find return value given the
    DW_AT_type DIE of a DW_TAG_subprogram DIE.  */
@@ -187,7 +187,7 @@ bool EBLHOOK(unwind) (Ebl *ebl, Dwarf_Addr pc, ebl_tid_registers_t *setfunc,
 		      bool *signal_framep);
 
 /* Returns true if the value can be resolved to an address in an
-   allocated section, which will be returned in *SHNDXP.
+   allocated section, which will be returned in *ADDR.
    (e.g. function descriptor resolving)  */
 bool EBLHOOK(resolve_sym_value) (Ebl *ebl, GElf_Addr *addr);
 
