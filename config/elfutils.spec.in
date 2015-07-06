@@ -165,11 +165,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/dwarf.h
 %dir %{_includedir}/elfutils
 %{_includedir}/elfutils/elf-knowledge.h
+%{_includedir}/elfutils/known-dwarf.h
 #%{_includedir}/elfutils/libasm.h
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
 %{_includedir}/elfutils/libdwelf.h
+%{_includedir}/elfutils/version.h
 %{_libdir}/libebl.a
 #%{_libdir}/libasm.so
 %{_libdir}/libdw.so
@@ -196,6 +198,23 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jun 19 2015 Mark Wielaard <mjw@redhat.com> 0.163-1
+- Bug fixes only, no new features.
+
+* Wed Jun 10 2015 Mark Wielaard <mjw@redhat.com> 0.162-1
+- libdw: Install new header elfutils/known-dwarf.h.
+  dwarf.h Add preliminary DWARF5 constants DW_TAG_atomic_type,
+  DW_LANG_Fortran03, DW_LANG_Fortran08. dwarf_peel_type now also
+  handles DW_TAG_atomic_type.
+- addr2line: Input addresses are now always interpreted as
+  hexadecimal numbers, never as octal or decimal numbers.
+  New option -a, --addresses to print address before each entry.
+  New option -C, --demangle to show demangled symbols.
+  New option --pretty-print to print all information on one line.
+- ar: CVE-2014-9447 Directory traversal vulnerability in ar
+  extraction.
+- backends: x32 support.
+
 * Thu Dec 18 2014 Mark Wielaard <mjw@redhat.com> 0.161-1
 - libdw: New function dwarf_peel_type. dwarf_aggregate_size now uses
   dwarf_peel_type to also provide the sizes of qualified types.

@@ -54,7 +54,7 @@ static_SRCS = i386_init.c i386_symbol.c i386_corenote.c i386_cfi.c \
 	     i386_initreg.c \
 	     x86_64_init.c x86_64_symbol.c x86_64_corenote.c x86_64_cfi.c \
 	     x86_64_retval.c x86_64_regs.c x86_64_syscall.c \
-	     x86_64_initreg.c \
+	     x86_64_initreg.c x32_corenote.c \
 	     ia64_init.c ia64_symbol.c ia64_regs.c ia64_retval.c \
 	     aarch64_init.c aarch64_regs.c aarch64_symbol.c   \
 	     aarch64_corenote.c aarch64_retval.c aarch64_cfi.c \
@@ -84,7 +84,7 @@ am_libebl_sh_pic_a_OBJECTS = $(sh_SRCS:.c=.os)
 
 x86_64_SRCS = x86_64_init.c x86_64_symbol.c x86_64_corenote.c x86_64_cfi.c \
 	      x86_64_retval.c x86_64_regs.c i386_auxv.c x86_64_syscall.c \
-	      x86_64_initreg.c
+	      x86_64_initreg.c x32_corenote.c
 cpu_x86_64 = ../libcpu/libcpu_x86_64.a
 libebl_x86_64_pic_a_SOURCES = $(x86_64_SRCS)
 am_libebl_x86_64_pic_a_OBJECTS = $(x86_64_SRCS:.c=.os)

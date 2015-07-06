@@ -1,5 +1,5 @@
 /* Generate ELF backend handle.
-   Copyright (C) 2000-2014 Red Hat, Inc.
+   Copyright (C) 2000-2015 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -142,6 +142,8 @@ static const struct
 };
 #define nmachines (sizeof (machines) / sizeof (machines[0]))
 
+/* No machine prefix should be larger than this.  */
+#define MAX_PREFIX_LEN 16
 
 /* Default callbacks.  Mostly they just return the error value.  */
 static const char *default_object_type_name (int ignore, char *buf,
