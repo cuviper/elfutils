@@ -14,6 +14,10 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <fcntl.h>
 #include <stdlib.h>
 #include <gelf.h>
@@ -26,10 +30,13 @@ main (int argc, char **argv)
 
   elf_version (EV_CURRENT);
 
-  int fd = open64 (argv[1], O_RDONLY);
+  int fd = open (argv[1], O_RDONLY);
   Elf *stripped = elf_begin (fd, ELF_C_READ, NULL);
 
   Elf_Scn *scn = NULL;
   while ((scn = elf_nextscn (stripped, scn)) != NULL)
     elf_flagdata (elf_getdata (scn, NULL), ELF_C_SET, ELF_F_DIRTY);
+
+  elf_end (stripped);
+  return 0;
 }

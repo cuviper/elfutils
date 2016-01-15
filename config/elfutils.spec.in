@@ -10,6 +10,7 @@ Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 Requires: glibc >= 2.7
 Requires: libstdc++
+Requires: default-yama-scope
 
 # ExcludeArch: xxx
 
@@ -30,13 +31,15 @@ BuildRequires: gcc-c++
 %define _programprefix eu-
 
 %description
-Elfutils is a collection of utilities, including ld (a linker),
-nm (for listing symbols from object files), size (for listing the
-section sizes of an object or archive file), strip (for discarding
-symbols), readelf (to see the raw ELF file structures), and elflint
-(to check for well-formed ELF files).  Also included are numerous
-helper libraries which implement DWARF, ELF, and machine-specific ELF
-handling.
+
+Elfutils is a collection of utilities, including stack (to show
+backtraces), nm (for listing symbols from object files), size
+(for listing the section sizes of an object or archive file),
+strip (for discarding symbols), readelf (to see the raw ELF file
+structures), elflint (to check for well-formed ELF files) and
+elfcompress (to compress or decompress ELF sections).
+Also included are helper libraries which implement DWARF, ELF,
+and machine-specific ELF handling and process introspection.
 
 %package devel
 Summary: Development libraries to handle compiled objects.
@@ -97,6 +100,22 @@ Conflicts: libelf-devel
 The elfutils-libelf-static package contains the static archive
 for libelf.
 
+%package default-yama-scope
+Summary: Default yama attach scope sysctl setting
+Group: Development/Tools
+License: GPLv2+ or LGPLv3+
+Provides: default-yama-scope
+BuildArch: noarch
+
+%description default-yama-scope
+Yama sysctl setting to enable default attach scope settings
+enabling programs to use ptrace attach, access to
+/proc/PID/{mem,personality,stack,syscall}, and the syscalls
+process_vm_readv and process_vm_writev which are used for
+interprocess services, communication and introspection
+(like synchronisation, signaling, debugging, tracing and
+profiling) of processes.
+
 %prep
 %setup -q
 
@@ -121,6 +140,8 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
   rm -f .%{_libdir}/libasm.a
 }
 
+install -Dm0644 config/10-default-yama-scope.conf ${RPM_BUILD_ROOT}%{_sysctldir}/10-default-yama-scope.conf
+
 %check
 make check
 
@@ -134,6 +155,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %post libelf -p /sbin/ldconfig
 
 %postun libelf -p /sbin/ldconfig
+
+%post default-yama-scope
+%sysctl_apply 10-default-yama-scope.conf
 
 %files
 %defattr(-,root,root)
@@ -153,6 +177,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-unstrip
 %{_bindir}/eu-make-debug-archive
 #%{_bindir}/eu-ld
+%{_bindir}/eu-elfcompress
 %{_libdir}/libasm-%{version}.so
 %{_libdir}/libdw-%{version}.so
 %{_libdir}/libasm.so.*
@@ -175,6 +200,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libebl.a
 #%{_libdir}/libasm.so
 %{_libdir}/libdw.so
+%{_libdir}/pkgconfig/libdw.pc
 
 %files devel-static
 %{_libdir}/libdw.a
@@ -193,11 +219,39 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/nlist.h
 %{_includedir}/elfutils/version.h
 %{_libdir}/libelf.so
+%{_libdir}/pkgconfig/libelf.pc
 
 %files libelf-devel-static
 %{_libdir}/libelf.a
 
+%files default-yama-scope
+%config(noreplace) %{_sysctldir}/10-default-yama-scope.conf
+
 %changelog
+* Fri Jan  8 2016 Mark Wielaard <mjw@redhat.com> 0.165-1
+- elfcompress: New utility to compress or decompress ELF sections.
+- readelf: Add -z,--decompress option.
+- libelf: Add elf_compress, elf_compress_gnu, elf32_getchdr,
+  elf64_getchdr and gelf_getchdr.
+- libdwelf: New function dwelf_scn_gnu_compressed_size.
+- config: Add libelf and libdw pkg-config files.
+- backends: sparc support for core and live backtraces.
+- translations: Updated Polish translation.
+
+* Thu Oct 15 2015 Mark Wielaard <mjw@redhat.com> 0.164-1
+- strip, unstrip: Handle ELF files with merged strtab/shstrtab
+  tables. Handle missing SHF_INFO_LINK section flags.
+- libelf: Use int64_t for offsets in libelf.h instead of loff_t.
+- libdw: dwarf.h Add preliminary DWARF5 DW_LANG_Haskell.
+- libdwfl: dwfl_standard_find_debuginfo now searches any subdir of
+  the binary path under the debuginfo root when the separate
+  debug file couldn't be found by build-id.
+  dwfl_linux_proc_attach can now be called before any Dwfl_Modules
+  have been reported.
+- backends: Better sparc and sparc64 support.
+- translations: Updated Ukrainian translation.
+- Provide default-yama-scope subpackage.
+
 * Fri Jun 19 2015 Mark Wielaard <mjw@redhat.com> 0.163-1
 - Bug fixes only, no new features.
 

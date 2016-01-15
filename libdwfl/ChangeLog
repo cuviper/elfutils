@@ -1,3 +1,210 @@
+2016-01-08  Mark Wielaard  <mjw@redhat.com>
+
+	* libdwfl_a_SOURCES: Unconditionally add gzip.c.
+	* linux-kernel-modules.c (vmlinux_suffixes): We always have at least
+	.gz support.
+	(try_kernel_name): Likewise.
+	(check_suffix): Likewise.
+	* open.c (decompress): Likewise.
+
+2015-12-18  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getdwarf.c (find_symtab): Uncompress symstr, xndx, sym
+	sections and aux_str, aux_xndx and aux_sym sections if necessary.
+	* relocate.c (relocate_getsym): Uncompress symtab and symtab_shndx
+	if necessary.
+	(resolve_symbol): Uncompress strtab section if necessary.
+	(relocate_section): Uncompress the section the relocations apply to
+	if necessary.
+
+2015-11-18  Chih-Hung Hsieh <chh@google.com>
+
+	* linux-proc-maps.c (proc_maps_report): Move nested function
+	'report' to file scope.
+
+2015-11-18  Chih-Hung Hsieh <chh@google.com>
+
+	* core-file.c (elf_begin_rand): Move nested function 'fail' to file
+	scope.
+	* core-file.c (dwfl_elf_phdr_memory_callback): Move nested functions
+	'update_end' and 'more' to file scope.
+
+2015-11-17  Chih-Hung Hsieh <chh@google.com>
+
+	* link_map.c (auxv_format_probe): Move nested functions
+	check64 and check32 to file scope.
+
+2015-12-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* dwfl_frame.c (state_fetch_pc): Add a backend-defined offset to
+	the value of the return address register as defined by the CFI
+	abi.
+	* frame_unwind.c (handle_cfi): Likewise.
+
+2015-12-01  Mark Wielaard  <mjw@redhat.com>
+
+	* link_map.c (dwfl_link_map_report): Track whether in.d_buf comes
+	from exec or memory_callback, free as appropriate.
+
+2015-12-01  Mark Wielaard  <mjw@redhat.com>
+
+	* libdwflP.h (struct Dwfl_User_Core): New.
+	(struct DWfl): Replace executable_for_core with user_core.
+	* argp-std.c (parse_opt): Store core and fd in Dwfl user_core.
+	* core-file.c (dwfl_core_file_report): Check and store
+	executable_for_core in Dwfl user_core.
+	* dwfl_build_id_find_elf.c (dwfl_build_id_find_elf): Check and use
+	executable_for_core in Dwfl user_core.
+	* dwfl_end.c (dwfl_end): Release resources held in Dwfl user_core.
+	* link-map.c (report_r_debug): Check executable_for_core in Dwfl
+	user_core.
+	(dwfl_link_map_report): Likewise.
+
+2015-11-16  Chih-Hung Hsieh <chh@google.com>
+
+	* dwfl_module_getdwarf.c (find_prelink_address_sync): Move nested
+	function 'consider_shdr' to file scope.
+	* dwfl_module_getdwarf.c (find_dynsym): Move nested function
+	'translate_offs' to file scope.
+
+2015-11-16  Chih-Hung Hsieh <chh@google.com>
+
+	* dwfl_module_addrsym.c (__libdwfl_addrsym): Move nested functions
+	'same_section', 'binding_value', 'try_sym_value', and 'search_table'
+	to file scope.
+
+2015-11-19  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module.c (__libdwfl_module_free): Remove Dwfl_Module Ebl from
+	eh_cfi and dwarf_cfi cache if necessary before calling dwarf_end and
+	dwarf_cfi_end.
+
+2015-11-13  Chih-Hung Hsieh <chh@google.com>
+
+	* gzip.c (unzip): Move nested functions to file scope.
+
+2015-10-21  Chih-Hung Hsieh <chh@google.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getsrc_file.c (dwfl_module_getsrc_file): Move nested
+	functions 'dwarf_line_file', 'dwfl_line', and 'dwfl_line_file' to
+	file scope. Rename dwarf_line_file to dwfl_dwarf_line_file. Don't
+	use INTUSE.
+
+2015-10-21  Chih-Hung Hsieh <chh@google.com>
+
+	* frame_unwind.c (expr_eval): Move nested function 'push' and 'pop'
+	to file scope. Pass used local variables in struct eval_stack.
+
+2015-10-21  Chih-Hung Hsieh <chh@google.com>
+
+	* dwfl_module.c (dwfl_report_module): Move nested function 'use' to
+	file scope.
+
+2015-10-09  Josh Stone  <jistone@redhat.com>
+
+	* core-file.c (elf_begin_rand): Replace loff_t with off_t.
+	* open.c (decompress): Replace off64_t with off_t.
+	* gzip.c (unzip): Likewise.
+	* image-header.c (__libdw_image_header): Likewise.
+	* libdwflP.h: Likewise in function declarations.
+	* argp-std.c (parse_opt): Replace open64 with open.
+	* dwfl_build_id_find_elf.c (__libdwfl_open_mod_by_build_id,
+	dwfl_build_id_find_elf): Likewise.
+	* dwfl_module_getdwarf.c (open_elf_file): Likewise.
+	* dwfl_report_elf.c (dwfl_report_elf): Likewise.
+	* dwfl_segment_report_module.c (dwfl_segment_report_module): Likewise.
+	* link_map.c (report_r_debug): Likewise.
+	* offline.c (dwfl_report_offline): Likewise.
+	* linux-proc-maps.c (grovel_auxv, get_pid_class,
+	dwfl_linux_proc_find_elf): Likewise.
+	(read_proc_memory): Replace off64_t with off_t.
+	* find-debuginfo.c (find_debuginfo_in_path): Replace stat64 and
+	fstat64 with stat and fstat.
+	(try_open): Likewise, and replace open64 with open.
+	* linux-kernel-modules.c: Manually define open and fopen to open64 and
+	fopen64 when needed, since the early fts.h include breaks that.
+	(try_kernel_name): Replace open64 with open.
+	(check_notes): Likewise.
+
+2015-10-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* linux-proc-maps.c (read_proc_memory): Use seek+read instead of
+	pread, as the later doesn't accept negative offsets.
+
+2015-10-07  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_module_getdwarf.c (MAX): Removed.
+	(find_prelink_address_sync): Allocate exact amount of bytes for
+	phdrs and shdrs.
+	* dwfl_segment_report_module.c (dwfl_segment_report_module):
+	Likewise for phdrs.
+	* elf-from-memory.c (MAX): Removed.
+	(elf_from_remote_memory): Allocate exact amount of bytes for phdrs.
+
+2015-10-05  Chih-Hung Hsieh <chh@google.com>
+
+	* dwfl_module_getdwarf.c (find_prelink_address_sync): Do not use
+	union of variable length arrays.
+	* dwfl_segment_report_module.c (dwfl_segment_report_module): Likewise.
+	* elf-from-memory.c (elf_from_remote_memory): Likewise.
+	* link_map.c (auxv_format_probe): Likewise.
+	* link_map.c (report_r_debug): Likewise.
+	* link_map.c (dwfl_link_map_report): Likewise.
+
+2015-09-18  Chih-Hung Hsieh  <chh@google.com>
+
+	* relocate.c (relocate_section): Move nested function "relocate"
+	to file scope, pass all used local variables as constants.
+	Move nested "check_badreltype" to file scope, pass addresses of
+	updated used local variables.
+	* linux-kernel-modules.c (intuit_kernel_bounds): Move nested function
+	"read_address" to file scope, pass all updated local variables in
+	a state structure.
+	* linux-kernel-modules.c (dwfl_linux_kernel_find_elf): Move nested
+	function "subst_name" to file scope, pass all used local variables
+	as constants.
+	* linux-kernel-modules.c (dwfl_linux_kernel_report_kernel): Replace
+	simple nested function "report" with a macro. Work around gcc static
+	analysis error -Werror=maybe-uninitialized.
+
+2015-09-22  Mark Wielaard  <mjw@redhat.com>
+
+	* core-file.c: Remove old-style function definitions.
+	* dwfl_error.c: Likewise.
+	* dwfl_module_dwarf_cfi.c: Likewise.
+	* dwfl_module_eh_cfi.c: Likewise.
+	* dwfl_module_register_names.c: Likewise.
+	* dwfl_module_return_value_location.c: Likewise.
+	* dwfl_version.c: Likewise.
+
+2015-09-09  Chih-Hung Hsieh  <chh@google.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl_frame.c (dwfl_attach_state): Remove redundant NULL tests
+	on parameters declared with __nonnull_attribute__.
+	* libdwfl.h (dwfl_module_getelf): Don't mark first argument as
+	nonnull.
+
+2015-09-08  Mark Wielaard  <mjw@redhat.com>
+
+	* libdwflP.h (struct __libdwfl_pid_arg): Add elf and elf_fd.
+	* linux-pid-attach.c (pid_detach): Call elf_end and close.
+	(dwfl_linux_proc_attach): Open and save /proc/PID/exe.
+
+2015-09-04  Chih-Hung Hsieh  <chh@google.com
+
+	* frame_unwind.c (expr_eval): Use llabs instead of abs.
+
+2015-08-14  Dodji Seketeli  <dodji@seketeli.org>
+
+	* find-debuginfo.c (find_debuginfo_in_path): Try to locate the
+	debug info file named debuglink_file under
+	mod->dwfl->callbacks->debuginfo_path, by looking at
+	the set of sub-trees under mod->dwfl->callbacks->debuginfo_path
+	which is common to the set of non-absolute parent trees of
+	file_name.
+
 2015-06-18  Mark Wielaard  <mjw@redhat.com>
 
 	* find-debuginfo.c (try_open): Free fname on all failure paths.

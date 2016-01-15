@@ -1,5 +1,5 @@
 /* Pedantic checking of ELF files compliance with gABI/psABI spec.
-   Copyright (C) 2001-2014 Red Hat, Inc.
+   Copyright (C) 2001-2015 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2001.
 
@@ -164,9 +164,9 @@ main (int argc, char *argv[])
       else
 	{
 	  unsigned int prev_error_count = error_count;
-	  struct stat64 st;
+	  struct stat st;
 
-	  if (fstat64 (fd, &st) != 0)
+	  if (fstat (fd, &st) != 0)
 	    {
 	      printf ("cannot stat '%s': %m\n", argv[remaining]);
 	      close (fd);
@@ -801,7 +801,11 @@ section [%2d] '%s': symbol %zu: function in COMMON section is nonsense\n"),
 				  && strcmp (name, "__bss_start") != 0
 				  && strcmp (name, "__bss_start__") != 0
 				  && strcmp (name, "__TMC_END__") != 0
-				  && strcmp (name, ".TOC.") != 0))
+				  && strcmp (name, ".TOC.") != 0
+				  && strcmp (name, "_edata") != 0
+				  && strcmp (name, "__edata") != 0
+				  && strcmp (name, "_end") != 0
+				  && strcmp (name, "__end") != 0))
 			    ERROR (gettext ("\
 section [%2d] '%s': symbol %zu: st_value out of bounds\n"),
 				   idx, section_name (ebl, idx), cnt);
@@ -864,7 +868,7 @@ section [%2d] '%s': symbol %zu: TLS symbol but no TLS program header entry\n"),
 section [%2d] '%s': symbol %zu: TLS symbol but couldn't get TLS program header entry\n"),
 				   idx, section_name (ebl, idx), cnt);
 			}
-		      else
+		      else if (!is_debuginfo)
 			{
 			  if (st_value
 			      < destshdr->sh_offset - phdr->p_offset)
@@ -1254,9 +1258,10 @@ section [%2d] '%s': sh_info should be zero\n"),
 		}
 	    }
 
-	  if (((*destshdrp)->sh_flags & (SHF_MERGE | SHF_STRINGS)) != 0)
+	  if ((((*destshdrp)->sh_flags & SHF_MERGE) != 0)
+	      && ((*destshdrp)->sh_flags & SHF_STRINGS) != 0)
 	    ERROR (gettext ("\
-section [%2d] '%s': no relocations for merge-able sections possible\n"),
+section [%2d] '%s': no relocations for merge-able string sections possible\n"),
 		   idx, section_name (ebl, idx));
 	}
     }
@@ -2686,7 +2691,7 @@ section [%2d] '%s': section group with only one member\n"),
 
 	  if (val > shnum)
 	    ERROR (gettext ("\
-section [%2d] '%s': section index %Zu out of range\n"),
+section [%2d] '%s': section index %zu out of range\n"),
 		   idx, section_name (ebl, idx), cnt / elsize);
 	  else
 	    {
@@ -2708,7 +2713,7 @@ section [%2d] '%s': section group contains another group [%2d] '%s'\n"),
 
 		  if ((refshdr->sh_flags & SHF_GROUP) == 0)
 		    ERROR (gettext ("\
-section [%2d] '%s': element %Zu references section [%2d] '%s' without SHF_GROUP flag set\n"),
+section [%2d] '%s': element %zu references section [%2d] '%s' without SHF_GROUP flag set\n"),
 			   idx, section_name (ebl, idx), cnt / elsize,
 			   val, section_name (ebl, val));
 		}
@@ -2745,7 +2750,8 @@ section_flags_string (GElf_Word flags, char *buf, size_t len)
       NEWFLAG (LINK_ORDER),
       NEWFLAG (OS_NONCONFORMING),
       NEWFLAG (GROUP),
-      NEWFLAG (TLS)
+      NEWFLAG (TLS),
+      NEWFLAG (COMPRESSED)
     };
 #undef NEWFLAG
   const size_t nknown_flags = sizeof (known_flags) / sizeof (known_flags[0]);
@@ -3693,7 +3699,8 @@ zeroth section has nonzero link value while ELF header does not signal overflow 
   size_t versym_scnndx = 0;
   for (size_t cnt = 1; cnt < shnum; ++cnt)
     {
-      shdr = gelf_getshdr (elf_getscn (ebl->elf, cnt), &shdr_mem);
+      Elf_Scn *scn = elf_getscn (ebl->elf, cnt);
+      shdr = gelf_getshdr (scn, &shdr_mem);
       if (shdr == NULL)
 	{
 	  ERROR (gettext ("\
@@ -3743,9 +3750,11 @@ section [%2d] '%s' has wrong type: expected %s, is %s\n"),
 		if (special_sections[s].attrflag == exact
 		    || special_sections[s].attrflag == exact_or_gnuld)
 		  {
-		    /* Except for the link order and group bit all the
-		       other bits should match exactly.  */
-		    if ((shdr->sh_flags & ~(SHF_LINK_ORDER | SHF_GROUP))
+		    /* Except for the link order, group bit and
+		       compression flag all the other bits should
+		       match exactly.  */
+		    if ((shdr->sh_flags
+			 & ~(SHF_LINK_ORDER | SHF_GROUP | SHF_COMPRESSED))
 			!= special_sections[s].attr
 			&& (special_sections[s].attrflag == exact || !gnuld))
 		      ERROR (gettext ("\
@@ -3761,9 +3770,10 @@ section [%2zu] '%s' has wrong flags: expected %s, is %s\n"),
 		  {
 		    if ((shdr->sh_flags & special_sections[s].attr)
 			!= special_sections[s].attr
-			|| ((shdr->sh_flags & ~(SHF_LINK_ORDER | SHF_GROUP
-						| special_sections[s].attr
-						| special_sections[s].attr2))
+			|| ((shdr->sh_flags
+			     & ~(SHF_LINK_ORDER | SHF_GROUP | SHF_COMPRESSED
+				 | special_sections[s].attr
+				 | special_sections[s].attr2))
 			    != 0))
 		      ERROR (gettext ("\
 section [%2zu] '%s' has wrong flags: expected %s and possibly %s, is %s\n"),
@@ -3866,7 +3876,8 @@ section [%2zu] '%s': size not multiple of entry size\n"),
 
 #define ALL_SH_FLAGS (SHF_WRITE | SHF_ALLOC | SHF_EXECINSTR | SHF_MERGE \
 		      | SHF_STRINGS | SHF_INFO_LINK | SHF_LINK_ORDER \
-		      | SHF_OS_NONCONFORMING | SHF_GROUP | SHF_TLS)
+		      | SHF_OS_NONCONFORMING | SHF_GROUP | SHF_TLS \
+		      | SHF_COMPRESSED)
       if (shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS)
 	{
 	  GElf_Xword sh_flags = shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS;
@@ -3894,6 +3905,25 @@ section [%2zu] '%s': thread-local data sections address not zero\n"),
 		   cnt, section_name (ebl, cnt));
 
 	  // XXX TODO more tests!?
+	}
+
+      if (shdr->sh_flags & SHF_COMPRESSED)
+	{
+	  if (shdr->sh_flags & SHF_ALLOC)
+	    ERROR (gettext ("\
+section [%2zu] '%s': allocated section cannot be compressed\n"),
+		   cnt, section_name (ebl, cnt));
+
+	  if (shdr->sh_type == SHT_NOBITS)
+	    ERROR (gettext ("\
+section [%2zu] '%s': nobits section cannot be compressed\n"),
+		   cnt, section_name (ebl, cnt));
+
+	  GElf_Chdr chdr;
+	  if (gelf_getchdr (scn, &chdr) == NULL)
+	    ERROR (gettext ("\
+section [%2zu] '%s': compressed section with no compression header: %s\n"),
+		   cnt, section_name (ebl, cnt), elf_errmsg (-1));
 	}
 
       if (shdr->sh_link >= shnum)
@@ -3938,15 +3968,24 @@ section [%2zu] '%s' has unexpected type %d for an executable section\n"),
 	      break;
 	    }
 
-	  if ((shdr->sh_flags & SHF_WRITE)
-	      && !ebl_check_special_section (ebl, cnt, shdr,
-					     section_name (ebl, cnt)))
-	    ERROR (gettext ("\
+	  if (shdr->sh_flags & SHF_WRITE)
+	    {
+	      if (is_debuginfo && shdr->sh_type != SHT_NOBITS)
+		ERROR (gettext ("\
+section [%2zu] '%s' must be of type NOBITS in debuginfo files\n"),
+		       cnt, section_name (ebl, cnt));
+
+	      if (!is_debuginfo
+		  && !ebl_check_special_section (ebl, cnt, shdr,
+						 section_name (ebl, cnt)))
+		ERROR (gettext ("\
 section [%2zu] '%s' is both executable and writable\n"),
-		   cnt, section_name (ebl, cnt));
+		       cnt, section_name (ebl, cnt));
+	    }
 	}
 
-      if (ehdr->e_type != ET_REL && (shdr->sh_flags & SHF_ALLOC) != 0)
+      if (ehdr->e_type != ET_REL && (shdr->sh_flags & SHF_ALLOC) != 0
+	  && !is_debuginfo)
 	{
 	  /* Make sure the section is contained in a loaded segment
 	     and that the initialization part matches NOBITS sections.  */
@@ -3978,9 +4017,39 @@ section [%2zu] '%s' not fully contained in segment of program header entry %d\n"
 		  {
 		    if (shdr->sh_offset < phdr->p_offset + phdr->p_filesz
 			&& !is_debuginfo)
-		      ERROR (gettext ("\
+		      {
+			if (!gnuld)
+			  ERROR (gettext ("\
 section [%2zu] '%s' has type NOBITS but is read from the file in segment of program header entry %d\n"),
-			 cnt, section_name (ebl, cnt), pcnt);
+				 cnt, section_name (ebl, cnt), pcnt);
+			else
+			  {
+			    /* This is truly horrible. GNU ld might put a
+			       NOBITS section in the middle of a PT_LOAD
+			       segment, assuming the next gap in the file
+			       actually consists of zero bits...
+			       So it really is like a PROGBITS section
+			       where the data is all zeros.  Check those
+			       zero bytes are really there.  */
+			    bool bad;
+			    Elf_Data *databits;
+			    databits = elf_getdata_rawchunk (ebl->elf,
+							     shdr->sh_offset,
+							     shdr->sh_size,
+							     ELF_T_BYTE);
+			    bad = (databits == NULL
+				   || databits->d_size != shdr->sh_size);
+			    for (size_t idx = 0;
+				 idx < databits->d_size && ! bad;
+				 idx++)
+			      bad = ((char *) databits->d_buf)[idx] != 0;
+
+			    if (bad)
+			      ERROR (gettext ("\
+section [%2zu] '%s' has type NOBITS but is read from the file in segment of program header entry %d and file contents is non-zero\n"),
+				     cnt, section_name (ebl, cnt), pcnt);
+			  }
+		      }
 		  }
 		else
 		  {
@@ -4216,7 +4285,7 @@ phdr[%d]: unknown core file note type %" PRIu32 " at offset %" PRIu64 "\n"),
 	    else
 	      ERROR (gettext ("\
 section [%2d] '%s': unknown core file note type %" PRIu32
-			      " at offset %Zu\n"),
+			      " at offset %zu\n"),
 		     shndx, section_name (ebl, shndx),
 		     (uint32_t) nhdr.n_type, offset);
 	  }
@@ -4238,12 +4307,12 @@ section [%2d] '%s': unknown core file note type %" PRIu32
 	  default:
 	    if (shndx == 0)
 	      ERROR (gettext ("\
-phdr[%d]: unknown object file note type %" PRIu32 " at offset %Zu\n"),
+phdr[%d]: unknown object file note type %" PRIu32 " at offset %zu\n"),
 		     phndx, (uint32_t) nhdr.n_type, offset);
 	    else
 	      ERROR (gettext ("\
 section [%2d] '%s': unknown object file note type %" PRIu32
-			      " at offset %Zu\n"),
+			      " at offset %zu\n"),
 		     shndx, section_name (ebl, shndx),
 		     (uint32_t) nhdr.n_type, offset);
 	  }
@@ -4429,10 +4498,26 @@ more than one GNU_RELRO entry in program header\n"));
 		      if ((phdr2->p_flags & PF_W) == 0)
 			ERROR (gettext ("\
 loadable segment GNU_RELRO applies to is not writable\n"));
-		      if ((phdr2->p_flags & ~PF_W) != (phdr->p_flags & ~PF_W))
-			ERROR (gettext ("\
+		      /* Unless fully covered, relro flags could be a
+			 subset of the phdrs2 flags.  For example the load
+			 segment could also have PF_X set.  */
+		      if (phdr->p_vaddr == phdr2->p_vaddr
+			  && (phdr->p_vaddr + phdr->p_memsz
+			      == phdr2->p_vaddr + phdr2->p_memsz))
+			{
+			  if ((phdr2->p_flags & ~PF_W)
+			      != (phdr->p_flags & ~PF_W))
+			    ERROR (gettext ("\
 loadable segment [%u] flags do not match GNU_RELRO [%u] flags\n"),
-			       cnt, inner);
+				   cnt, inner);
+			}
+		      else
+			{
+			  if ((phdr->p_flags & ~phdr2->p_flags) != 0)
+			    ERROR (gettext ("\
+GNU_RELRO [%u] flags are not a subset of the loadable segment [%u] flags\n"),
+				   inner, cnt);
+			}
 		      break;
 		    }
 		}

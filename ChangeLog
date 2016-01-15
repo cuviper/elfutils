@@ -1,3 +1,40 @@
+2016-01-08  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Set version to 0.165.
+	* NEWS: Add 0.164 section.
+
+2016-01-04  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Add BZ2_LIBS and LIBLZMA substitutions.
+	Add config/libelf.pc and config/libdw.pc config files.
+
+2015-12-31  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Set --no-print-directory.
+
+2015-10-16  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Make zlib mandatory.
+
+2015-10-15  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Set version to 0.164.
+	* NEWS: Add 0.164 additions.
+
+2015-10-07  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Add AM_SILENT_RULES([yes]).
+
+2015-09-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* configure.ac: Use -fPIC instead of -fpic to avoid relocation
+	overflows in some platforms.
+
+2015-07-11  Pino Toscano  <toscano.pino@tiscali.it>
+
+	* .gitignore: Add more generated files, and anchor some of the
+	existing ones.
+
 2015-06-19  Mark Wielaard  <mjw@redhat.com>
 
 	* configure.ac: Set version to 0.163.

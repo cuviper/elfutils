@@ -37,7 +37,7 @@ main (int argc, char *argv[])
       Dwarf_Off offset = 0;
       size_t len;
 
-      int fd = open64 (argv[cnt], O_RDONLY);
+      int fd = open (argv[cnt], O_RDONLY);
       if (fd == -1)
 	{
 	  printf ("cannot open '%s': %m\n", argv[cnt]);
@@ -70,6 +70,7 @@ main (int argc, char *argv[])
 	  offset += len + 1;
 	}
 
+      dwarf_end (dbg);
       close (fd);
     }
 

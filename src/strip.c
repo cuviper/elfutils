@@ -119,7 +119,7 @@ static int debug_fd = -1;
 static char *tmp_debug_fname = NULL;
 
 /* Close debug file descriptor, if opened. And remove temporary debug file.  */
-static void cleanup_debug ();
+static void cleanup_debug (void);
 
 #define INTERNAL_ERROR(fname) \
   do { \
@@ -310,12 +310,12 @@ process_file (const char *fname)
   /* If we have to preserve the modify and access timestamps get them
      now.  We cannot use fstat() after opening the file since the open
      would change the access time.  */
-  struct stat64 pre_st;
+  struct stat pre_st;
   struct timespec tv[2];
  again:
   if (preserve_dates)
     {
-      if (stat64 (fname, &pre_st) != 0)
+      if (stat (fname, &pre_st) != 0)
 	{
 	  error (0, errno, gettext ("cannot stat input file '%s'"), fname);
 	  return 1;
@@ -338,8 +338,8 @@ process_file (const char *fname)
   /* We always use fstat() even if we called stat() before.  This is
      done to make sure the information returned by stat() is for the
      same file.  */
-  struct stat64 st;
-  if (fstat64 (fd, &st) != 0)
+  struct stat st;
+  if (fstat (fd, &st) != 0)
     {
       error (0, errno, gettext ("cannot stat input file '%s'"), fname);
       return 1;
@@ -644,10 +644,12 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 	goto illformed;
 
       /* Sections in files other than relocatable object files which
-	 don't contain any file content or are not loaded can be freely
-	 moved by us.  In relocatable object files everything can be moved.  */
+	 not loaded can be freely moved by us.  In theory we can also
+	 freely move around allocated nobits sections.  But we don't
+	 to keep the layout of all allocated sections as similar as
+	 possible to the original file.  In relocatable object files
+	 everything can be moved.  */
       if (ehdr->e_type == ET_REL
-	  || shdr_info[cnt].shdr.sh_type == SHT_NOBITS
 	  || (shdr_info[cnt].shdr.sh_flags & SHF_ALLOC) == 0)
 	shdr_info[cnt].shdr.sh_offset = 0;
 
@@ -1035,9 +1037,10 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 	}
     }
 
-  /* Mark the section header string table as unused, we will create
-     a new one.  */
-  shdr_info[shstrndx].idx = 0;
+  /* Although we always create a new section header string table we
+     don't explicitly mark the existing one as unused.  It can still
+     be used through a symbol table section we are keeping.  If not it
+     will already be marked as unused.  */
 
   /* We need a string table for the section headers.  */
   shst = ebl_strtabinit (true);
@@ -1376,9 +1379,11 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 			    shdr_info[cnt].shdr.sh_info = destidx - 1;
 			  }
 		      }
-		    else if (debug_fname == NULL
-			     || shdr_info[cnt].debug_data == NULL)
-		      /* This is a section or group signature symbol
+		    else if (debug_fname != NULL
+			     && shdr_info[cnt].debug_data == NULL)
+		      /* The symbol points to a section that is discarded
+			 but isn't preserved in the debug file. Check that
+			 this is a section or group signature symbol
 			 for a section which has been removed.  */
 		      {
 			size_t sidx = (sym->st_shndx != SHN_XINDEX
@@ -2110,7 +2115,7 @@ while computing checksum for debug information"));
 	      || (pwrite_retry (fd, zero, sizeof zero,
 				offsetof (Elf32_Ehdr, e_shentsize))
 		  != sizeof zero)
-	      || ftruncate64 (fd, shdr_info[shdridx].shdr.sh_offset) < 0)
+	      || ftruncate (fd, shdr_info[shdridx].shdr.sh_offset) < 0)
 	    {
 	      error (0, errno, gettext ("while writing '%s'"),
 		     output_fname ?: fname);
@@ -2130,7 +2135,7 @@ while computing checksum for debug information"));
 	      || (pwrite_retry (fd, zero, sizeof zero,
 				offsetof (Elf64_Ehdr, e_shentsize))
 		  != sizeof zero)
-	      || ftruncate64 (fd, shdr_info[shdridx].shdr.sh_offset) < 0)
+	      || ftruncate (fd, shdr_info[shdridx].shdr.sh_offset) < 0)
 	    {
 	      error (0, errno, gettext ("while writing '%s'"),
 		     output_fname ?: fname);
@@ -2208,7 +2213,7 @@ cannot set access and modification date of '%s'"),
 }
 
 static void
-cleanup_debug ()
+cleanup_debug (void)
 {
   if (debug_fd >= 0)
     {

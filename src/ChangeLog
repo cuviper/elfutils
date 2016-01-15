@@ -1,3 +1,229 @@
+2016-01-08  Mark Wielaard  <mjw@redhat.com>
+
+	* elfcompress.c (compress_section): Use %zu to print size_t.
+	* readelf.c (print_shdr): Use %zx to print size_t.
+
+2015-12-16  Mark Wielaard  <mjw@redhat.com>
+
+	* elfcompress.c: New file.
+	* Makefile.am (bin_PROGRAMS): Add elfcompress.
+	(elfcompress_LDADD): New variable.
+
+2015-12-18  Mark Wielaard  <mjw@redhat.com>
+
+	* elflint.c (section_flags_string): Add NEWFLAG COMPRESSED.
+	(check_sections): SHF_COMPRESSED can be on any special section.
+	SHF_COMPRESSED is a valid section flag. SHF_COMPRESSED cannot
+	be used together with SHF_ALLOC or with SHT_NOBITS. Should have
+	a valid Chdr.
+
+2015-10-20  Mark Wielaard  <mjw@redhat.com>
+
+	* readelf.c (options): Expand -z help text.
+	(dump_data_section): Check whether we need and can decompress section
+	data and call elf_rawzdata if so,
+	(print_string_section): Likewise.
+	(elf_contains_chdrs): New function.
+	(process_elf_file): Rename print_unrelocated to print_unchanged,
+	use elf_contains_chdrs.
+	(print_scngrp): Check whether section is compressed before use.
+	(print_symtab): Likewise.
+	(handle_hash): Likewise.
+
+2015-10-16  Mark Wielaard  <mjw@redhat.com>
+
+	* readelf.c (argp_option): Describe --decompress,-z.
+	(print_decompress): New bool.
+	(parse_opt): Handle -z.
+	(elf_ch_type_name): New function.
+	(print_shdr): Print section compress information.
+
+2015-12-31  Mark Wielaard  <mjw@redhat.com>
+
+	* elflint.c (check_symtab): Add _edata and _end (plus extra underscore
+	variants) to to the list of possibly dangling symbols.
+
+2015-12-02  Mark Wielaard  <mjw@redhat.com>
+
+	* nm.c (process_file): Accept fd and pass it on.
+	(handle_elf): Likewise.
+	(find_no_debuginfo): New.
+	(struct getdbg): Likewise.
+	(getdbg_dwflmod): Likewise.
+	(show_symbols): Take fd. If the file is ET_REL use libdwfl to get
+	the relocated Dwarf.
+
+2015-12-02  Mark Wielaard  <mjw@redhat.com>
+
+	* nm.c (get_local_names): Check for duplicates in local_root tree.
+
+2015-12-02  Mark Wielaard  <mjw@redhat.com>
+
+	* unstrip.c (struct data_list): New.
+	(new_data_list): Likewise.
+	(record_new_data): Likewise.
+	(free_new_data): Likewise.
+	(adjust_relocs): Call record_new_data.
+	(add_new_section_symbols): Likewise.
+	(copy_elided_sections): Call free_new_data.
+
+2015-12-01  Mark Wielaard  <mjw@redhat.com>
+
+	* elfcmp.c (main): Close ebl1 and ebl2 backends.
+
+2015-10-16  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am [BUILD_STATIC](libdw): Add -lz.
+	[BUILD_STATIC](libelf): Likewise.
+
+2015-10-16  Mark Wielaard  <mjw@redhat.com>
+
+	* elflint.c (check_symtab): Don't check TLS symbol value against TLS
+	phdr offset in debuginfo files.
+	(check_sections): Don't try to match section offsets to phdrs offsets
+	in debuginfo files.
+
+2015-10-16  Mark Wielaard  <mjw@redhat.com>
+
+	* elflint.c (check_reloc_shdr): Reject only desthdrs if they have both
+	SHF_MERGE and SHF_STRINGS set.
+
+2015-10-13  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* elflint.c (check_sections): Do not rely on
+	ebl_check_special_section when checking debuginfo files.  Also
+	check that the type of WE sections in debuginfo files is NOBITS.
+
+2015-10-13  Mark Wielaard  <mjw@redhat.com>
+
+	* elflint.c (check_program_header): Check relro flags are a subset
+	of the load segment if they don't fully overlap.
+
+2015-10-07  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (ldlex_no_Wstack_usage): New.
+	* ldlex.l ([RWX]): Make cnt unsigned.
+
+2015-10-09  Josh Stone  <jistone@redhat.com>
+
+	* elflint.c (main): Replace stat64 and fstat64 with stat and fstat.
+	* readelf.c (process_file): Likewise.
+	(process_elf_file): Replace off64_t with off_t.
+	* findtextrel.c (process_file): Replace open64 with open.
+	* ld.c (main): Replace sizeof (off64_t) with 8.
+	* strings.c: Replace off64_t with off_t throughout.
+	(main): Replace stat64 and fstat64 with stat and fstat.
+	(map_file): Replace mmap64 with mmap.
+	(read_block): Likewise, and replace lseek64 with lseek.
+	* strip.c (handle_elf): Replace ftruncate64 with ftruncate.
+	(process_file): Replace stat64 and fstat64 with stat and fstat.
+	* unstrip.c (parse_opt): Replace stat64 with stat.
+	(handle_file): Replace open64 with open.
+	(open_file): Likewise.
+
+2015-10-08  Chih-Hung Hsieh  <chh@google.com>
+
+	* ld.c (determine_output_format): Move recursive nested
+	function "try" to file scope.
+
+2015-10-04  Mark Wielaard  <mjw@redhat.com>
+
+	* strip.c (handle_elf): Only sanity check section symbols to not
+	kept discarded sections if we are creating a debug file.
+
+2015-10-07  Mark Wielaard  <mjw@redhat.com>
+
+	* unstrip.c (MAX): Removed.
+	(find_alloc_sections_prelink): Allocate exact amount of bytes for
+	shdrs.
+
+2015-10-05  Chih-Hung Hsieh <chh@google.com>
+
+	* unstrip.c (find_alloc_sections_prelink): Do not allocate
+	on stack union types with variable length arrays; use xmalloc
+	for such dynamic sized objects.
+	* readelf.c (handle_core_item): Likewise, but use alloca
+	for small variable size data object and add assert(count < 128).
+
+2015-10-05  Josh Stone  <jistone@redhat.com>
+
+	* Makefile.am (libld_elf_i386.so): Add AM_V_CCLD silencer.
+	(.deps/none_ld.Po): Always silence the dummy command.
+	(make-debug-archive): Add AM_V_GEN and AM_V_at silencers.
+
+2015-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	* unstrip.c (copy_elided_sections): Use SH_INFO_LINK_P, not just
+	SHF_INFO_LINK.
+
+2015-10-02  Mark Wielaard  <mjw@redhat.com>
+
+	* strip.c (handle_elf): Don't move around allocated NOBITS sections.
+	Don't just mark the section header string table as unused.
+	* unstrip.c (copy_elided_sections): Add header names to strtab if
+	shstrndx equals the symtab strtabndx.
+
+2015-09-22  Mark Wielaard  <mjw@redhat.com>
+
+	* strip.c (cleanup_debug): Remove old-style function definitions.
+
+2015-09-09  Chih-Hung Hsieh  <chh@google.com>
+
+	* readelf.c (print_debug_exception_table): Initialize variable before
+	it is used, because compiler does not know that error never returns.
+	(dump_arhive_index): Likewise.
+
+2015-09-04  Chih-Hung Hsieh  <chh@google.com>
+
+	* elflint.c (check_group): Replace %Z length modifier with %z.
+	(check_note_data): Likewise.
+	* findtextrel.c (process_file): Likewise.
+	* readelf.c (handle_dynamic): Likewise.
+	(handle_symtab): Likewise.
+	(handle_verneed): Likewise.
+	(handle_verdef): Likewise.
+	(handle_versym): Likewise.
+	(print_hash_info): Likewise.
+	(print_decoded_aranges_section): Likewise.
+	(print_debug_aranges_section): Likewise.
+	(print_debug_line_section): Likewise.
+	(hex_dump): Likewise.
+	(dump_data_section): Likewise.
+	(print_string_section): Likewise.
+	(dump_archive_index): Likewise.
+	* unstrip.c (adjust_relocs): Likewise.
+	(collect_symbols): likewise.
+	(get_section_name): Likewise.
+	(find_alloc_sections_prelink): Likewise.
+	(copy_elided_sections): Likewise.
+	* ldscript.y (add_id_list): Add missing '%s'.
+
+2015-09-03  Mark Wielaard  <mjw@redhat.com>
+
+	* readelf.c (handle_core_item): Handle right shift >= 32 bits.
+
+2015-08-11  Mark Wielaard  <mjw@redhat.com>
+
+	* elflint.c (check_sections): When gnuld and a NOBITS section falls
+	inside a segment make sure any ELF file contents is zero.
+
+2015-07-29  Mark Wielaard  <mjw@redhat.com>
+
+	* unstrip.c (sections_flags_match): New function.
+	(sections_match): Use sections_flags_match.
+	(find_alloc_sections_prelink): Only clear matched sections if there
+	is an undo section.
+	(copy_elided_sections): Add SHF_INFO_LINK to shdr_mem.sh_flags if
+	necessary.
+
+2015-06-27  Pino Toscano  <toscano.pino@tiscali.it>
+
+	* src/strings.c: Define MAP_POPULATE if not defined already.
+
+2015-06-27  Mark Wielaard  <mjw@redhat.com>
+
+	* nm.c (show_symbols): First call elf_getdata, then allocate memory.
+
 2015-06-18  Mark Wielaard  <mjw@redhat.com>
 
 	* findtextrel.c (process_file): Free segments after use.

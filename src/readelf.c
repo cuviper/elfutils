@@ -48,6 +48,7 @@
 #include "../libelf/libelfP.h"
 #include "../libelf/common.h"
 #include "../libebl/libeblP.h"
+#include "../libdwelf/libdwelf.h"
 #include "../libdw/libdwP.h"
 #include "../libdwfl/libdwflP.h"
 #include "../libdw/memory-access.h"
@@ -112,6 +113,8 @@ static const struct argp_option options[] =
     N_("Display just offsets instead of resolving values to addresses in DWARF data"), 0 },
   { "wide", 'W', NULL, 0,
     N_("Ignored for compatibility (lines always wide)"), 0 },
+  { "decompress", 'z', NULL, 0,
+    N_("Show compression information for compressed sections (when used with -S); decompress section before dumping data (when used with -p or -x)"), 0 },
   { NULL, 0, NULL, 0, NULL, 0 }
 };
 
@@ -189,6 +192,9 @@ static bool decodedaranges = false;
 
 /* True if we should print the .debug_aranges section using libdw.  */
 static bool decodedline = false;
+
+/* True if we want to show more information about compressed sections.  */
+static bool print_decompress = false;
 
 /* Select printing of debugging sections.  */
 static enum section_e
@@ -479,6 +485,9 @@ parse_opt (int key, char *arg,
       break;
     case 'W':			/* Ignored.  */
       break;
+    case 'z':
+      print_decompress = true;
+      break;
     case ELF_INPUT_SECTION:
       if (arg == NULL)
 	elf_input_section = ".gnu_debugdata";
@@ -764,8 +773,8 @@ process_file (int fd, const char *fname, bool only_one)
     dwfl->offline_next_address = 0;
   if (dwfl_report_offline (dwfl, fname, fname, dwfl_fd) == NULL)
     {
-      struct stat64 st;
-      if (fstat64 (dwfl_fd, &st) != 0)
+      struct stat st;
+      if (fstat (dwfl_fd, &st) != 0)
 	error (0, errno, gettext ("cannot stat input file"));
       else if (unlikely (st.st_size == 0))
 	error (0, 0, gettext ("input file is empty"));
@@ -797,6 +806,20 @@ process_file (int fd, const char *fname, bool only_one)
     close (fd);
 }
 
+/* Check whether there are any compressed sections in the ELF file.  */
+static bool
+elf_contains_chdrs (Elf *elf)
+{
+  Elf_Scn *scn = NULL;
+  while ((scn = elf_nextscn (elf, scn)) != NULL)
+    {
+      GElf_Shdr shdr_mem;
+      GElf_Shdr *shdr = gelf_getshdr (scn, &shdr_mem);
+      if (shdr != NULL && (shdr->sh_flags & SHF_COMPRESSED) != 0)
+	return true;
+    }
+  return false;
+}
 
 /* Process one ELF file.  */
 static void
@@ -835,20 +858,24 @@ process_elf_file (Dwfl_Module *dwflmod, int fd)
 	   gettext ("cannot determine number of program headers: %s"),
 	   elf_errmsg (-1));
 
-  /* For an ET_REL file, libdwfl has adjusted the in-core shdrs
-     and may have applied relocation to some sections.
-     So we need to get a fresh Elf handle on the file to display those.  */
-  bool print_unrelocated = (print_section_header
-			    || print_relocations
-			    || dump_data_sections != NULL
-			    || print_notes);
+  /* For an ET_REL file, libdwfl has adjusted the in-core shdrs and
+     may have applied relocation to some sections.  If there are any
+     compressed sections, any pass (or libdw/libdwfl) might have
+     uncompressed them.  So we need to get a fresh Elf handle on the
+     file to display those.  */
+  bool print_unchanged = ((print_section_header
+			   || print_relocations
+			   || dump_data_sections != NULL
+			   || print_notes)
+			  && (ehdr->e_type == ET_REL
+			      || elf_contains_chdrs (ebl->elf)));
 
   Elf *pure_elf = NULL;
   Ebl *pure_ebl = ebl;
-  if (ehdr->e_type == ET_REL && print_unrelocated)
+  if (print_unchanged)
     {
       /* Read the file afresh.  */
-      off64_t aroff = elf_getaroff (elf);
+      off_t aroff = elf_getaroff (elf);
       pure_elf = elf_begin (fd, ELF_C_READ_MMAP, NULL);
       if (aroff > 0)
 	{
@@ -1065,6 +1092,17 @@ get_visibility_type (int value)
     }
 }
 
+static const char *
+elf_ch_type_name (unsigned int code)
+{
+  if (code == 0)
+    return "NONE";
+
+  if (code == ELFCOMPRESS_ZLIB)
+    return "ZLIB";
+
+  return "UNKNOWN";
+}
 
 /* Print the section headers.  */
 static void
@@ -1090,6 +1128,14 @@ There are %d section headers, starting at offset %#" PRIx64 ":\n\
     puts (gettext ("[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al"));
   else
     puts (gettext ("[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al"));
+
+  if (print_decompress)
+    {
+      if (ehdr->e_ident[EI_CLASS] == ELFCLASS32)
+	puts (gettext ("     [Compression  Size   Al]"));
+      else
+	puts (gettext ("     [Compression  Size     Al]"));
+    }
 
   for (cnt = 0; cnt < shnum; ++cnt)
     {
@@ -1128,25 +1174,57 @@ There are %d section headers, starting at offset %#" PRIx64 ":\n\
 	*cp++ = 'G';
       if (shdr->sh_flags & SHF_TLS)
 	*cp++ = 'T';
+      if (shdr->sh_flags & SHF_COMPRESSED)
+	*cp++ = 'C';
       if (shdr->sh_flags & SHF_ORDERED)
 	*cp++ = 'O';
       if (shdr->sh_flags & SHF_EXCLUDE)
 	*cp++ = 'E';
       *cp = '\0';
 
+      const char *sname;
       char buf[128];
+      sname = elf_strptr (ebl->elf, shstrndx, shdr->sh_name) ?: "<corrupt>";
       printf ("[%2zu] %-20s %-12s %0*" PRIx64 " %0*" PRIx64 " %0*" PRIx64
 	      " %2" PRId64 " %-5s %2" PRId32 " %3" PRId32
 	      " %2" PRId64 "\n",
-	      cnt,
-	      elf_strptr (ebl->elf, shstrndx, shdr->sh_name)
-	      ?: "<corrupt>",
+	      cnt, sname,
 	      ebl_section_type_name (ebl, shdr->sh_type, buf, sizeof (buf)),
 	      ehdr->e_ident[EI_CLASS] == ELFCLASS32 ? 8 : 16, shdr->sh_addr,
 	      ehdr->e_ident[EI_CLASS] == ELFCLASS32 ? 6 : 8, shdr->sh_offset,
 	      ehdr->e_ident[EI_CLASS] == ELFCLASS32 ? 6 : 8, shdr->sh_size,
 	      shdr->sh_entsize, flagbuf, shdr->sh_link, shdr->sh_info,
 	      shdr->sh_addralign);
+
+      if (print_decompress)
+	{
+	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
+	    {
+	      GElf_Chdr chdr;
+	      if (gelf_getchdr (scn, &chdr) != NULL)
+		printf ("     [ELF %s (%" PRId32 ") %0*" PRIx64
+			" %2" PRId64 "]\n",
+			elf_ch_type_name (chdr.ch_type),
+			chdr.ch_type,
+			ehdr->e_ident[EI_CLASS] == ELFCLASS32 ? 6 : 8,
+			chdr.ch_size, chdr.ch_addralign);
+	      else
+		error (0, 0,
+		       gettext ("bad compression header for section %zd: %s"),
+		       elf_ndxscn (scn), elf_errmsg (-1));
+	    }
+	  else if (strncmp(".zdebug", sname, strlen (".zdebug")) == 0)
+	    {
+	      ssize_t size;
+	      if ((size = dwelf_scn_gnu_compressed_size (scn)) >= 0)
+		printf ("     [GNU ZLIB     %0*zx   ]\n",
+			ehdr->e_ident[EI_CLASS] == ELFCLASS32 ? 6 : 8, size);
+	      else
+		error (0, 0,
+		       gettext ("bad gnu compressed size for section %zd: %s"),
+		       elf_ndxscn (scn), elf_errmsg (-1));
+	    }
+	}
     }
 
   fputc_unlocked ('\n', stdout);
@@ -1443,7 +1521,17 @@ print_scngrp (Ebl *ebl)
       GElf_Shdr *shdr = gelf_getshdr (scn, &shdr_mem);
 
       if (shdr != NULL && shdr->sh_type == SHT_GROUP)
-	handle_scngrp (ebl, scn, shdr);
+	{
+	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
+	    {
+	      if (elf_compress (scn, 0, 0) < 0)
+		printf ("WARNING: %s [%zd]\n",
+			gettext ("Couldn't uncompress section"),
+			elf_ndxscn (scn));
+	      shdr = gelf_getshdr (scn, &shdr_mem);
+	    }
+	  handle_scngrp (ebl, scn, shdr);
+	}
     }
 }
 
@@ -1582,7 +1670,7 @@ handle_dynamic (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
 
   glink = gelf_getshdr (elf_getscn (ebl->elf, shdr->sh_link), &glink_mem);
   if (glink == NULL)
-    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %Zu"),
+    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %zu"),
 	   elf_ndxscn (scn));
 
   printf (ngettext ("\
@@ -2142,7 +2230,17 @@ print_symtab (Ebl *ebl, int type)
       GElf_Shdr *shdr = gelf_getshdr (scn, &shdr_mem);
 
       if (shdr != NULL && shdr->sh_type == (GElf_Word) type)
-	handle_symtab (ebl, scn, shdr);
+	{
+	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
+	    {
+	      if (elf_compress (scn, 0, 0) < 0)
+		printf ("WARNING: %s [%zd]\n",
+			gettext ("Couldn't uncompress section"),
+			elf_ndxscn (scn));
+	      shdr = gelf_getshdr (scn, &shdr_mem);
+	    }
+	  handle_symtab (ebl, scn, shdr);
+	}
     }
 }
 
@@ -2205,7 +2303,7 @@ handle_symtab (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
   GElf_Shdr *glink = gelf_getshdr (elf_getscn (ebl->elf, shdr->sh_link),
 				   &glink_mem);
   if (glink == NULL)
-    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %Zu"),
+    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %zu"),
 	   elf_ndxscn (scn));
 
   /* Now we can compute the number of entries in the section.  */
@@ -2463,7 +2561,7 @@ handle_verneed (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
   GElf_Shdr *glink = gelf_getshdr (elf_getscn (ebl->elf, shdr->sh_link),
 				   &glink_mem);
   if (glink == NULL)
-    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %Zu"),
+    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %zu"),
 	   elf_ndxscn (scn));
 
   printf (ngettext ("\
@@ -2539,7 +2637,7 @@ handle_verdef (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
   GElf_Shdr *glink = gelf_getshdr (elf_getscn (ebl->elf, shdr->sh_link),
 				   &glink_mem);
   if (glink == NULL)
-    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %Zu"),
+    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %zu"),
 	   elf_ndxscn (scn));
 
   int class = gelf_getclass (ebl->elf);
@@ -2843,7 +2941,7 @@ handle_versym (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
 				   &glink_mem);
   size_t sh_entsize = gelf_fsize (ebl->elf, ELF_T_HALF, 1, EV_CURRENT);
   if (glink == NULL)
-    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %Zu"),
+    error (EXIT_FAILURE, 0, gettext ("invalid sh_link value in section %zu"),
 	   elf_ndxscn (scn));
 
   /* Print the header.  */
@@ -2917,7 +3015,7 @@ print_hash_info (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr, size_t shstrndx,
 				   &glink_mem);
   if (glink == NULL)
     {
-      error (0, 0, gettext ("invalid sh_link value in section %Zu"),
+      error (0, 0, gettext ("invalid sh_link value in section %zu"),
 	     elf_ndxscn (scn));
       return;
     }
@@ -3211,6 +3309,16 @@ handle_hash (Ebl *ebl)
 
       if (likely (shdr != NULL))
 	{
+	  if ((shdr->sh_type == SHT_HASH || shdr->sh_type == SHT_GNU_HASH)
+	      && (shdr->sh_flags & SHF_COMPRESSED) != 0)
+	    {
+	      if (elf_compress (scn, 0, 0) < 0)
+		printf ("WARNING: %s [%zd]\n",
+			gettext ("Couldn't uncompress section"),
+			elf_ndxscn (scn));
+	      shdr = gelf_getshdr (scn, &shdr_mem);
+	    }
+
 	  if (shdr->sh_type == SHT_HASH)
 	    {
 	      if (ebl_sysvhash_entrysize (ebl) == sizeof (Elf64_Xword))
@@ -4605,7 +4713,7 @@ print_decoded_aranges_section (Ebl *ebl, GElf_Ehdr *ehdr, Elf_Scn *scn,
   glink = gelf_getshdr (elf_getscn (ebl->elf, shdr->sh_link), &glink_mem);
   if (glink == NULL)
     {
-      error (0, 0, gettext ("invalid sh_link value in section %Zu"),
+      error (0, 0, gettext ("invalid sh_link value in section %zu"),
 	     elf_ndxscn (scn));
       return;
     }
@@ -4686,7 +4794,7 @@ print_debug_aranges_section (Dwfl_Module *dwflmod __attribute__ ((unused)),
       const unsigned char *hdrstart = readp;
       size_t start_offset = hdrstart - (const unsigned char *) data->d_buf;
 
-      printf (gettext ("\nTable at offset %Zu:\n"), start_offset);
+      printf (gettext ("\nTable at offset %zu:\n"), start_offset);
       if (readp + 4 > readendp)
 	{
 	invalid_data:
@@ -4804,7 +4912,7 @@ print_debug_aranges_section (Dwfl_Module *dwflmod __attribute__ ((unused)),
       if (readp != nexthdr)
 	{
 	  size_t padding = nexthdr - readp;
-	  printf (gettext ("   %Zu padding bytes\n"), padding);
+	  printf (gettext ("   %zu padding bytes\n"), padding);
 	  readp = nexthdr;
 	}
     }
@@ -6383,7 +6491,7 @@ print_debug_line_section (Dwfl_Module *dwflmod, Ebl *ebl, GElf_Ehdr *ehdr,
     {
       size_t start_offset = linep - (const unsigned char *) data->d_buf;
 
-      printf (gettext ("\nTable at offset %Zu:\n"), start_offset);
+      printf (gettext ("\nTable at offset %zu:\n"), start_offset);
 
       if (unlikely (linep + 4 > lineendp))
 	goto invalid_data;
@@ -7910,6 +8018,7 @@ print_debug_exception_table (Dwfl_Module *dwflmod __attribute__ ((unused)),
 	  dsize = 8;
 	  break;
 	default:
+	  dsize = 0;
 	  error (1, 0, gettext ("invalid TType encoding"));
 	}
 
@@ -8259,11 +8368,9 @@ print_debug (Dwfl_Module *dwflmod, Ebl *ebl, GElf_Ehdr *ehdr)
 	  int n;
 	  for (n = 0; n < ndebug_sections; ++n)
 	    if (strcmp (name, debug_sections[n].name) == 0
-#if USE_ZLIB
 		|| (name[0] == '.' && name[1] == 'z'
 		    && debug_sections[n].name[1] == 'd'
 		    && strcmp (&name[2], &debug_sections[n].name[1]) == 0)
-#endif
 		)
 	      {
 		if ((print_debug_sections | implicit_debug_sections)
@@ -8369,6 +8476,9 @@ handle_core_item (Elf *core, const Ebl_Core_Item *item, const void *desc,
 		  unsigned int colno, size_t *repeated_size)
 {
   uint_fast16_t count = item->count ?: 1;
+  /* Ebl_Core_Item count is always a small number.
+     Make sure the backend didn't put in some large bogus value.  */
+  assert (count < 128);
 
 #define TYPES								      \
   DO_TYPE (BYTE, Byte, "0x%.2" PRIx8, "%" PRId8);			      \
@@ -8378,11 +8488,16 @@ handle_core_item (Elf *core, const Ebl_Core_Item *item, const void *desc,
   DO_TYPE (XWORD, Xword, "0x%.16" PRIx64, "%" PRId64);			      \
   DO_TYPE (SXWORD, Sxword, "%" PRId64, "%" PRId64)
 
-#define DO_TYPE(NAME, Name, hex, dec) GElf_##Name Name[count]
-  union { TYPES; } value;
+#define DO_TYPE(NAME, Name, hex, dec) GElf_##Name Name
+  typedef union { TYPES; } value_t;
+  void *data = alloca (count * sizeof (value_t));
 #undef DO_TYPE
 
-  void *data = &value;
+#define DO_TYPE(NAME, Name, hex, dec) \
+    GElf_##Name *value_##Name __attribute__((unused)) = data
+  TYPES;
+#undef DO_TYPE
+
   size_t size = gelf_fsize (core, item->type, count, EV_CURRENT);
   size_t convsize = size;
   if (repeated_size != NULL)
@@ -8413,7 +8528,7 @@ handle_core_item (Elf *core, const Ebl_Core_Item *item, const void *desc,
 #define DO_TYPE(NAME, Name, hex, dec)					      \
 	  case ELF_T_##NAME:						      \
 	    colno = print_core_item (colno, ',', WRAP_COLUMN,		      \
-				     0, item->name, dec, value.Name[0]); \
+				     0, item->name, dec, value_##Name[0]); \
 	    break
 	  TYPES;
 #undef DO_TYPE
@@ -8429,7 +8544,7 @@ handle_core_item (Elf *core, const Ebl_Core_Item *item, const void *desc,
 #define DO_TYPE(NAME, Name, hex, dec)					      \
 	  case ELF_T_##NAME:						      \
 	    colno = print_core_item (colno, ',', WRAP_COLUMN,		      \
-				     0, item->name, hex, value.Name[0]);      \
+				     0, item->name, hex, value_##Name[0]);      \
 	    break
 	  TYPES;
 #undef DO_TYPE
@@ -8474,8 +8589,16 @@ handle_core_item (Elf *core, const Ebl_Core_Item *item, const void *desc,
 	    unsigned int w = negate ? ~*i : *i;
 	    while (w != 0)
 	      {
-		int n = ffs (w);
-		w >>= n;
+		/* Note that a right shift equal to (or greater than)
+		   the number of bits of w is undefined behaviour.  In
+		   particular when the least significant bit is bit 32
+		   (w = 0x8000000) then w >>= n is undefined.  So
+		   explicitly handle that case separately.  */
+		unsigned int n = ffs (w);
+		if (n < sizeof (w) * 8)
+		  w >>= n;
+		else
+		  w = 0;
 		bit += n;
 
 		if (lastbit != 0 && lastbit + 1 == bit)
@@ -8511,8 +8634,8 @@ handle_core_item (Elf *core, const Ebl_Core_Item *item, const void *desc,
 	{
 #define DO_TYPE(NAME, Name, hex, dec)					      \
 	  case ELF_T_##NAME:						      \
-	    sec = value.Name[0];					      \
-	    usec = value.Name[1];					      \
+	    sec = value_##Name[0];					      \
+	    usec = value_##Name[1];					      \
 	    break
 	  TYPES;
 #undef DO_TYPE
@@ -8542,12 +8665,12 @@ handle_core_item (Elf *core, const Ebl_Core_Item *item, const void *desc,
     case 'c':
       assert (count == 1);
       colno = print_core_item (colno, ',', WRAP_COLUMN, 0, item->name,
-			       "%c", value.Byte[0]);
+			       "%c", value_Byte[0]);
       break;
 
     case 's':
       colno = print_core_item (colno, ',', WRAP_COLUMN, 0, item->name,
-			       "%.*s", (int) count, value.Byte);
+			       "%.*s", (int) count, value_Byte);
       break;
 
     case '\n':
@@ -9347,7 +9470,7 @@ hex_dump (const uint8_t *data, size_t len)
   size_t pos = 0;
   while (pos < len)
     {
-      printf ("  0x%08Zx ", pos);
+      printf ("  0x%08zx ", pos);
 
       const size_t chunk = MIN (len - pos, 16);
 
@@ -9375,20 +9498,38 @@ static void
 dump_data_section (Elf_Scn *scn, const GElf_Shdr *shdr, const char *name)
 {
   if (shdr->sh_size == 0 || shdr->sh_type == SHT_NOBITS)
-    printf (gettext ("\nSection [%Zu] '%s' has no data to dump.\n"),
+    printf (gettext ("\nSection [%zu] '%s' has no data to dump.\n"),
 	    elf_ndxscn (scn), name);
   else
     {
+      if (print_decompress)
+	{
+	  /* We try to decompress the section, but keep the old shdr around
+	     so we can show both the original shdr size and the uncompressed
+	     data size.   */
+	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
+	    elf_compress (scn, 0, 0);
+	  else if (strncmp (name, ".zdebug", strlen (".zdebug")) == 0)
+	    elf_compress_gnu (scn, 0, 0);
+	}
+
       Elf_Data *data = elf_rawdata (scn, NULL);
       if (data == NULL)
-	error (0, 0, gettext ("cannot get data for section [%Zu] '%s': %s"),
+	error (0, 0, gettext ("cannot get data for section [%zu] '%s': %s"),
 	       elf_ndxscn (scn), name, elf_errmsg (-1));
       else
 	{
-	  printf (gettext ("\nHex dump of section [%Zu] '%s', %" PRIu64
-			   " bytes at offset %#0" PRIx64 ":\n"),
-		  elf_ndxscn (scn), name,
-		  shdr->sh_size, shdr->sh_offset);
+	  if (data->d_size == shdr->sh_size)
+	    printf (gettext ("\nHex dump of section [%zu] '%s', %" PRIu64
+			     " bytes at offset %#0" PRIx64 ":\n"),
+		    elf_ndxscn (scn), name,
+		    shdr->sh_size, shdr->sh_offset);
+	  else
+	    printf (gettext ("\nHex dump of section [%zu] '%s', %" PRIu64
+			     " bytes (%zd uncompressed) at offset %#0"
+			     PRIx64 ":\n"),
+		    elf_ndxscn (scn), name,
+		    shdr->sh_size, data->d_size, shdr->sh_offset);
 	  hex_dump (data->d_buf, data->d_size);
 	}
     }
@@ -9398,20 +9539,38 @@ static void
 print_string_section (Elf_Scn *scn, const GElf_Shdr *shdr, const char *name)
 {
   if (shdr->sh_size == 0 || shdr->sh_type == SHT_NOBITS)
-    printf (gettext ("\nSection [%Zu] '%s' has no strings to dump.\n"),
+    printf (gettext ("\nSection [%zu] '%s' has no strings to dump.\n"),
 	    elf_ndxscn (scn), name);
   else
     {
+      if (print_decompress)
+	{
+	  /* We try to decompress the section, but keep the old shdr around
+	     so we can show both the original shdr size and the uncompressed
+	     data size.  */
+	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
+	    elf_compress (scn, 0, 0);
+	  else if (strncmp (name, ".zdebug", strlen (".zdebug")) == 0)
+	    elf_compress_gnu (scn, 0, 0);
+	}
+
       Elf_Data *data = elf_rawdata (scn, NULL);
       if (data == NULL)
-	error (0, 0, gettext ("cannot get data for section [%Zu] '%s': %s"),
+	error (0, 0, gettext ("cannot get data for section [%zu] '%s': %s"),
 	       elf_ndxscn (scn), name, elf_errmsg (-1));
       else
 	{
-	  printf (gettext ("\nString section [%Zu] '%s' contains %" PRIu64
-			   " bytes at offset %#0" PRIx64 ":\n"),
-		  elf_ndxscn (scn), name,
-		  shdr->sh_size, shdr->sh_offset);
+	  if (data->d_size == shdr->sh_size)
+	    printf (gettext ("\nString section [%zu] '%s' contains %" PRIu64
+			     " bytes at offset %#0" PRIx64 ":\n"),
+		    elf_ndxscn (scn), name,
+		    shdr->sh_size, shdr->sh_offset);
+	  else
+	    printf (gettext ("\nString section [%zu] '%s' contains %" PRIu64
+			     " bytes (%zd uncompressed) at offset %#0"
+			     PRIx64 ":\n"),
+		    elf_ndxscn (scn), name,
+		    shdr->sh_size, data->d_size, shdr->sh_offset);
 
 	  const char *start = data->d_buf;
 	  const char *const limit = start + data->d_size;
@@ -9421,11 +9580,11 @@ print_string_section (Elf_Scn *scn, const GElf_Shdr *shdr, const char *name)
 	      const size_t pos = start - (const char *) data->d_buf;
 	      if (unlikely (end == NULL))
 		{
-		  printf ("  [%6Zx]- %.*s\n",
+		  printf ("  [%6zx]- %.*s\n",
 			  pos, (int) (limit - start), start);
 		  break;
 		}
-	      printf ("  [%6Zx]  %s\n", pos, start);
+	      printf ("  [%6zx]  %s\n", pos, start);
 	      start = end + 1;
 	    } while (start < limit);
 	}
@@ -9549,7 +9708,7 @@ dump_archive_index (Elf *elf, const char *fname)
       return;
     }
 
-  printf (gettext ("\nIndex of archive '%s' has %Zu entries:\n"),
+  printf (gettext ("\nIndex of archive '%s' has %zu entries:\n"),
 	  fname, narsym);
 
   size_t as_off = 0;
@@ -9559,7 +9718,7 @@ dump_archive_index (Elf *elf, const char *fname)
 	{
 	  as_off = s->as_off;
 
-	  Elf *subelf;
+	  Elf *subelf = NULL;
 	  if (unlikely (elf_rand (elf, as_off) == 0)
 	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
 			   == NULL))
@@ -9567,7 +9726,7 @@ dump_archive_index (Elf *elf, const char *fname)
 	    while (1)
 #endif
 	      error (EXIT_FAILURE, 0,
-		     gettext ("cannot extract member at offset %Zu in '%s': %s"),
+		     gettext ("cannot extract member at offset %zu in '%s': %s"),
 		     as_off, fname, elf_errmsg (-1));
 
 	  const Elf_Arhdr *h = elf_getarhdr (subelf);

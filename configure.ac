@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Configure input file for elfutils.                     -*-autoconf-*-
 dnl
-dnl Copyright (C) 1996-2015 Red Hat, Inc.
+dnl Copyright (C) 1996-2016 Red Hat, Inc.
 dnl
 dnl This file is part of elfutils.
 dnl
@@ -17,17 +17,19 @@ dnl  GNU General Public License for more details.
 dnl
 dnl  You should have received a copy of the GNU General Public License
 dnl  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-AC_INIT([elfutils],[0.163],[https://bugzilla.redhat.com/],[elfutils])
+AC_INIT([elfutils],[0.165],[https://bugzilla.redhat.com/],[elfutils])
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_FILES([config/Makefile])
 
-AC_COPYRIGHT([Copyright (C) 1996-2015 Red Hat, Inc.])
+AC_COPYRIGHT([Copyright (C) 1996-2016 Red Hat, Inc.])
 AC_PREREQ(2.63)			dnl Minimum Autoconf version required.
 
 dnl We use GNU make extensions; automake 1.10 defaults to -Wportability.
 AM_INIT_AUTOMAKE([gnits 1.11 -Wno-portability dist-bzip2 no-dist-gzip parallel-tests])
 AM_MAINTAINER_MODE
+
+AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([libelf/libelf.h])
 AC_CONFIG_FILES([Makefile])
@@ -111,7 +113,7 @@ AC_CACHE_CHECK([for __thread support], ac_cv_tls, [dnl
 # Some old compiler/linker/libc combinations fail some ways and not others.
 save_CFLAGS="$CFLAGS"
 save_LDFLAGS="$LDFLAGS"
-CFLAGS="-fpic $CFLAGS"
+CFLAGS="-fPIC $CFLAGS"
 LDFLAGS="-shared -Wl,-z,defs,-z,relro $LDFLAGS"
 AC_LINK_IFELSE([dnl
 AC_LANG_PROGRAM([[#include <stdlib.h>
@@ -238,13 +240,24 @@ AC_SUBST([LIBEBL_SUBDIR])
 AC_DEFINE_UNQUOTED(LIBEBL_SUBDIR, "$LIBEBL_SUBDIR")
 AH_TEMPLATE([LIBEBL_SUBDIR], [$libdir subdirectory containing libebl modules.])
 
-dnl Test for zlib and bzlib, gives ZLIB/BZLIB .am
-dnl conditional and config.h USE_ZLIB/USE_BZLIB #define.
+dnl zlib is mandatory.
 save_LIBS="$LIBS"
 LIBS=
 eu_ZIPLIB(zlib,ZLIB,z,gzdirect,gzip)
+AS_IF([test "x$with_zlib" = xno], [AC_MSG_ERROR("zlib not found")])
+LIBS="$save_LIBS"
+
+dnl Test for bzlib and xz/lzma, gives BZLIB/LZMALIB .am
+dnl conditional and config.h USE_BZLIB/USE_LZMALIB #define.
+save_LIBS="$LIBS"
+LIBS=
 eu_ZIPLIB(bzlib,BZLIB,bz2,BZ2_bzdopen,bzip2)
+# We need this since bzip2 doesn't have a pkgconfig file.
+BZ2_LIB="$LIBS"
+AC_SUBST([BZ2_LIB])
 eu_ZIPLIB(lzma,LZMA,lzma,lzma_auto_decoder,[LZMA (xz)])
+AS_IF([test "x$with_lzma" = xyes], [LIBLZMA="liblzma"], [LIBLZMA=""])
+AC_SUBST([LIBLZMA])
 zip_LIBS="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST([zip_LIBS])
@@ -343,6 +356,9 @@ AC_CONFIG_FILES([src/Makefile po/Makefile.in])
 dnl Test suite.
 AM_CONDITIONAL(STANDALONE, false)dnl Used in tests/Makefile.am, which see.
 AC_CONFIG_FILES([tests/Makefile])
+
+dnl pkgconfig files
+AC_CONFIG_FILES([config/libelf.pc config/libdw.pc])
 
 # Get the definitions necessary to create the Makefiles in the po
 # subdirectories.  This is a small subset of the gettext rules.

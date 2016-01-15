@@ -1,3 +1,83 @@
+2015-12-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sparc_init.c (sparc_init): Hook sparc_set_initial_registers_tid.
+	* sparc_initreg.c: New file.
+	* Makefile.am (sparc_SRCS): Added sparc_initreg.c.
+
+2015-12-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sparc_corenote.c: Header comment typo fixed.
+	(PRSTATUS_REGSET_ITEMS): Defined, so the PC can be fetched from
+	core files.
+	* Makefile.am (sparc_SRCS): Added sparc_cfi.c
+	* sparc_cfi.c: New file.
+	* sparc_init.c (sparc_init): Set eh->frame_nregs, eh->ra_offset
+	and hook sparc_abi_cfi.
+
+2015-10-21  Chih-Hung Hsieh  <chh@google.com>
+
+	* ia64_retval.c (hfa_type): Move nested function 'hfa' to file scope.
+	* aarch64_regs.c (aarch64_register_info): Move nested function 'regtype'
+	to file scope.
+
+2015-10-16  Mark Wielaard  <mjw@redhat.com>
+
+	* ppc_symbol.c (ppc_check_special_symbol): Also allow _SDA_BASE_
+	in .data section.
+
+2015-10-05  Josh Stone  <jistone@redhat.com>
+
+	* Makefile.am (libebl_%.so): Add AM_V_at and AM_V_CCLD silencers.
+
+2015-10-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sparc_attrs.c: New file.
+	* Makefile.am (sparc_SRCS): Added sparc_attrs.c
+	* sparc_init.c (sparc_init): Hook sparc_check_object_attribute.
+
+2015-10-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sparc_init.c (RELOC_TYPE_ID): Defined.
+	* common-reloc.c (reloc_type_name): Apply target-specific
+	relocation ID extractors if defined.
+	(reloc_type_check): Likewise.
+	(reloc_valid_use): Likewise.
+
+2015-10-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sparc_reloc.def: Added relocation types WDISP10, JMP_IREL and
+	IRELATIVE.
+
+2015-09-22  Mark Wielaard  <mjw@redhat.com>
+
+	* arm_attrs.c: Remove old-style function definitions.
+	* linux-core-note.c: Likewise.
+	* ppc_attrs.c: Likewise.
+
+2015-09-04  Chih-Hung Hsieh  <chh@google.com>
+
+	* aarch64_init.c (aarch64_init): Replace K&R function definition
+	with ansi-C definitions.
+	* alpha_init.c (alpha_init): Likewise.
+	* arm_init.c (arm_init): Likewise.
+	* i386_init.c (i386_init): Likewise.
+	* ia64_init.c (ia64_init): Likewise.
+	* ppc64_init.c (ppc64_init): Likewise.
+	* ppc_init.c (ppc_init): Likewise.
+	* s390_init.c (s390_init): Likewise.
+	* sh_init.c (sh_init): Likewise.
+	* sparc_init.c (sparc_init): Likewise.
+	* tilegx_init.c (tilegx_init): Likewise.
+	* x86_64_init.c (x86_64_init): Likewise.
+
+2015-09-03  Mark Wielaard  <mjw@redhat.com>
+
+	* sparc_regs.c (sparc_register_info): Use ebl->class not ebl->machine.
+
+2015-06-26  Pino Toscano  <toscano.pino@tiscali.it>
+
+	* i386_initreg.c: Reduce scope of some includes to match their usage.
+
 2015-04-28  Mark Wielaard  <mjw@redhat.com>
 
 	* aarch64_reloc.def: Drop "64" from TLS_DTPMOD64, TLS_DTPREL64 and

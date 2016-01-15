@@ -1,3 +1,49 @@
+2016-01-08  Mark Wielaard  <mjw@redhat.com>
+
+	* elfutils.spec.in: Add elfcompress. Update for 0.165.
+
+2016-01-04  Mark Wielaard  <mjw@redhat.com>
+
+	* libelf.pc.in: New file.
+	* libdw.pc.in: Likewise.
+	* Makefile.am (EXTRA_DIST): Add libelf.pc.in and libdw.pc.in.
+	(pkgconfigdir): New variable.
+	(pkgconfigdir_DATA): Likewise.
+	* elfutils.spec.in (files devel): Add libdw.pc.
+	(files libelf-devel): Add libelf.pc.
+
+2015-10-15  Mark Wielaard  <mjw@redhat.com>
+
+	* elfutils.spec.in: Update for 0.164.
+
+2015-10-07  Mark Wielaard  <mjw@redhat.com>
+
+	* eu.am (ARFLAGS): Set to "cr".
+
+2015-10-09  Josh Stone  <jistone@redhat.com>
+
+	* eu.am (print-%): New target to print any variable.
+
+2015-10-05  Josh Stone  <jistone@redhat.com>
+
+	* eu.am (%.os): Add AM_V_CC silencers.
+
+2015-09-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* eu.am (%.os): Use -fPIC instead of -fpic to avoid relocation
+	overflows in some platforms.
+
+2015-09-22  Mark Wielaard  <mjw@redhat.com>
+
+	* eu.am (AM_CFLAGS): Add -Wold-style-definition -Wstrict-prototypes.
+
+2015-08-04  Mark Wielaard  <mjw@redhat.com>
+
+	* 10-default-yama-scope.conf: New file.
+	* Makefile.am (EXTRA_DIST): Add 10-default-yama-scope.conf.
+	* elfutils.spec.in (Requires): default-yama-scope.
+	(default-yama-scope): New package.
+
 2015-06-19  Mark Wielaard  <mjw@redhat.com>
 
 	* elfutils.spec.in: Update for 0.163.
