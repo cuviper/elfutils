@@ -1,3 +1,35 @@
+2016-02-09  Mark Wielaard  <mjw@redhat.com>
+
+	* testfile-s390x-hash-both.bz2: New testfile.
+	* Makefile.am (EXTRA_DIST): Add testfile-s390x-hash-both.bz2.
+	* run-elflint-test.sh: Add elflint testfile-s390x-hash-both test.
+
+2016-02-04  Mark Wielaard  <mjw@redhat.com>
+
+	* run-strip-nobitsalign.sh: New test.
+	* testfile-nobitsalign.bz2: New testfile.
+	* testfile-nobitsalign.strip.bz2: Likewise.
+	* Makefile.am (TESTS): Add run-strip-nobitsalign.sh.
+	(EXTRA_DIST): Add run-strip-nobitsalign.sh, testfile-nobitsalign.bz2
+	and testfile-nobitsalign.strip.bz2.
+	* run-strip-test.sh: Add --gnu to elflint calls.
+
+2016-01-13  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl-bug-fd-leak.c: Skip test unless on __linux__.
+
+2016-01-13  Mark Wielaard  <mjw@redhat.com>
+
+	* dwfl-proc-attach.c: Guard linux specific header.
+
+2016-01-13  Mark Wielaard  <mjw@redhat.com>
+
+	* system-elf-libelf-test.c: New test.
+	* Makefile.am (TESTS): Add system-elf-libelf-test, if !STANDALONE.
+	(check_PROGRAMS): Likewise.
+	(system_elf_libelf_test_CPPFLAGS): New variable.
+	(system_elf_libelf_test_LDADD): Likewise.
+
 2016-01-08  Mark Wielaard  <mjw@redhat.com>
 
 	* elfputzdata.c (main): Fix parentheses in strncmp test.

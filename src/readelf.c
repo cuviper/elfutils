@@ -1,5 +1,5 @@
 /* Print information from ELF file in human-readable form.
-   Copyright (C) 1999-2015 Red Hat, Inc.
+   Copyright (C) 1999-2016 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 1999.
 
@@ -1529,6 +1529,11 @@ print_scngrp (Ebl *ebl)
 			gettext ("Couldn't uncompress section"),
 			elf_ndxscn (scn));
 	      shdr = gelf_getshdr (scn, &shdr_mem);
+	      if (unlikely (shdr == NULL))
+		error (EXIT_FAILURE, 0,
+		       gettext ("cannot get section [%zd] header: %s"),
+		       elf_ndxscn (scn),
+		       elf_errmsg (-1));
 	    }
 	  handle_scngrp (ebl, scn, shdr);
 	}
@@ -2238,6 +2243,10 @@ print_symtab (Ebl *ebl, int type)
 			gettext ("Couldn't uncompress section"),
 			elf_ndxscn (scn));
 	      shdr = gelf_getshdr (scn, &shdr_mem);
+	      if (unlikely (shdr == NULL))
+		error (EXIT_FAILURE, 0,
+		       gettext ("cannot get section [%zd] header: %s"),
+		       elf_ndxscn (scn), elf_errmsg (-1));
 	    }
 	  handle_symtab (ebl, scn, shdr);
 	}
@@ -3317,6 +3326,10 @@ handle_hash (Ebl *ebl)
 			gettext ("Couldn't uncompress section"),
 			elf_ndxscn (scn));
 	      shdr = gelf_getshdr (scn, &shdr_mem);
+	      if (unlikely (shdr == NULL))
+		error (EXIT_FAILURE, 0,
+		       gettext ("cannot get section [%zd] header: %s"),
+		       elf_ndxscn (scn), elf_errmsg (-1));
 	    }
 
 	  if (shdr->sh_type == SHT_HASH)
@@ -5044,11 +5057,68 @@ register_info (Ebl *ebl, unsigned int regno, const Ebl_Register_Location *loc,
   return set;
 }
 
+static const unsigned char *
+read_encoded (unsigned int encoding, const unsigned char *readp,
+	      const unsigned char *const endp, uint64_t *res, Dwarf *dbg)
+{
+  if ((encoding & 0xf) == DW_EH_PE_absptr)
+    encoding = gelf_getclass (dbg->elf) == ELFCLASS32
+      ? DW_EH_PE_udata4 : DW_EH_PE_udata8;
+
+  switch (encoding & 0xf)
+    {
+    case DW_EH_PE_uleb128:
+      get_uleb128 (*res, readp, endp);
+      break;
+    case DW_EH_PE_sleb128:
+      get_sleb128 (*res, readp, endp);
+      break;
+    case DW_EH_PE_udata2:
+      if (readp + 2 > endp)
+	goto invalid;
+      *res = read_2ubyte_unaligned_inc (dbg, readp);
+      break;
+    case DW_EH_PE_udata4:
+      if (readp + 4 > endp)
+	goto invalid;
+      *res = read_4ubyte_unaligned_inc (dbg, readp);
+      break;
+    case DW_EH_PE_udata8:
+      if (readp + 8 > endp)
+	goto invalid;
+      *res = read_8ubyte_unaligned_inc (dbg, readp);
+      break;
+    case DW_EH_PE_sdata2:
+      if (readp + 2 > endp)
+	goto invalid;
+      *res = read_2sbyte_unaligned_inc (dbg, readp);
+      break;
+    case DW_EH_PE_sdata4:
+      if (readp + 4 > endp)
+	goto invalid;
+      *res = read_4sbyte_unaligned_inc (dbg, readp);
+      break;
+    case DW_EH_PE_sdata8:
+      if (readp + 8 > endp)
+	goto invalid;
+      *res = read_8sbyte_unaligned_inc (dbg, readp);
+      break;
+    default:
+    invalid:
+      error (1, 0,
+	     gettext ("invalid encoding"));
+    }
+
+  return readp;
+}
+
+
 static void
 print_cfa_program (const unsigned char *readp, const unsigned char *const endp,
 		   Dwarf_Word vma_base, unsigned int code_align,
 		   int data_align,
 		   unsigned int version, unsigned int ptr_size,
+		   unsigned int encoding,
 		   Dwfl_Module *dwflmod, Ebl *ebl, Dwarf *dbg)
 {
   char regnamebuf[REGNAMESZ];
@@ -5079,9 +5149,9 @@ print_cfa_program (const unsigned char *readp, const unsigned char *const endp,
 	  case DW_CFA_set_loc:
 	    if ((uint64_t) (endp - readp) < 1)
 	      goto invalid;
-	    get_uleb128 (op1, readp, endp);
-	    op1 += vma_base;
-	    printf ("     set_loc %" PRIu64 "\n", op1 * code_align);
+	    readp = read_encoded (encoding, readp, endp, &op1, dbg);
+	    printf ("     set_loc %#" PRIx64 " to %#" PRIx64 "\n",
+		    op1, pc = vma_base + op1);
 	    break;
 	  case DW_CFA_advance_loc1:
 	    if ((uint64_t) (endp - readp) < 1)
@@ -5418,62 +5488,6 @@ print_encoding_base (const char *pfx, unsigned int fde_encoding)
 
       puts (")");
     }
-}
-
-
-static const unsigned char *
-read_encoded (unsigned int encoding, const unsigned char *readp,
-	      const unsigned char *const endp, uint64_t *res, Dwarf *dbg)
-{
-  if ((encoding & 0xf) == DW_EH_PE_absptr)
-    encoding = gelf_getclass (dbg->elf) == ELFCLASS32
-      ? DW_EH_PE_udata4 : DW_EH_PE_udata8;
-
-  switch (encoding & 0xf)
-    {
-    case DW_EH_PE_uleb128:
-      get_uleb128 (*res, readp, endp);
-      break;
-    case DW_EH_PE_sleb128:
-      get_sleb128 (*res, readp, endp);
-      break;
-    case DW_EH_PE_udata2:
-      if (readp + 2 > endp)
-	goto invalid;
-      *res = read_2ubyte_unaligned_inc (dbg, readp);
-      break;
-    case DW_EH_PE_udata4:
-      if (readp + 4 > endp)
-	goto invalid;
-      *res = read_4ubyte_unaligned_inc (dbg, readp);
-      break;
-    case DW_EH_PE_udata8:
-      if (readp + 8 > endp)
-	goto invalid;
-      *res = read_8ubyte_unaligned_inc (dbg, readp);
-      break;
-    case DW_EH_PE_sdata2:
-      if (readp + 2 > endp)
-	goto invalid;
-      *res = read_2sbyte_unaligned_inc (dbg, readp);
-      break;
-    case DW_EH_PE_sdata4:
-      if (readp + 4 > endp)
-	goto invalid;
-      *res = read_4sbyte_unaligned_inc (dbg, readp);
-      break;
-    case DW_EH_PE_sdata8:
-      if (readp + 8 > endp)
-	goto invalid;
-      *res = read_8sbyte_unaligned_inc (dbg, readp);
-      break;
-    default:
-    invalid:
-      error (1, 0,
-	     gettext ("invalid encoding"));
-    }
-
-  return readp;
 }
 
 
@@ -5851,7 +5865,7 @@ print_debug_frame_section (Dwfl_Module *dwflmod, Ebl *ebl, GElf_Ehdr *ehdr,
       else
 	print_cfa_program (readp, cieend, vma_base, code_alignment_factor,
 			   data_alignment_factor, version, ptr_size,
-			   dwflmod, ebl, dbg);
+			   fde_encoding, dwflmod, ebl, dbg);
       readp = cieend;
     }
 }
@@ -9508,9 +9522,19 @@ dump_data_section (Elf_Scn *scn, const GElf_Shdr *shdr, const char *name)
 	     so we can show both the original shdr size and the uncompressed
 	     data size.   */
 	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
-	    elf_compress (scn, 0, 0);
+	    {
+	      if (elf_compress (scn, 0, 0) < 0)
+		printf ("WARNING: %s [%zd]\n",
+			gettext ("Couldn't uncompress section"),
+			elf_ndxscn (scn));
+	    }
 	  else if (strncmp (name, ".zdebug", strlen (".zdebug")) == 0)
-	    elf_compress_gnu (scn, 0, 0);
+	    {
+	      if (elf_compress_gnu (scn, 0, 0) < 0)
+		printf ("WARNING: %s [%zd]\n",
+			gettext ("Couldn't uncompress section"),
+			elf_ndxscn (scn));
+	    }
 	}
 
       Elf_Data *data = elf_rawdata (scn, NULL);
@@ -9549,9 +9573,19 @@ print_string_section (Elf_Scn *scn, const GElf_Shdr *shdr, const char *name)
 	     so we can show both the original shdr size and the uncompressed
 	     data size.  */
 	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
-	    elf_compress (scn, 0, 0);
+	    {
+	      if (elf_compress (scn, 0, 0) < 0)
+		printf ("WARNING: %s [%zd]\n",
+			gettext ("Couldn't uncompress section"),
+			elf_ndxscn (scn));
+	    }
 	  else if (strncmp (name, ".zdebug", strlen (".zdebug")) == 0)
-	    elf_compress_gnu (scn, 0, 0);
+	    {
+	      if (elf_compress_gnu (scn, 0, 0) < 0)
+		printf ("WARNING: %s [%zd]\n",
+			gettext ("Couldn't uncompress section"),
+			elf_ndxscn (scn));
+	    }
 	}
 
       Elf_Data *data = elf_rawdata (scn, NULL);

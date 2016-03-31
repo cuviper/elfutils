@@ -380,9 +380,11 @@ check_elf_header (Ebl *ebl, GElf_Ehdr *ehdr, size_t size)
     ERROR (gettext ("unknown ELF header version number e_ident[%d] == %d\n"),
 	   EI_VERSION, ehdr->e_ident[EI_VERSION]);
 
-  /* We currently don't handle any OS ABIs other than Linux.  */
+  /* We currently don't handle any OS ABIs other than Linux and the
+     kFreeBSD variant of Debian.  */
   if (ehdr->e_ident[EI_OSABI] != ELFOSABI_NONE
-      && ehdr->e_ident[EI_OSABI] != ELFOSABI_LINUX)
+      && ehdr->e_ident[EI_OSABI] != ELFOSABI_LINUX
+      && ehdr->e_ident[EI_OSABI] != ELFOSABI_FREEBSD)
     ERROR (gettext ("unsupported OS ABI e_ident[%d] == '%s'\n"),
 	   EI_OSABI,
 	   ebl_osabi_name (ebl, ehdr->e_ident[EI_OSABI], buf, sizeof (buf)));
@@ -2480,7 +2482,7 @@ hash section [%2zu] '%s' uses too much data\n"),
 	    }
 	}
     }
-  else if (hash_shdr->sh_entsize == sizeof (Elf64_Word))
+  else if (hash_shdr->sh_entsize == sizeof (Elf64_Xword))
     {
       const Elf64_Xword *hasharr = (Elf64_Xword *) hash_data->d_buf;
       if (hash_data->d_size < 2 * sizeof (Elf32_Word))
@@ -2521,7 +2523,7 @@ hash section [%2zu] '%s' uses too much data\n"),
     {
       ERROR (gettext ("\
 hash section [%2zu] '%s' invalid sh_entsize\n"),
-	     gnu_hash_idx, gnu_hash_name);
+	     hash_idx, hash_name);
       return;
     }
 

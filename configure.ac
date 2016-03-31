@@ -17,7 +17,20 @@ dnl  GNU General Public License for more details.
 dnl
 dnl  You should have received a copy of the GNU General Public License
 dnl  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-AC_INIT([elfutils],[0.165],[https://bugzilla.redhat.com/],[elfutils])
+AC_INIT([elfutils],[0.166],[https://bugzilla.redhat.com/],[elfutils])
+
+# We want eu- as default program prefix if none was given by the user.
+# But if the user explicitly provided --program-prefix="" then pretend
+# it wasn't set at all (NONE). We want to test this really early before
+# configure has a chance to use the value.
+
+if test "x$program_prefix" = "xNONE"; then
+  AC_MSG_NOTICE([No --program-prefix given, using "eu-"])
+  program_prefix="eu-"
+elif test "x$program_prefix" = "x"; then
+  AC_MSG_NOTICE([Using no program-prefix])
+  program_prefix=NONE
+fi
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_FILES([config/Makefile])
@@ -244,7 +257,7 @@ dnl zlib is mandatory.
 save_LIBS="$LIBS"
 LIBS=
 eu_ZIPLIB(zlib,ZLIB,z,gzdirect,gzip)
-AS_IF([test "x$with_zlib" = xno], [AC_MSG_ERROR("zlib not found")])
+AS_IF([test "x$with_zlib" = xno], [AC_MSG_ERROR([zlib not found but is required])])
 LIBS="$save_LIBS"
 
 dnl Test for bzlib and xz/lzma, gives BZLIB/LZMALIB .am
@@ -290,6 +303,38 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],
 		  ac_cv_stack_usage=yes, ac_cv_stack_usage=no)
 CFLAGS="$old_CFLAGS"])
 AM_CONDITIONAL(ADD_STACK_USAGE_WARNING, [test "x$ac_cv_stack_usage" != "xno"])
+
+# -Wlogical-op was too fragile in the past, make sure we get a sane one.
+AC_CACHE_CHECK([whether gcc has a sane -Wlogical-op], ac_cv_logical_op, [dnl
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Wlogical-op -Werror"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+	[#define FLAG 1
+	int f (int r, int f) { return (r && (FLAG || (FLAG & f))); }])],
+		  ac_cv_logical_op=yes, ac_cv_logical_op=no)
+CFLAGS="$old_CFLAGS"])
+AM_CONDITIONAL(SANE_LOGICAL_OP_WARNING,
+	       [test "x$ac_cv_logical_op" != "xno"])
+
+# -Wduplicated-cond was added by GCC6
+AC_CACHE_CHECK([whether gcc accepts -Wduplicated-cond], ac_cv_duplicated_cond, [dnl
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Wduplicated-cond"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],
+		  ac_cv_duplicated_cond=yes, ac_cv_duplicated_cond=no)
+CFLAGS="$old_CFLAGS"])
+AM_CONDITIONAL(HAVE_DUPLICATED_COND_WARNING,
+	       [test "x$ac_cv_duplicated_cond" != "xno"])
+
+# -Wnull-dereference was added by GCC6
+AC_CACHE_CHECK([whether gcc accepts -Wnull-dereference], ac_cv_null_dereference, [dnl
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Wnull-dereference"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],
+		  ac_cv_null_dereference=yes, ac_cv_null_dereference=no)
+CFLAGS="$old_CFLAGS"])
+AM_CONDITIONAL(HAVE_NULL_DEREFERENCE_WARNING,
+	       [test "x$ac_cv_null_dereference" != "xno"])
 
 dnl Check if we have argp available from our libc
 AC_LINK_IFELSE(

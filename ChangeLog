@@ -1,3 +1,21 @@
+2016-03-31  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Set version to 0.166.
+
+2016-03-02  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Set program_prefix to eu- by default.
+	* NEWS (0.166): New sections, document --program-prefix default.
+
+2016-02-13  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Add check for whether gcc accepts -Wnull-dereference.
+
+2016-02-08  Mark Wielaard  <mjw@redhat.com>
+
+	* configure.ac: Add checks for sane -Wlogical-op and whether gcc
+	accepts -Wduplicated-cond.
+
 2016-01-08  Mark Wielaard  <mjw@redhat.com>
 
 	* configure.ac: Set version to 0.165.

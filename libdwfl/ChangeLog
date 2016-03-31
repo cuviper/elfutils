@@ -1,3 +1,40 @@
+2016-03-01  Steven Chamberlain  <steven@pyro.eu.org>
+
+	* linux-pid-attach.c: Removed unused pid_thread_callbacks,
+	pid_thread_detach, pid_detach, pid_set_initial_registers,
+	pid_memory_read, pid_getthread, pid_next_thread in #ifndef
+	__linux__ code.
+
+2016-02-22  Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+	    Mark Wielaard  <mjw@redhat.com>
+
+	* find-debuginfo.c (find_debuginfo_in_path): Remember whether
+	debuglink_file is NULL. Try file basename (without .debug) ofr
+	absolute and relative path if debug_file was NULL.
+	* linux-kernel-modules.c (try_kernel_name): If try_debug is true call
+	dwfl_standard_find_debuginfo with NULL debuglink_file, otherwise with
+	basename of fname.
+
+2016-02-13  Mark Wielaard  <mjw@redhat.com>
+
+	* linux-proc-maps.c (proc_maps_report): Free last_file when ENOEXEC.
+
+2016-02-13  Mark Wielaard  <mjw@redhat.com>
+
+	* frame_unwind.c (new_unwound): Check and return unwound.
+	(handle_cfi): Check new_unwound was able to allocate new memory
+	before use. Return DWFL_E_NOMEM otherwise.
+
+2016-02-11  Mark Wielaard  <mjw@redhat.com>
+
+	* relocate.c (relocate_section): Check result of all gelf_get* calls.
+	(__libdwfl_relocate): Likewise.
+	(__libdwfl_relocate_section): Likewise.
+
+2016-02-11  Mark Wielaard  <mjw@redhat.com>
+
+	* relocate.c (relocate_section): Check result of gelf_update_* calls.
+
 2016-01-08  Mark Wielaard  <mjw@redhat.com>
 
 	* libdwfl_a_SOURCES: Unconditionally add gzip.c.

@@ -1,3 +1,26 @@
+2016-02-26  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sparc_initreg.c (EBLHOOK): Provide a dummy
+	sparc_set_initial_registers_tid for sparc32.  This fixes the build
+	in sparcv9-*-* targets.
+
+2016-02-26  Andreas Schwab  <schwab@suse.de>
+
+	* ppc_symbol.c (ppc_dynamic_tag_name): Add DT_PPC_OPT.
+	(ppc_dynamic_tag_check): Likewise.
+
+2015-12-28  Mark Wielaard  <mjw@redhat.com>
+
+	* i386_reloc.def: Add GOT32X.
+	* x86_64_reloc.def: Add GOTPCRELX and REX_GOTPCRELX.
+
+2016-02-12  Mark Wielaard  <mjw@redhat.com>
+
+	* aarch64_corenote.c (aarch64_syscall_items): New Ebl_Core_Item[].
+	(EXTRA_NOTES): Add NT_ARM_SYSTEM_CALL.
+	* eblcorenotetypename.c (ebl_core_note_type_name):
+	Add ARM_SYSTEM_CALL.
+
 2015-12-08  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* sparc_init.c (sparc_init): Hook sparc_set_initial_registers_tid.

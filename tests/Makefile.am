@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 ##
-## Copyright (C) 1996-2015 Red Hat, Inc.
+## Copyright (C) 1996-2016 Red Hat, Inc.
 ## This file is part of elfutils.
 ##
 ## This file is free software; you can redistribute it and/or modify
@@ -80,6 +80,7 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-strip-test6.sh run-strip-test7.sh run-strip-test8.sh \
 	run-strip-test9.sh run-strip-test10.sh \
 	run-strip-groups.sh run-strip-reloc.sh run-strip-strmerge.sh \
+	run-strip-nobitsalign.sh \
 	run-unstrip-test.sh run-unstrip-test2.sh \
 	run-unstrip-test3.sh run-unstrip-M.sh run-elfstrmerge-test.sh \
 	run-ecp-test.sh run-ecp-test2.sh run-alldts.sh \
@@ -136,8 +137,8 @@ export ELFUTILS_DISABLE_DEMANGLE = 1
 endif
 
 if !STANDALONE
-check_PROGRAMS += msg_tst md5-sha1-test
-TESTS += msg_tst md5-sha1-test
+check_PROGRAMS += msg_tst md5-sha1-test system-elf-libelf-test
+TESTS += msg_tst md5-sha1-test system-elf-libelf-test
 endif
 
 if LZMA
@@ -163,6 +164,8 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     run-strip-test4.sh run-strip-test5.sh run-strip-test6.sh \
 	     run-strip-test7.sh run-strip-test8.sh run-strip-groups.sh \
 	     run-strip-test9.sh run-strip-test10.sh run-strip-strmerge.sh \
+	     run-strip-nobitsalign.sh \
+	     testfile-nobitsalign.bz2 testfile-nobitsalign.strip.bz2 \
 	     run-strip-reloc.sh hello_i386.ko.bz2 hello_x86_64.ko.bz2 \
 	     hello_ppc64.ko.bz2 hello_s390.ko.bz2 hello_aarch64.ko.bz2 \
 	     run-unstrip-test.sh run-unstrip-test2.sh \
@@ -233,6 +236,7 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     testfile56.bz2 testfile57.bz2 testfile58.bz2 \
 	     run-typeiter.sh testfile59.bz2 \
 	     run-readelf-d.sh testlib_dynseg.so.bz2 \
+	     testfile-s390x-hash-both.bz2 \
 	     run-readelf-gdb_index.sh testfilegdbindex5.bz2 \
 	     testfilegdbindex7.bz2 \
 	     run-readelf-s.sh testfilebazdbg.bz2 testfilebazdyn.bz2 \
@@ -474,6 +478,11 @@ elfgetchdr_LDADD = $(libelf) $(libdw)
 elfgetzdata_LDADD = $(libelf)
 elfputzdata_LDADD = $(libelf)
 zstrptr_LDADD = $(libelf)
+
+# We want to test the libelf header against the system elf.h header.
+# Don't include any -I CPPFLAGS.
+system_elf_libelf_test_CPPFLAGS =
+system_elf_libelf_test_LDADD = $(libelf)
 
 if GCOV
 check: check-am coverage
