@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: http://bugzilla.redhat.com/\n"
-"POT-Creation-Date: 2016-03-31 10:50+0200\n"
+"POT-Creation-Date: 2016-08-25 18:09+0200\n"
 "PO-Revision-Date: 2015-09-26 16:41+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
@@ -47,7 +47,7 @@ msgid "cannot allocate memory"
 msgstr "не вдалося розподілити пам’ять"
 
 #: lib/xmalloc.c:53 lib/xmalloc.c:66 lib/xmalloc.c:78 src/readelf.c:3291
-#: src/readelf.c:3682 src/readelf.c:8430 src/unstrip.c:2233 src/unstrip.c:2438
+#: src/readelf.c:3682 src/readelf.c:8430 src/unstrip.c:2237 src/unstrip.c:2442
 #, c-format
 msgid "memory exhausted"
 msgstr "пам’ять вичерпано"
@@ -62,8 +62,7 @@ msgstr "без помилок"
 msgid "out of memory"
 msgstr "нестача пам'яті"
 
-#: libasm/asm_error.c:67 src/ldgeneric.c:2677
-#, c-format
+#: libasm/asm_error.c:67
 msgid "cannot create output file"
 msgstr "не вдалося створити файл виводу даних"
 
@@ -75,8 +74,7 @@ msgstr "некоректний параметр"
 msgid "cannot change mode of output file"
 msgstr "не вдалося змінити права доступу до файла виводу даних"
 
-#: libasm/asm_error.c:70 src/ldgeneric.c:6990
-#, c-format
+#: libasm/asm_error.c:70
 msgid "cannot rename output file"
 msgstr "не вдалося перейменувати файл виводу даних"
 
@@ -249,7 +247,7 @@ msgstr "некоректний код операції"
 msgid "not a CU (unit) DIE"
 msgstr "не є DIE CU (модуля)"
 
-#: libdwfl/argp-std.c:46 src/stack.c:642 src/unstrip.c:2380
+#: libdwfl/argp-std.c:46 src/stack.c:642 src/unstrip.c:2384
 msgid "Input selection options:"
 msgstr "Вибір параметрів виведення даних:"
 
@@ -294,6 +292,7 @@ msgstr ""
 msgid "cannot load kernel symbols"
 msgstr "не вдалося завантажити символи ядра"
 
+#. Non-fatal to have no modules since we do have the kernel.
 #: libdwfl/argp-std.c:234
 msgid "cannot find kernel modules"
 msgstr "не вдалося виявити модулі ядра"
@@ -472,11 +471,10 @@ msgstr "Не є файлом ET_CORE ELF"
 msgid "No backend"
 msgstr "Немає сервера"
 
-#: libebl/eblcorenotetypename.c:99 libebl/eblobjecttypename.c:53
-#: libebl/eblobjnotetypename.c:76 libebl/eblobjnotetypename.c:83
-#: libebl/eblobjnotetypename.c:102 libebl/eblosabiname.c:73
-#: libebl/eblsectionname.c:83 libebl/eblsectiontypename.c:115
-#: libebl/eblsegmenttypename.c:79
+#: libebl/eblcorenotetypename.c:99 libebl/eblobjnotetypename.c:76
+#: libebl/eblobjnotetypename.c:83 libebl/eblobjnotetypename.c:102
+#: libebl/eblosabiname.c:73 libebl/eblsectionname.c:83
+#: libebl/eblsectiontypename.c:115 libebl/eblsegmenttypename.c:79
 msgid "<unknown>"
 msgstr "<невідомо>"
 
@@ -530,6 +528,7 @@ msgstr " Арг.: "
 msgid "    Build ID: "
 msgstr "    Ід. збирання: "
 
+#. A non-null terminated version string.
 #: libebl/eblobjnote.c:152
 #, c-format
 msgid "    Linker version: %.*s\n"
@@ -790,19 +789,21 @@ msgstr "Вивести усі дані у один рядок і додати в
 msgid "Miscellaneous:"
 msgstr "Інше:"
 
+#. Short description of program.
 #: src/addr2line.c:87
 msgid ""
 "Locate source files and line information for ADDRs (in a.out by default)."
 msgstr "Шукати АДРЕСИ у файлах кодів та даних про рядки (типово, у a.out)."
 
+#. Strings for arguments in help texts.
 #: src/addr2line.c:91
 msgid "[ADDR...]"
 msgstr "[АДРЕСА...]"
 
 #: src/addr2line.c:216 src/ar.c:285 src/elfcmp.c:672 src/elflint.c:235
-#: src/findtextrel.c:162 src/ld.c:943 src/nm.c:262 src/objdump.c:177
-#: src/ranlib.c:124 src/readelf.c:509 src/size.c:207 src/strings.c:230
-#: src/strip.c:218 src/unstrip.c:232
+#: src/findtextrel.c:162 src/nm.c:262 src/objdump.c:177 src/ranlib.c:124
+#: src/readelf.c:509 src/size.c:207 src/strings.c:230 src/strip.c:219
+#: src/unstrip.c:233
 #, c-format
 msgid ""
 "Copyright (C) %s Red Hat, Inc.\n"
@@ -815,9 +816,9 @@ msgstr ""
 "гарантій, зокрема гарантій працездатності або придатності для певної мети.\n"
 
 #: src/addr2line.c:221 src/ar.c:290 src/elfcmp.c:677 src/elflint.c:240
-#: src/findtextrel.c:167 src/ld.c:948 src/nm.c:267 src/objdump.c:182
-#: src/ranlib.c:129 src/readelf.c:514 src/size.c:212 src/strings.c:235
-#: src/strip.c:223 src/unstrip.c:237
+#: src/findtextrel.c:167 src/nm.c:267 src/objdump.c:182 src/ranlib.c:129
+#: src/readelf.c:514 src/size.c:212 src/strings.c:235 src/strip.c:224
+#: src/unstrip.c:238
 #, c-format
 msgid "Written by %s.\n"
 msgstr "Автор — %s.\n"
@@ -926,10 +927,12 @@ msgstr "Використовувати для порівняння повний 
 msgid "Update only older files in archive."
 msgstr "Оновлювати у архіві лише старіші файли."
 
+#. Short description of program.
 #: src/ar.c:99
 msgid "Create, modify, and extract from archives."
 msgstr "Створення, зміна архівів і видобування даних з архівів."
 
+#. Strings for arguments in help texts.
 #: src/ar.c:102
 msgid "[MEMBER] [COUNT] ARCHIVE [FILE...]"
 msgstr "[ЕЛЕМЕНТ] [НОМЕР] АРХІВ [ФАЙЛ...]"
@@ -1067,7 +1070,7 @@ msgstr "не виявлено елемента позиції %s"
 msgid "%s: no entry %s in archive!\n"
 msgstr "%s: у архіві немає запису %s!\n"
 
-#: src/ar.c:1259 src/ldgeneric.c:509 src/objdump.c:253
+#: src/ar.c:1259 src/objdump.c:253
 #, c-format
 msgid "cannot open %s"
 msgstr "не вдалося відкрити %s"
@@ -1107,6 +1110,7 @@ msgstr ""
 msgid "%s (default)"
 msgstr "%s (типово)"
 
+#. The archive is too big.
 #: src/arlib.c:209
 #, c-format
 msgid "the archive '%s' is too large"
@@ -1145,10 +1149,12 @@ msgstr "Ігнорувати відмінності у ідентифікато�
 msgid "Output nothing; yield exit status only"
 msgstr "Нічого не виводити; визначити лише стан виходу"
 
+#. Short description of program.
 #: src/elfcmp.c:77
 msgid "Compare relevant parts of two ELF files for equality."
 msgstr "Порівнює відповідні частини двох файлів ELF."
 
+#. Strings for arguments in help texts.
 #: src/elfcmp.c:81
 msgid "FILE1 FILE2"
 msgstr "ФАЙЛ1 ФАЙЛ2"
@@ -1298,10 +1304,9 @@ msgstr "%s %s diff: проміжок"
 msgid "Invalid value '%s' for --gaps parameter."
 msgstr "Некоректне значення «%s» параметра --gaps."
 
-#: src/elfcmp.c:732 src/findtextrel.c:221 src/ldgeneric.c:1757
-#: src/ldgeneric.c:4247 src/nm.c:378 src/ranlib.c:157 src/size.c:289
-#: src/strings.c:186 src/strip.c:466 src/strip.c:503 src/unstrip.c:2029
-#: src/unstrip.c:2058
+#: src/elfcmp.c:732 src/findtextrel.c:221 src/nm.c:378 src/ranlib.c:157
+#: src/size.c:289 src/strings.c:186 src/strip.c:467 src/strip.c:504
+#: src/unstrip.c:2033 src/unstrip.c:2062
 #, c-format
 msgid "cannot open '%s'"
 msgstr "не вдалося відкрити «%s»"
@@ -1331,6 +1336,79 @@ msgstr "не вдалося отримати вміст розділу %zu: %s"
 msgid "cannot get relocation: %s"
 msgstr "не вдалося отримати пересування: %s"
 
+#: src/elfcompress.c:121 src/strip.c:255 src/unstrip.c:121
+#, c-format
+msgid "-o option specified twice"
+msgstr "параметр -o вказано двічі"
+
+#: src/elfcompress.c:128
+#, fuzzy, c-format
+msgid "-t option specified twice"
+msgstr "параметр -f вказано двічі"
+
+#: src/elfcompress.c:137
+#, fuzzy, c-format
+msgid "unknown compression type '%s'"
+msgstr "невизначений тип"
+
+#. We need at least one input file.
+#: src/elfcompress.c:149 src/elfcompress.c:1310
+#, fuzzy, c-format
+msgid "No input file given"
+msgstr "вхідний файл є порожнім"
+
+#: src/elfcompress.c:155 src/elfcompress.c:1315
+#, fuzzy, c-format
+msgid "Only one input file allowed together with '-o'"
+msgstr ""
+"Разом з «-o» або «-f» можна використовувати лише один файл вхідних даних"
+
+#: src/elfcompress.c:1272
+#, fuzzy
+msgid "Place (de)compressed output into FILE"
+msgstr "Вивести дані після вилучення до ФАЙЛа"
+
+#: src/elfcompress.c:1275
+msgid ""
+"What type of compression to apply. TYPE can be 'none' (decompress), "
+"'zlib' (ELF ZLIB compression, the default, 'zlib-gabi' is an alias) or 'zlib-"
+"gnu' (.zdebug GNU style compression, 'gnu' is an alias)"
+msgstr ""
+
+#: src/elfcompress.c:1278
+msgid ""
+"SECTION name to (de)compress, SECTION is an extended wildcard pattern "
+"(defaults to '.?(z)debug*')"
+msgstr ""
+
+#: src/elfcompress.c:1281
+msgid "Print a message for each section being (de)compressed"
+msgstr ""
+
+#: src/elfcompress.c:1284
+msgid "Force compression of section even if it would become larger"
+msgstr ""
+
+#: src/elfcompress.c:1287 src/strip.c:88
+msgid "Relax a few rules to handle slightly broken ELF files"
+msgstr ""
+"Знехтувати декількома правилами для обробки трохи пошкоджених файлів ELF"
+
+#: src/elfcompress.c:1290
+#, fuzzy
+msgid "Be silent when a section cannot be compressed"
+msgstr ""
+"розділ [%2zu] «%s»: адреса розділів локальних даних потоків не є нульовою\n"
+
+#. Strings for arguments in help texts.
+#: src/elfcompress.c:1299 src/elflint.c:78 src/readelf.c:126
+msgid "FILE..."
+msgstr "ФАЙЛ..."
+
+#: src/elfcompress.c:1300
+msgid "Compress or decompress sections in an ELF file."
+msgstr ""
+
 #: src/elflint.c:64
 msgid "Be extremely strict, flag level 2 features."
 msgstr "Висока строгість, увімкнути можливості рівня 2."
@@ -1351,14 +1429,11 @@ msgstr ""
 "Бінарний файл було створено за допомогою GNU ld, тому він, очевидно, є до "
 "певної міри неправильним"
 
+#. Short description of program.
 #: src/elflint.c:74
 msgid "Pedantic checking of ELF files compliance with gABI/psABI spec."
 msgstr ""
 "Педантична перевірка файлів ELF на сумісність зі специфікаціями gABI/psABI."
-
-#: src/elflint.c:78 src/readelf.c:126
-msgid "FILE..."
-msgstr "ФАЙЛ..."
 
 #: src/elflint.c:155 src/readelf.c:298
 #, c-format
@@ -1388,6 +1463,7 @@ msgstr "Не вказано назви файла.\n"
 msgid " error while freeing sub-ELF descriptor: %s\n"
 msgstr " помилка під час спроби вивільнення дескриптора суб-ELF: %s\n"
 
+#. We cannot do anything.
 #: src/elflint.c:306
 #, c-format
 msgid "Not an ELF file - it has the wrong magic bytes at the start\n"
@@ -1601,6 +1677,7 @@ msgstr ""
 "розділ [%2d] «%s»: символ %zu: XINDEX використано для індексування, яке не "
 "відповідає st_shndx (%<PRIu32>)\n"
 
+#. || sym->st_shndx > SHN_HIRESERVE  always false
 #: src/elflint.c:725
 #, c-format
 msgid "section [%2d] '%s': symbol %zu: invalid section index\n"
@@ -1745,6 +1822,9 @@ msgstr ""
 "розділ [%2d] «%s»: символ _GLOBAL_OFFSET_TABLE_  посилається на розділ [%2d] "
 "'%s'\n"
 
+#. This test is more strict than the psABIs which
+#. usually allow the symbol to be in the middle of
+#. the .got section, allowing negative offsets.
 #: src/elflint.c:991
 #, c-format
 msgid ""
@@ -2717,6 +2797,7 @@ msgid ""
 msgstr ""
 "розділ [%2d] «%s»: зміщення %zu: некоректна довжина у підрозділі атрибутів\n"
 
+#. Tag_File
 #: src/elflint.c:3512
 #, c-format
 msgid ""
@@ -3338,12 +3419,14 @@ msgstr "Додавати ШЛЯХ до всіх назв файлів"
 msgid "Use PATH as root of debuginfo hierarchy"
 msgstr "Використовувати ШЛЯХ як кореневий каталог для ієрархії debuginfo"
 
+#. Short description of program.
 #: src/findtextrel.c:72
 msgid "Locate source of text relocations in FILEs (a.out by default)."
 msgstr "Шукає джерело пересуваного тексту у ФАЙЛАХ (типово, a.out)."
 
+#. Strings for arguments in help texts.
 #: src/findtextrel.c:76 src/nm.c:108 src/objdump.c:71 src/size.c:83
-#: src/strings.c:88 src/strip.c:95
+#: src/strings.c:88 src/strip.c:96
 msgid "[FILE...]"
 msgstr "[ФАЙЛ...]"
 
@@ -3436,735 +3519,7 @@ msgstr ""
 "пересування призводить до зміни запису пам’яті за зміщенням %llu у "
 "захищеному від запису сегменті\n"
 
-#: src/i386_ld.c:202
-#, c-format
-msgid "cannot allocate PLT section: %s"
-msgstr "не вдалося розмістити PLT-розділ: %s"
-
-#: src/i386_ld.c:224
-#, c-format
-msgid "cannot allocate PLTREL section: %s"
-msgstr "не вдалося розмістити розділ PLTREL: %s"
-
-#: src/i386_ld.c:245
-#, c-format
-msgid "cannot allocate GOT section: %s"
-msgstr "не вдалося розмістити розділ GOT: %s"
-
-#: src/i386_ld.c:266
-#, c-format
-msgid "cannot allocate GOTPLT section: %s"
-msgstr "не вдалося розмістити розділ GOTPLT: %s"
-
-#: src/i386_ld.c:653
-#, c-format
-msgid "initial-executable TLS relocation cannot be used "
-msgstr ""
-"не можна використовувати пересування TLS у початковому виконуваному файлі"
-
-#: src/ld.c:78
-msgid "Input File Control:"
-msgstr "Керування файлом вхідних даних:"
-
-#: src/ld.c:80
-msgid "Include whole archives in the output from now on."
-msgstr "Відтепер включати цілі архіви до виведених даних."
-
-#: src/ld.c:82
-msgid "Stop including the whole archives in the output."
-msgstr "Припинити включення цілих архівів до вихідних даних."
-
-#: src/ld.c:83 src/ld.c:97 src/ld.c:175
-msgid "FILE"
-msgstr "ФАЙЛ"
-
-#: src/ld.c:84
-msgid "Start a group."
-msgstr "Почати групу."
-
-#: src/ld.c:85
-msgid "End a group."
-msgstr "Завершити групу."
-
-#: src/ld.c:86
-msgid "PATH"
-msgstr "ШЛЯХ"
-
-#: src/ld.c:87
-msgid "Add PATH to list of directories files are searched in."
-msgstr "Додати ШЛЯХ до списку каталогів, у яких слід шукати файли."
-
-#: src/ld.c:89
-msgid "Only set DT_NEEDED for following dynamic libs if actually used"
-msgstr ""
-"Встановлювати DT_NEEDED лише для наступних динамічних бібліотек, якщо він "
-"справді використовується"
-
-#: src/ld.c:91
-msgid "Always set DT_NEEDED for following dynamic libs"
-msgstr "Завжди встановлювати DT_NEEDED для наступних динамічних бібліотек"
-
-#: src/ld.c:93
-msgid "Ignore LD_LIBRARY_PATH environment variable."
-msgstr "Ігнорувати змінну середовища LD_LIBRARY_PATH."
-
-#: src/ld.c:96
-msgid "Output File Control:"
-msgstr "Керування файлом виведених даних:"
-
-#: src/ld.c:97
-msgid "Place output in FILE."
-msgstr "Вивести дані до ФАЙЛА."
-
-#: src/ld.c:100
-msgid "Object is marked to not use default search path at runtime."
-msgstr ""
-"Об’єкт позначено, як таких, який не використовує типовий шлях пошуку під час "
-"запуску."
-
-#: src/ld.c:102
-msgid "Same as --whole-archive."
-msgstr "Те саме, що --whole-archive."
-
-#: src/ld.c:103
-msgid ""
-"Default rules of extracting from archive; weak references are not enough."
-msgstr "Типові правила видобування з архівів; слабкого посилання недостатньо."
-
-#: src/ld.c:107
-msgid "Weak references cause extraction from archive."
-msgstr "Слабкі посилання спричиняють видобування з архіву."
-
-#: src/ld.c:109
-msgid "Allow multiple definitions; first is used."
-msgstr "Дозволити декілька визначень. Використовуватиметься лише перше."
-
-#: src/ld.c:111
-msgid "Disallow/allow undefined symbols in DSOs."
-msgstr "Заборонити/Дозволити невизначені символи у DSO."
-
-#: src/ld.c:114
-msgid "Object requires immediate handling of $ORIGIN."
-msgstr "Об’єкт вимагає негайної обробки $ORIGIN."
-
-#: src/ld.c:116
-msgid "Relocation will not be processed lazily."
-msgstr "Переміщення не буде оброблятися у лінивому режимі."
-
-#: src/ld.c:118
-msgid "Object cannot be unloaded at runtime."
-msgstr "Об’єкт не можна вивантажувати під час запуску."
-
-#: src/ld.c:120
-msgid "Mark object to be initialized first."
-msgstr "Позначити об’єкт, як такий, що потребує ініціалізації."
-
-#: src/ld.c:122
-msgid "Enable/disable lazy-loading flag for following dependencies."
-msgstr ""
-"Увімкнути/Вимкнути прапорець лінивого завантаження для наведених нижче "
-"залежностей."
-
-#: src/ld.c:124
-msgid "Mark object as not loadable with 'dlopen'."
-msgstr ""
-"Позначити об’єкт, як непридатний для завантаження за допомогою «dlopen»."
-
-#: src/ld.c:126
-msgid "Ignore/record dependencies on unused DSOs."
-msgstr "Ігнорувати/Записувати залежності невикористаних DSO."
-
-#: src/ld.c:128
-msgid "Generated DSO will be a system library."
-msgstr "Створена DSO буде системною бібліотекою."
-
-#: src/ld.c:129
-msgid "ADDRESS"
-msgstr "АДРЕСА"
-
-#: src/ld.c:129
-msgid "Set entry point address."
-msgstr "Встановити адресу точки входу."
-
-#: src/ld.c:132
-msgid "Do not link against shared libraries."
-msgstr "Не компонувати з бібліотеками спільного використання."
-
-#: src/ld.c:135
-msgid "Prefer linking against shared libraries."
-msgstr "Надавати перевагу компонуванню з бібліотеками спільного використання."
-
-#: src/ld.c:136
-msgid "Export all dynamic symbols."
-msgstr "Експортувати всі динамічні символи."
-
-#: src/ld.c:137
-msgid "Strip all symbols."
-msgstr "Вилучити всі символи."
-
-#: src/ld.c:138
-msgid "Strip debugging symbols."
-msgstr "Вилучити символи зневаджування."
-
-#: src/ld.c:140
-msgid "Assume pagesize for the target system to be SIZE."
-msgstr ""
-"Вважати розмір сторінки для системи призначення рівним значенню РОЗМІР."
-
-#: src/ld.c:142
-msgid "Set runtime DSO search path."
-msgstr "Встановити шлях пошуку DSO під час запуску."
-
-#: src/ld.c:145
-msgid "Set link time DSO search path."
-msgstr "Встановити шлях пошуку DSO під час компонування."
-
-#: src/ld.c:146
-msgid "Generate dynamic shared object."
-msgstr "Створити динамічний об’єкт спільного використання."
-
-#: src/ld.c:147
-msgid "Generate relocatable object."
-msgstr "Створити придатний для пересування об’єкт."
-
-#: src/ld.c:150
-msgid "Causes symbol not assigned to a version be reduced to local."
-msgstr ""
-"Спричиняє перетворення символів, не прив’язаних до версії, на локальні."
-
-#: src/ld.c:151
-msgid "Remove unused sections."
-msgstr "Вилучити невикористані розділи."
-
-#: src/ld.c:154
-msgid "Don't remove unused sections."
-msgstr "Не вилучати невикористані розділи."
-
-#: src/ld.c:155
-msgid "Set soname of shared object."
-msgstr "Встановити soname об’єкта спільного використання."
-
-#: src/ld.c:156
-msgid "Set the dynamic linker name."
-msgstr "Встановити назву динамічного компонувальника."
-
-#: src/ld.c:159
-msgid "Add/suppress addition indentifying link-editor to .comment section."
-msgstr ""
-"Додати/Придушити додавання ідентифікації редактора компонування до розділу ."
-"comment."
-
-#: src/ld.c:162
-msgid "Create .eh_frame_hdr section"
-msgstr "Створити розділ .eh_frame_hdr"
-
-#: src/ld.c:164
-msgid "Set hash style to sysv, gnu or both."
-msgstr "Встановити формат хешування у значення sysv, gnu або both."
-
-#: src/ld.c:166
-msgid "Generate build ID note (md5, sha1 (default), uuid)."
-msgstr "Створити запису ідентифікатора збирання (md5, sha1 (типовий), uuid)."
-
-#: src/ld.c:168
-msgid "Linker Operation Control:"
-msgstr "Керування роботою компонувальника:"
-
-#: src/ld.c:169
-msgid "Verbose messages."
-msgstr "Докладні повідомлення."
-
-#: src/ld.c:170
-msgid "Trace file opens."
-msgstr "Спостерігати за відкриттями файлів."
-
-#: src/ld.c:172
-msgid "Trade speed for less memory usage"
-msgstr "Зменшити споживання пам’яті за рахунок швидкості"
-
-#: src/ld.c:173
-msgid "LEVEL"
-msgstr "РІВЕНЬ"
-
-#: src/ld.c:174
-msgid "Set optimization level to LEVEL."
-msgstr "Встановити рівень оптимізації РІВЕНЬ."
-
-#: src/ld.c:175
-msgid "Use linker script in FILE."
-msgstr "Використати скрипт компонування у ФАЙЛі."
-
-#: src/ld.c:178
-msgid "Select to get parser debug information"
-msgstr "Позначте, щоб отримати діагностичні дані обробника"
-
-#: src/ld.c:181
-msgid "Read version information from FILE."
-msgstr "Прочитати відомості щодо версії з ФАЙЛа."
-
-#: src/ld.c:182
-msgid "Set emulation to NAME."
-msgstr "Встановити режим емуляції на основі НАЗВИ."
-
-#: src/ld.c:188
-msgid "Combine object and archive files."
-msgstr "Комбінує об’єктні файли і файли архівів."
-
-#: src/ld.c:191
-msgid "[FILE]..."
-msgstr "[ФАЙЛ]..."
-
-#: src/ld.c:319
-#, c-format
-msgid "At least one input file needed"
-msgstr "Потрібен принаймні один файл вхідних даних"
-
-#: src/ld.c:335
-#, c-format
-msgid "error while preparing linking"
-msgstr "помилка під час приготування до компонування"
-
-#: src/ld.c:342
-#, c-format
-msgid "cannot open linker script '%s'"
-msgstr "не вдалося відкрити скрипт компонування «%s»"
-
-#: src/ld.c:383
-#, c-format
-msgid "-( without matching -)"
-msgstr "-( без відповідника -)"
-
-#: src/ld.c:558 src/ld.c:596
-#, c-format
-msgid "only one option of -G and -r is allowed"
-msgstr "можна використовувати лише один з параметрів -G або -r"
-
-#: src/ld.c:580
-#, c-format
-msgid "more than one '-m' parameter"
-msgstr "декілька параметрів «-m»"
-
-#: src/ld.c:590 src/ld.c:999
-#, c-format
-msgid "unknown option `-%c %s'"
-msgstr "невідомий параметр «-%c %s»"
-
-#: src/ld.c:632
-#, c-format
-msgid "invalid page size value '%s': ignored"
-msgstr "некоректне значення розміру сторінки «%s»: проігноровано"
-
-#: src/ld.c:673
-#, c-format
-msgid "invalid hash style '%s'"
-msgstr "некоректний формат хешування «%s»"
-
-#: src/ld.c:683
-#, c-format
-msgid "invalid build-ID style '%s'"
-msgstr "некоректний формат ідентифікатора збирання «%s»"
-
-#: src/ld.c:771
-#, c-format
-msgid "More than one output file name given."
-msgstr "Вказано декілька назв файлів виведення даних."
-
-#: src/ld.c:788
-#, c-format
-msgid "Invalid optimization level `%s'"
-msgstr "Некоректний рівень оптимізації «%s»"
-
-#: src/ld.c:836
-#, c-format
-msgid "nested -( -) groups are not allowed"
-msgstr "підтримки вкладених груп -( -) не передбачено"
-
-#: src/ld.c:855
-#, c-format
-msgid "-) without matching -("
-msgstr "-) без відповідника -("
-
-#: src/ld.c:1032
-#, c-format
-msgid "unknown option '-%c %s'"
-msgstr "невідомий параметр «-%c %s»"
-
-#: src/ld.c:1138
-#, c-format
-msgid "could not find input file to determine output file format"
-msgstr ""
-"не вдалося виявити файл вхідних даних для визначення формату файла вихідних "
-"даних"
-
-#: src/ld.c:1140
-#, c-format
-msgid "try again with an appropriate '-m' parameter"
-msgstr "повторіть спробу з належним параметром «-m»"
-
-#: src/ld.c:1434
-#, c-format
-msgid "cannot read version script '%s'"
-msgstr "не вдалося прочитати скрипт версій «%s»"
-
-#: src/ld.c:1500 src/ld.c:1539
-#, c-format
-msgid "duplicate definition of '%s' in linker script"
-msgstr "повторне визначення «%s» у скрипті компонування"
-
-#: src/ldgeneric.c:201 src/ldgeneric.c:5141
-#, c-format
-msgid "cannot create string table"
-msgstr "не вдалося створити таблицю рядків"
-
-#: src/ldgeneric.c:247
-#, c-format
-msgid "cannot load ld backend library '%s': %s"
-msgstr "не вдалося завантажити бібліотеку сервера ld «%s»: %s"
-
-#: src/ldgeneric.c:257
-#, c-format
-msgid "cannot find init function in ld backend library '%s': %s"
-msgstr "не вдалося виявити функцію init у бібліотеці сервера ld «%s»: %s"
-
-#: src/ldgeneric.c:300
-#, c-format
-msgid "%s listed more than once as input"
-msgstr "%s вказано декілька разів як джерело даних"
-
-#: src/ldgeneric.c:414
-#, c-format
-msgid "%s (for -l%s)\n"
-msgstr "%s (для -l%s)\n"
-
-#: src/ldgeneric.c:415
-#, c-format
-msgid "%s (for DT_NEEDED %s)\n"
-msgstr "%s (для DT_NEEDED %s)\n"
-
-#: src/ldgeneric.c:563
-#, c-format
-msgid "Warning: type of `%s' changed from %s in %s to %s in %s"
-msgstr "Попередження: тип «%s» змінився з %s у %s на %s у %s"
-
-#: src/ldgeneric.c:576
-#, c-format
-msgid "Warning: size of `%s' changed from %<PRIu64> in %s to %<PRIu64> in %s"
-msgstr "Попередження: розмір «%s» змінено з %<PRIu64> у %s на %<PRIu64> у %s"
-
-#: src/ldgeneric.c:651 src/ldgeneric.c:1112 src/readelf.c:536 src/readelf.c:852
-#: src/strip.c:589
-#, c-format
-msgid "cannot determine number of sections: %s"
-msgstr "не вдалося визначити кількість розділів: %s"
-
-#: src/ldgeneric.c:667
-#, c-format
-msgid "(%s+%#<PRIx64>): multiple definition of %s `%s'\n"
-msgstr "(%s+%#<PRIx64>): повторне визначення %s «%s»\n"
-
-#: src/ldgeneric.c:690
-#, c-format
-msgid "(%s+%#<PRIx64>): first defined here\n"
-msgstr "(%s+%#<PRIx64>): вперше визначено тут\n"
-
-#: src/ldgeneric.c:809
-#, c-format
-msgid "%s: cannot get section group data: %s"
-msgstr "%s: не вдалося отримати дані групи розділів: %s"
-
-#: src/ldgeneric.c:830
-#, c-format
-msgid "%s: section '%s' with group flag set does not belong to any group"
-msgstr ""
-"%s: розділ «%s» з встановленим прапорцем групи не належить жодній групі"
-
-#: src/ldgeneric.c:875
-#, c-format
-msgid "%s: section [%2d] '%s' is not in the correct section group"
-msgstr "%s: розділ [%2d] «%s» не належить до відповідної групи розділів"
-
-#: src/ldgeneric.c:1146 src/ldgeneric.c:1403 src/ldgeneric.c:1412
-#: src/ldgeneric.c:1471 src/ldgeneric.c:1480 src/ldgeneric.c:1743
-#: src/ldgeneric.c:1995
-#, c-format
-msgid "%s: invalid ELF file (%s:%d)\n"
-msgstr "%s: некоректний файл ELF (%s:%d)\n"
-
-#: src/ldgeneric.c:1240
-#, c-format
-msgid "%s: only files of type ET_REL might contain section groups"
-msgstr "%s: групи розділів можуть містити лише файли типу ET_REL"
-
-#: src/ldgeneric.c:1292
-#, c-format
-msgid "%s: cannot determine signature of section group [%2zd] '%s': %s"
-msgstr "%s: не вдалося визначити підпис групи розділів [%2zd] «%s»: %s"
-
-#: src/ldgeneric.c:1304
-#, c-format
-msgid "%s: cannot get content of section group [%2zd] '%s': %s'"
-msgstr "%s: не вдалося отримати вміст групи розділів [%2zd] «%s»: %s'"
-
-#: src/ldgeneric.c:1318
-#, c-format
-msgid ""
-"%s: group member %zu of section group [%2zd] '%s' has too high index: "
-"%<PRIu32>"
-msgstr ""
-"%s: елемент групи %zu групи розділів [%2zd] «%s» має надто високий індекс: "
-"%<PRIu32>"
-
-#: src/ldgeneric.c:1340
-#, c-format
-msgid "%s: section '%s' has unknown type: %d"
-msgstr "%s: розділ «%s» належить до невідомого типу: %d"
-
-#: src/ldgeneric.c:1719
-#, c-format
-msgid "cannot get descriptor for ELF file (%s:%d): %s\n"
-msgstr "не вдалося отримати дескриптор файла ELF (%s:%d): %s\n"
-
-#: src/ldgeneric.c:1889
-#, c-format
-msgid "cannot read archive `%s': %s"
-msgstr "не вдалося прочитати архів «%s»: %s"
-
-#: src/ldgeneric.c:2010
-#, c-format
-msgid "file of type %s cannot be linked in\n"
-msgstr "файл типу %s не можна скомпонувати у\n"
-
-#: src/ldgeneric.c:2022
-#, c-format
-msgid "%s: input file incompatible with ELF machine type %s\n"
-msgstr "%s: файл вхідних даних несумісний з типом архітектури ELF %s\n"
-
-#: src/ldgeneric.c:2034
-#, c-format
-msgid "%s: cannot get section header string table index: %s\n"
-msgstr ""
-"%s: не вдалося отримати покажчик таблиці рядків заголовка розділу: %s\n"
-
-#: src/ldgeneric.c:2063
-#, c-format
-msgid "cannot use DSO '%s' when generating relocatable object file"
-msgstr ""
-"не вдалося використати DSO «%s» під час створення придатного до пересування "
-"об’єктного файла"
-
-#: src/ldgeneric.c:2148
-#, c-format
-msgid "input file '%s' ignored"
-msgstr "файл вхідних даних «%s» проігноровано"
-
-#: src/ldgeneric.c:2362
-#, c-format
-msgid "undefined symbol `%s' in %s"
-msgstr "невизначений символ «%s» у %s"
-
-#: src/ldgeneric.c:2692
-#, c-format
-msgid "cannot create ELF descriptor for output file: %s"
-msgstr "не вдалося створити дескриптор ELF для файла вихідних даних: %s"
-
-#: src/ldgeneric.c:2699
-#, c-format
-msgid "could not create ELF header for output file: %s"
-msgstr "не вдалося створити заголовок ELF для файла виведених даних: %s"
-
-#: src/ldgeneric.c:3214 src/ldgeneric.c:3284 src/ldgeneric.c:3320
-#: src/ldgeneric.c:4447 src/ldgeneric.c:4496 src/ldgeneric.c:4528
-#: src/ldgeneric.c:4763 src/ldgeneric.c:4818 src/ldgeneric.c:5065
-#: src/ldgeneric.c:5121 src/ldgeneric.c:5590 src/ldgeneric.c:5602
-#, c-format
-msgid "cannot create section for output file: %s"
-msgstr "не вдалося створити розділ для файла вихідних даних: %s"
-
-#: src/ldgeneric.c:3434
-#, c-format
-msgid "address computation expression contains variable '%s'"
-msgstr "вираз обчислення адреси містить змінну «%s»"
-
-#: src/ldgeneric.c:3479
-#, c-format
-msgid ""
-"argument '%<PRIuMAX>' of ALIGN in address computation expression is no power "
-"of two"
-msgstr ""
-"значення «%<PRIuMAX>» ALIGN у виразі обчислення адреси не є степенем двійки"
-
-#: src/ldgeneric.c:3674
-#, c-format
-msgid "cannot find entry symbol '%s': defaulting to %#0*<PRIx64>"
-msgstr ""
-"не вдалося знайти символ запису «%s»: встановлено типове значення "
-"%#0*<PRIx64>"
-
-#: src/ldgeneric.c:3680
-#, c-format
-msgid "no entry symbol specified: defaulting to %#0*<PRIx64>"
-msgstr "не вказано символу запису: встановлено типове значення %#0*<PRIx64>"
-
-#: src/ldgeneric.c:3910
-#, c-format
-msgid "cannot create GNU hash table section for output file: %s"
-msgstr ""
-"не вдалося створити розділ таблиці хешів GNU для файла вихідних даних: %s"
-
-#: src/ldgeneric.c:4061
-#, c-format
-msgid "cannot create hash table section for output file: %s"
-msgstr "не вдалося створити розділ таблиці хешів для файла вихідних даних: %s"
-
-#: src/ldgeneric.c:4104
-#, c-format
-msgid "cannot create build ID section: %s"
-msgstr "не вдалося створити розділу ідентифікатора збирання: %s"
-
-#: src/ldgeneric.c:4181
-#, c-format
-msgid "cannot convert section data to file format: %s"
-msgstr "не вдалося перетворити дані розділу у формат файла: %s"
-
-#: src/ldgeneric.c:4190
-#, c-format
-msgid "cannot convert section data to memory format: %s"
-msgstr "не вдалося перетворити дані розділу у формат вмісту пам’яті: %s"
-
-#: src/ldgeneric.c:4251
-#, c-format
-msgid "cannot read enough data for UUID"
-msgstr "не вдалося прочитати достатньо даних для встановлення UUID"
-
-#: src/ldgeneric.c:4348 src/ldgeneric.c:4369 src/ldgeneric.c:4398
-#: src/ldgeneric.c:6051
-#, c-format
-msgid "cannot create symbol table for output file: %s"
-msgstr "не вдалося створити таблицю символів для файла вихідних даних: %s"
-
-#: src/ldgeneric.c:5290 src/ldgeneric.c:5842
-#, c-format
-msgid "section index too large in dynamic symbol table"
-msgstr "у таблиці динамічних символів покажчик є занадто великим"
-
-#: src/ldgeneric.c:5735
-#, c-format
-msgid "cannot create versioning section: %s"
-msgstr "не вдалося створити розділ версій: %s"
-
-#: src/ldgeneric.c:5808
-#, c-format
-msgid "cannot create dynamic symbol table for output file: %s"
-msgstr ""
-"не вдалося створити динамічну таблицю символів для файла вихідних даних: %s"
-
-#: src/ldgeneric.c:5983
-#, c-format
-msgid "cannot create versioning data: %s"
-msgstr "не вдалося створити даних версії: %s"
-
-#: src/ldgeneric.c:6083 src/ldgeneric.c:6096 src/ldgeneric.c:6160
-#: src/ldgeneric.c:6168
-#, c-format
-msgid "cannot create section header string section: %s"
-msgstr "не вдалося створити розділ рядків заголовка розділу: %s"
-
-#: src/ldgeneric.c:6090
-#, c-format
-msgid "cannot create section header string section"
-msgstr "не вдалося створити розділ рядків заголовка розділу"
-
-#: src/ldgeneric.c:6248
-#, c-format
-msgid "cannot create program header: %s"
-msgstr "не вдалося створити заголовок програми: %s"
-
-#: src/ldgeneric.c:6256
-#, c-format
-msgid "while determining file layout: %s"
-msgstr "під час визначення компонування файла: %s"
-
-#: src/ldgeneric.c:6377
-#, c-format
-msgid "internal error: non-nobits section follows nobits section"
-msgstr "внутрішня помилка: небезбітовий розділ слідом за безбітовим розділом"
-
-#: src/ldgeneric.c:6914
-#, c-format
-msgid "cannot get header of 0th section: %s"
-msgstr "не вдалося отримати заголовок 0-го розділу: %s"
-
-#: src/ldgeneric.c:6930 src/unstrip.c:1929
-#, c-format
-msgid "cannot update ELF header: %s"
-msgstr "не вдалося оновити заголовок ELF: %s"
-
-#: src/ldgeneric.c:6961
-#, c-format
-msgid "linker backend didn't specify function to relocate section"
-msgstr "у сервері компонування не визначено функції для розділу пересування"
-
-#: src/ldgeneric.c:6973
-#, c-format
-msgid "while writing output file: %s"
-msgstr "під час запису файла вихідних даних: %s"
-
-#: src/ldgeneric.c:6978
-#, c-format
-msgid "while finishing output file: %s"
-msgstr "під час закриття файла вихідних даних: %s"
-
-#: src/ldgeneric.c:6984
-#, c-format
-msgid "cannot stat output file"
-msgstr "не вдалося обробити stat файл виводу даних"
-
-#: src/ldgeneric.c:7000
-#, c-format
-msgid "WARNING: temporary output file overwritten before linking finished"
-msgstr ""
-"ПОПЕРЕДЖЕННЯ: файл тимчасового виводу даних було перезаписано до завершення "
-"компонування"
-
-#: src/ldgeneric.c:7053 src/ldgeneric.c:7064 src/ldgeneric.c:7075
-#: src/ldgeneric.c:7086 src/ldgeneric.c:7105 src/ldgeneric.c:7118
-#: src/ldgeneric.c:7130
-#, c-format
-msgid "no machine specific '%s' implementation"
-msgstr "не специфічна для архітектури реалізація «%s»"
-
-#: src/ldscript.y:170
-msgid "mode for segment invalid\n"
-msgstr "режим сегмента є некоректним\n"
-
-#: src/ldscript.y:457
-#, c-format
-msgid "while reading version script '%s': %s at line %d"
-msgstr "під час читання скрипту версій «%s»: %s у рядку %d"
-
-#: src/ldscript.y:458
-#, c-format
-msgid "while reading linker script '%s': %s at line %d"
-msgstr "під час читання скрипту компонування «%s»: %s у рядку %d"
-
-#: src/ldscript.y:737
-#, c-format
-msgid "symbol '%s' is declared both local and global for unnamed version '%s'"
-msgstr ""
-"символ «%s» оголошено локально і на загальному рівні для версії без назви "
-"«%s»"
-
-#: src/ldscript.y:739
-#, c-format
-msgid "symbol '%s' is declared both local and global for version '%s'"
-msgstr "символ «%s» оголошено локально і на загальному рівні для версії «%s»"
-
-#: src/ldscript.y:759 src/ldscript.y:766
-#, c-format
-msgid "default visibility set as local and global"
-msgstr "типову видимість визначено як локальну і загальну"
-
-#: src/nm.c:66 src/strip.c:67
+#: src/nm.c:66 src/strip.c:68
 msgid "Output selection:"
 msgstr "Вибір виводу:"
 
@@ -4228,7 +3583,7 @@ msgstr "Позначати спеціальні символи"
 msgid "Print size of defined symbols"
 msgstr "Вивести розмір визначених символів"
 
-#: src/nm.c:91 src/size.c:71 src/strip.c:72 src/unstrip.c:72
+#: src/nm.c:91 src/size.c:71 src/strip.c:73 src/unstrip.c:73
 msgid "Output options:"
 msgstr "Параметри виводу:"
 
@@ -4248,6 +3603,7 @@ msgstr "Змінити порядок на протилежний"
 msgid "Decode low-level symbol names into source code names"
 msgstr "Визначати за низькорівневими назвами символів назви у початковому коді"
 
+#. Short description of program.
 #: src/nm.c:105
 msgid "List symbols from FILEs (a.out by default)."
 msgstr "Показати список символів з ФАЙЛів (типово з a.out)."
@@ -4256,22 +3612,23 @@ msgstr "Показати список символів з ФАЙЛів (типо
 msgid "Output formatting"
 msgstr "Форматування виводу"
 
-#: src/nm.c:140 src/objdump.c:103 src/size.c:108 src/strip.c:127
+#: src/nm.c:140 src/objdump.c:103 src/size.c:108 src/strip.c:128
 #, c-format
 msgid "%s: INTERNAL ERROR %d (%s): %s"
 msgstr "%s: ВНУТРІШНЯ ПОМИЛКА %d (%s): %s"
 
 #: src/nm.c:395 src/nm.c:407 src/size.c:305 src/size.c:314 src/size.c:325
-#: src/strip.c:2282
+#: src/strip.c:2300
 #, c-format
 msgid "while closing '%s'"
 msgstr "під час закриття «%s»"
 
-#: src/nm.c:417 src/objdump.c:292 src/strip.c:391
+#: src/nm.c:417 src/objdump.c:292 src/strip.c:392
 #, c-format
 msgid "%s: File format not recognized"
 msgstr "%s: не вдалося розпізнати формат файла"
 
+#. Note: 0 is no valid offset.
 #: src/nm.c:457
 msgid ""
 "\n"
@@ -4310,11 +3667,12 @@ msgstr "не вдалося створити дерево пошуку"
 #: src/readelf.c:1878 src/readelf.c:2068 src/readelf.c:2309 src/readelf.c:2567
 #: src/readelf.c:2643 src/readelf.c:2730 src/readelf.c:3310 src/readelf.c:3360
 #: src/readelf.c:3423 src/readelf.c:8334 src/readelf.c:9434 src/readelf.c:9637
-#: src/readelf.c:9705 src/size.c:413 src/size.c:482 src/strip.c:520
+#: src/readelf.c:9705 src/size.c:413 src/size.c:482 src/strip.c:521
 #, c-format
 msgid "cannot get section header string table index"
 msgstr "не вдалося визначити індекс заголовка розділу у таблиці рядків"
 
+#. We always print this prolog.
 #: src/nm.c:787
 #, c-format
 msgid ""
@@ -4328,6 +3686,7 @@ msgstr ""
 "Символи з %s:\n"
 "\n"
 
+#. The header line.
 #: src/nm.c:790
 #, c-format
 msgid ""
@@ -4352,6 +3711,7 @@ msgstr "%s: розмір розділу %zd «%s» не є кратним до �
 msgid "%s: entries (%zd) in section %zd `%s' is too large"
 msgstr "%s: розмір запису у розділі %zd «%s» не є очікуваним"
 
+#. XXX Add machine specific object file types.
 #: src/nm.c:1542
 #, c-format
 msgid "%s%s%s%s: Invalid operation"
@@ -4386,6 +3746,7 @@ msgstr "Вибір виведених даних:"
 msgid "Only display information for section NAME."
 msgstr "Показати інформацію лише з розділу НАЗВА."
 
+#. Short description of program.
 #: src/objdump.c:67
 msgid "Show information from FILEs (a.out by default)."
 msgstr "Показати інформацію з ФАЙЛів (типово a.out)."
@@ -4432,10 +3793,12 @@ msgstr "Вміст розділу %s:\n"
 msgid "cannot disassemble"
 msgstr "не вдалося дизасемблювати"
 
+#. Short description of program.
 #: src/ranlib.c:65
 msgid "Generate an index to speed access to archives."
 msgstr "Створювати покажчик для пришвидшення доступу до архівів."
 
+#. Strings for arguments in help texts.
 #: src/ranlib.c:68
 msgid "ARCHIVE"
 msgstr "АРХІВ"
@@ -4569,6 +3932,7 @@ msgid ""
 "decompress section before dumping data (when used with -p or -x)"
 msgstr ""
 
+#. Short description of program.
 #: src/readelf.c:122
 msgid "Print information from ELF file in human-readable form."
 msgstr "Виводити відомості з файла ELF у придатному для читання форматі."
@@ -4583,16 +3947,21 @@ msgstr "Невідомий діагностичний розділ DWARF «%s».
 msgid "cannot generate Elf descriptor: %s"
 msgstr "не вдалося створити дескриптор Elf: %s"
 
+#: src/readelf.c:536 src/readelf.c:852 src/strip.c:590
+#, c-format
+msgid "cannot determine number of sections: %s"
+msgstr "не вдалося визначити кількість розділів: %s"
+
 #: src/readelf.c:554 src/readelf.c:1145 src/readelf.c:1347
 #, c-format
 msgid "cannot get section: %s"
 msgstr "не вдалося отримати розділ: %s"
 
 #: src/readelf.c:563 src/readelf.c:1152 src/readelf.c:1355 src/readelf.c:9657
-#: src/unstrip.c:387 src/unstrip.c:418 src/unstrip.c:467 src/unstrip.c:577
-#: src/unstrip.c:594 src/unstrip.c:631 src/unstrip.c:829 src/unstrip.c:1118
-#: src/unstrip.c:1309 src/unstrip.c:1369 src/unstrip.c:1490 src/unstrip.c:1543
-#: src/unstrip.c:1658 src/unstrip.c:1796 src/unstrip.c:1891
+#: src/unstrip.c:388 src/unstrip.c:419 src/unstrip.c:468 src/unstrip.c:578
+#: src/unstrip.c:595 src/unstrip.c:632 src/unstrip.c:830 src/unstrip.c:1119
+#: src/unstrip.c:1311 src/unstrip.c:1371 src/unstrip.c:1492 src/unstrip.c:1545
+#: src/unstrip.c:1660 src/unstrip.c:1800 src/unstrip.c:1895
 #, c-format
 msgid "cannot get section header: %s"
 msgstr "не вдалося отримати заголовок розділу: %s"
@@ -4693,6 +4062,7 @@ msgstr "CORE (Файл ядра)"
 msgid "OS Specific: (%x)\n"
 msgstr "ОС-специфічне: (%x)\n"
 
+#. && e_type <= ET_HIPROC always true
 #: src/readelf.c:959
 #, c-format
 msgid "Processor Specific: (%x)\n"
@@ -4820,6 +4190,7 @@ msgstr "  Кількість записів заголовків розділі�
 msgid " (%<PRIu32> in [0].sh_size)"
 msgstr " (%<PRIu32> у [0].sh_size)"
 
+#. We managed to get the zeroth section.
 #: src/readelf.c:1060
 #, c-format
 msgid " (%<PRIu32> in [0].sh_link)"
@@ -4923,7 +4294,7 @@ msgstr ""
 " Відображення розділів на сегмент:\n"
 "  Розділи сегмента..."
 
-#: src/readelf.c:1336 src/unstrip.c:1950 src/unstrip.c:1992 src/unstrip.c:1999
+#: src/readelf.c:1336 src/unstrip.c:1954 src/unstrip.c:1996 src/unstrip.c:2003
 #, c-format
 msgid "cannot get program header: %s"
 msgstr "не вдалося отримати заголовок програми: %s"
@@ -5072,6 +4443,12 @@ msgstr[2] ""
 "Розділ пересування [%2zu] «%s» для розділу [%2u] «%s» за зміщенням "
 "%#0<PRIx64> містить %d записів:\n"
 
+#. The .rel.dyn section does not refer to a specific section but
+#. instead of section index zero.  Do not try to print a section
+#. name.
+#. The .rela.dyn section does not refer to a specific section but
+#. instead of section index zero.  Do not try to print a section
+#. name.
 #: src/readelf.c:1896 src/readelf.c:2086
 #, c-format
 msgid ""
@@ -5231,6 +4608,7 @@ msgstr "  %#06x: Версія:  %hd  Прап.: %s  Індекс: %hd К-ть: %
 msgid "  %#06x: Parent %d: %s\n"
 msgstr "  %#06x: батьківський %d: %s\n"
 
+#. Print the header.
 #: src/readelf.c:2957
 #, c-format
 msgid ""
@@ -5393,11 +4771,13 @@ msgstr "  Власник        Розмір\n"
 msgid "  %-13s  %4<PRIu32>\n"
 msgstr "  %-13s  %4<PRIu32>\n"
 
+#. Unknown subsection, print and skip.
 #: src/readelf.c:3520
 #, c-format
 msgid "    %-4u %12<PRIu32>\n"
 msgstr "    %-4u %12<PRIu32>\n"
 
+#. Tag_File
 #: src/readelf.c:3525
 #, c-format
 msgid "    File: %11<PRIu32>\n"
@@ -5698,6 +5078,8 @@ msgstr " [%6tx]  базова адреса %s\n"
 msgid " [%6tx]  empty list\n"
 msgstr " [%6tx]  порожній список\n"
 
+#. We have an address range entry.
+#. First address range entry in a list.
 #: src/readelf.c:5016
 #, c-format
 msgid " [%6tx]  %s..%s\n"
@@ -5855,6 +5237,7 @@ msgstr ""
 msgid "cannot get line data section data: %s"
 msgstr "не вдалося отримати дані розділу лінійних даних: %s"
 
+#. Print what we got so far.
 #: src/readelf.c:6565
 #, c-format
 msgid ""
@@ -5966,10 +5349,12 @@ msgstr ""
 msgid " set discriminator to %u\n"
 msgstr " встановити розрізнення для %u\n"
 
+#. Unknown, ignore it.
 #: src/readelf.c:6841
 msgid " unknown opcode"
 msgstr " невідомий код операції"
 
+#. Takes no argument.
 #: src/readelf.c:6853
 msgid " copy"
 msgstr " копія"
@@ -6004,6 +5389,7 @@ msgstr " встановити значення стовпчика %<PRIu64>\n"
 msgid " set '%s' to %<PRIuFAST8>\n"
 msgstr " встановити «%s» у %<PRIuFAST8>\n"
 
+#. Takes no argument.
 #: src/readelf.c:6910
 msgid " set basic block flag"
 msgstr " встановити прапорець базового блоку"
@@ -6023,10 +5409,12 @@ msgstr " збільшити адресу на сталу величину %u д�
 msgid " advance address by fixed value %u to %s\n"
 msgstr " збільшити адресу на фіксовану величину %u до %s\n"
 
+#. Takes no argument.
 #: src/readelf.c:6954
 msgid " set prologue end flag"
 msgstr " встановити прапорець кінця вступу"
 
+#. Takes no argument.
 #: src/readelf.c:6959
 msgid " set epilogue begin flag"
 msgstr " встановити прапорець початку епілогу"
@@ -6036,6 +5424,9 @@ msgstr " встановити прапорець початку епілогу"
 msgid " set isa to %u\n"
 msgstr " встановити isa у %u\n"
 
+#. This is a new opcode the generator but not we know about.
+#. Read the parameters associated with it but then discard
+#. everything.  Read all the parameters for this opcode.
 #: src/readelf.c:6977
 #, c-format
 msgid " unknown opcode with %<PRIu8> parameter:"
@@ -6049,6 +5440,7 @@ msgstr[2] " невідомий код операції з %<PRIu8> параме�
 msgid "cannot get .debug_loc content: %s"
 msgstr "не вдалося отримати вміст .debug_loc: %s"
 
+#. First entry in a list.
 #: src/readelf.c:7084
 #, c-format
 msgid " [%6tx]  %s..%s"
@@ -6495,6 +5887,7 @@ msgstr ""
 msgid "Display the total sizes (bsd only)"
 msgstr "Показувати загальні розміри (лише bsd)"
 
+#. Short description of program.
 #: src/size.c:79
 msgid "List section sizes of FILEs (a.out by default)."
 msgstr "Показати розміри розділів ФАЙЛів (типово a.out)."
@@ -6690,6 +6083,7 @@ msgstr "Виводити адресу рядка за основами 8, 10 т�
 msgid "Alias for --radix=o"
 msgstr "Замінник --radix=o"
 
+#. Short description of program.
 #: src/strings.c:84
 msgid "Print the strings of printable characters in files."
 msgstr "Вивести рядки файлів з символів, придатних для друку."
@@ -6724,31 +6118,31 @@ msgstr "помилка mprotect"
 msgid "Skipping section %zd '%s' data outside file"
 msgstr "Пропускаємо дані %zd «%s» поза файлом"
 
-#: src/strip.c:68
+#: src/strip.c:69
 msgid "Place stripped output into FILE"
 msgstr "Вивести дані після вилучення до ФАЙЛа"
 
-#: src/strip.c:69
+#: src/strip.c:70
 msgid "Extract the removed sections into FILE"
 msgstr "Видобути вилучені розділи до ФАЙЛа"
 
-#: src/strip.c:70
+#: src/strip.c:71
 msgid "Embed name FILE instead of -f argument"
 msgstr "Вбудувати назву ФАЙЛа замість аргументу -f"
 
-#: src/strip.c:74
+#: src/strip.c:75
 msgid "Remove all debugging symbols"
 msgstr "Вилучити всі символи зневаджування"
 
-#: src/strip.c:78
+#: src/strip.c:79
 msgid "Remove section headers (not recommended)"
 msgstr "Вилучити заголовки розділів (не рекомендовано)"
 
-#: src/strip.c:80
+#: src/strip.c:81
 msgid "Copy modified/access timestamps to the output"
 msgstr "Скопіювати часові позначки зміни/доступу до виведених даних"
 
-#: src/strip.c:82
+#: src/strip.c:83
 msgid ""
 "Resolve all trivial relocations between debug sections if the removed "
 "sections are placed in a debug file (only relevant for ET_REL files, "
@@ -6758,417 +6152,424 @@ msgstr ""
 "вилучені розділи було розташовано у діагностичному файлі (стосується лише "
 "файлів ET_REL, скасувати дію неможливо, потребує параметра -f)"
 
-#: src/strip.c:84
+#: src/strip.c:85
 msgid "Remove .comment section"
 msgstr "Вилучити розділ .comment"
 
-#: src/strip.c:87
-msgid "Relax a few rules to handle slightly broken ELF files"
-msgstr ""
-"Знехтувати декількома правилами для обробки трохи пошкоджених файлів ELF"
-
-#: src/strip.c:92
+#. Short description of program.
+#: src/strip.c:93
 msgid "Discard symbols from object files."
 msgstr "Відкинути символи з об’єктних файлів"
 
-#: src/strip.c:186
+#: src/strip.c:187
 #, c-format
 msgid "--reloc-debug-sections used without -f"
 msgstr "--reloc-debug-sections використано без -f"
 
-#: src/strip.c:200
+#: src/strip.c:201
 #, c-format
 msgid "Only one input file allowed together with '-o' and '-f'"
 msgstr ""
 "Разом з «-o» або «-f» можна використовувати лише один файл вхідних даних"
 
-#: src/strip.c:236
+#: src/strip.c:237
 #, c-format
 msgid "-f option specified twice"
 msgstr "параметр -f вказано двічі"
 
-#: src/strip.c:245
+#: src/strip.c:246
 #, c-format
 msgid "-F option specified twice"
 msgstr "параметр -F вказано двічі"
 
-#: src/strip.c:254 src/unstrip.c:120
-#, c-format
-msgid "-o option specified twice"
-msgstr "параметр -o вказано двічі"
-
-#: src/strip.c:278
+#: src/strip.c:279
 #, c-format
 msgid "-R option supports only .comment section"
 msgstr "Для параметра -R передбачено підтримку лише розділу .comment"
 
-#: src/strip.c:320 src/strip.c:344
+#: src/strip.c:321 src/strip.c:345
 #, c-format
 msgid "cannot stat input file '%s'"
 msgstr "не вдалося отримати дані з вхідного файла «%s» за допомогою stat"
 
-#: src/strip.c:334
+#: src/strip.c:335
 #, c-format
 msgid "while opening '%s'"
 msgstr "під час спроби відкриття «%s»"
 
-#: src/strip.c:372
+#: src/strip.c:373
 #, c-format
 msgid "%s: cannot use -o or -f when stripping archive"
 msgstr ""
 "%s: не можна використовувати -o або -f під час вилучення додаткового вмісту "
 "архіву"
 
-#: src/strip.c:384
+#. We would like to support ar archives, but currently it just
+#. doesn't work at all since we call elf_clone on the members
+#. which doesn't really support ar members.
+#. result = handle_ar (fd, elf, NULL, fname,
+#. preserve_dates ? tv : NULL);
+#.
+#: src/strip.c:385
 #, c-format
 msgid "%s: no support for stripping archive"
 msgstr "%s: підтримки вилучення додаткового вмісту з архіву не передбачено"
 
-#: src/strip.c:483
+#: src/strip.c:484
 #, c-format
 msgid "cannot open EBL backend"
 msgstr "не вдалося відкрити канал сервера EBL"
 
-#: src/strip.c:528
+#: src/strip.c:529
 #, c-format
 msgid "cannot get number of phdrs"
 msgstr "не вдалося отримати кількість phdr"
 
-#: src/strip.c:544 src/strip.c:568
+#: src/strip.c:545 src/strip.c:569
 #, c-format
 msgid "cannot create new file '%s': %s"
 msgstr "не вдалося створити файл «%s»: %s"
 
-#: src/strip.c:634
+#: src/strip.c:635
 #, c-format
 msgid "illformed file '%s'"
 msgstr "помилкове форматування файла «%s»"
 
-#: src/strip.c:968 src/strip.c:1067
+#: src/strip.c:969 src/strip.c:1068
 #, c-format
 msgid "while generating output file: %s"
 msgstr "під час спроби створення файла з виведеними даними: %s"
 
-#: src/strip.c:1033 src/strip.c:2073
+#: src/strip.c:1034 src/strip.c:2091
 #, c-format
 msgid "%s: error while creating ELF header: %s"
 msgstr "%s: помилка під час створення заголовка ELF: %s"
 
-#: src/strip.c:1050
+#: src/strip.c:1051
 #, c-format
 msgid "while preparing output for '%s'"
 msgstr "під час приготування виведених даних для «%s»"
 
-#: src/strip.c:1108 src/strip.c:1171
+#: src/strip.c:1109 src/strip.c:1172
 #, c-format
 msgid "while create section header section: %s"
 msgstr "під час створення розділу заголовка розділу: %s"
 
-#: src/strip.c:1117
+#: src/strip.c:1118
 #, c-format
 msgid "cannot allocate section data: %s"
 msgstr "не вдалося розмістити дані розділу: %s"
 
-#: src/strip.c:1183
+#: src/strip.c:1184
 #, c-format
 msgid "while create section header string table: %s"
 msgstr "під час створення таблиці рядків заголовка розділу: %s"
 
-#: src/strip.c:1863
+#: src/strip.c:1191
+#, fuzzy, c-format
+msgid "no memory to create section header string table"
+msgstr "під час створення таблиці рядків заголовка розділу: %s"
+
+#: src/strip.c:1877
 #, c-format
 msgid "bad relocation"
 msgstr "помилкове пересування"
 
-#: src/strip.c:1984 src/strip.c:2097
+#: src/strip.c:2002 src/strip.c:2115
 #, c-format
 msgid "while writing '%s': %s"
 msgstr "під час запису «%s»: %s"
 
-#: src/strip.c:1995
+#: src/strip.c:2013
 #, c-format
 msgid "while creating '%s'"
 msgstr "під час спроби створення «%s»"
 
-#: src/strip.c:2018
+#: src/strip.c:2036
 #, c-format
 msgid "while computing checksum for debug information"
 msgstr "під час обчислення контрольної суми для діагностичних даних"
 
-#: src/strip.c:2082
+#: src/strip.c:2100
 #, c-format
 msgid "%s: error while reading the file: %s"
 msgstr "%s: помилка під час читання файла: %s"
 
-#: src/strip.c:2122 src/strip.c:2142
+#: src/strip.c:2140 src/strip.c:2160
 #, c-format
 msgid "while writing '%s'"
 msgstr "під час спроби запису «%s»"
 
-#: src/strip.c:2179 src/strip.c:2186
+#: src/strip.c:2197 src/strip.c:2204
 #, c-format
 msgid "error while finishing '%s': %s"
 msgstr "помилка під час завершення «%s»: %s"
 
-#: src/strip.c:2203 src/strip.c:2275
+#: src/strip.c:2221 src/strip.c:2293
 #, c-format
 msgid "cannot set access and modification date of '%s'"
 msgstr "не вдалося встановити права доступу та дату зміни «%s»"
 
-#: src/unstrip.c:69
+#: src/unstrip.c:70
 msgid "Match MODULE against file names, not module names"
 msgstr ""
 "Встановити відповідність МОДУЛЯ назвам файлів, а не назвам модулів names"
 
-#: src/unstrip.c:70
+#: src/unstrip.c:71
 msgid "Silently skip unfindable files"
 msgstr "Пропустити незнайдені файли без додаткових повідомлень"
 
-#: src/unstrip.c:73
+#: src/unstrip.c:74
 msgid "Place output into FILE"
 msgstr "Вивести дані у ФАЙЛ"
 
-#: src/unstrip.c:75
+#: src/unstrip.c:76
 msgid "Create multiple output files under DIRECTORY"
 msgstr "Створити декілька файлів виведених даних у КАТАЛОЗІ"
 
-#: src/unstrip.c:76
+#: src/unstrip.c:77
 msgid "Use module rather than file names"
 msgstr "Використовувати назви модулів, а не файлів"
 
-#: src/unstrip.c:78
+#: src/unstrip.c:79
 msgid "Create output for modules that have no separate debug information"
 msgstr ""
 "Вивести дані для модулів, які не містять окремих діагностичних відомостей"
 
-#: src/unstrip.c:81
+#: src/unstrip.c:82
 msgid "Apply relocations to section contents in ET_REL files"
 msgstr "Застосувати пересування до вмісту розділів у файлах ET_REL"
 
-#: src/unstrip.c:83
+#: src/unstrip.c:84
 msgid "Only list module and file names, build IDs"
 msgstr "Вивести лише список назв модулів, файлів, побудувати ідентифікатори"
 
-#: src/unstrip.c:85
+#: src/unstrip.c:86
 msgid "Force combining files even if some ELF headers don't seem to match"
 msgstr ""
 "Примусово поєднати файли, навіть якщо буде встановлено невідповідність "
 "якихось із заголовків ELF"
 
-#: src/unstrip.c:129
+#: src/unstrip.c:130
 #, c-format
 msgid "-d option specified twice"
 msgstr "параметр -d вказано двічі"
 
-#: src/unstrip.c:164
+#: src/unstrip.c:165
 #, c-format
 msgid "only one of -o or -d allowed"
 msgstr "можна використовувати лише один з параметрів: -o або -d"
 
-#: src/unstrip.c:173
+#: src/unstrip.c:174
 #, c-format
 msgid "-n cannot be used with explicit files or -o or -d"
 msgstr ""
 "-n не можна використовувати з файлами, заданими явно, або параметрами -o і -d"
 
-#: src/unstrip.c:188
+#: src/unstrip.c:189
 #, c-format
 msgid "output directory '%s'"
 msgstr "каталог виведення даних «%s»"
 
-#: src/unstrip.c:197
+#: src/unstrip.c:198
 #, c-format
 msgid "exactly two file arguments are required"
 msgstr "як аргументи має бути вказано точно два файла"
 
-#: src/unstrip.c:203
+#: src/unstrip.c:204
 #, c-format
 msgid "-m, -a, -R, and -i options not allowed with explicit files"
 msgstr ""
 "для файлів, заданих явно, не можна використовувати параметри -m, -a, -R і -i"
 
-#: src/unstrip.c:216
+#: src/unstrip.c:217
 #, c-format
 msgid "-o or -d is required when using implicit files"
 msgstr ""
 "якщо використовуються файли, задані неявно, слід додавати параметр -o або -d"
 
-#: src/unstrip.c:252
+#: src/unstrip.c:253
 #, c-format
 msgid "cannot create ELF header: %s"
 msgstr "не вдалося створити заголовок ELF: %s"
 
-#: src/unstrip.c:257
+#: src/unstrip.c:258
 #, c-format
 msgid "cannot copy ELF header: %s"
 msgstr "не вдалося скопіювати заголовок ELF: %s"
 
-#: src/unstrip.c:261 src/unstrip.c:1939 src/unstrip.c:1982
+#: src/unstrip.c:262 src/unstrip.c:1943 src/unstrip.c:1986
 #, c-format
 msgid "cannot get number of program headers: %s"
 msgstr "не вдалося отримати кількість заголовків програми: %s"
 
-#: src/unstrip.c:266 src/unstrip.c:1943
+#: src/unstrip.c:267 src/unstrip.c:1947
 #, c-format
 msgid "cannot create program headers: %s"
 msgstr "не вдалося створити заголовки програми: %s"
 
-#: src/unstrip.c:272
+#: src/unstrip.c:273
 #, c-format
 msgid "cannot copy program header: %s"
 msgstr "не вдалося скопіювати заголовок програми: %s"
 
-#: src/unstrip.c:282
+#: src/unstrip.c:283
 #, c-format
 msgid "cannot copy section header: %s"
 msgstr "не вдалося скопіювати заголовок розділу: %s"
 
-#: src/unstrip.c:285 src/unstrip.c:1576
+#: src/unstrip.c:286 src/unstrip.c:1578
 #, c-format
 msgid "cannot get section data: %s"
 msgstr "не вдалося отримати дані розділу: %s"
 
-#: src/unstrip.c:287 src/unstrip.c:1578
+#: src/unstrip.c:288 src/unstrip.c:1580
 #, c-format
 msgid "cannot copy section data: %s"
 msgstr "не вдалося скопіювати дані розділу: %s"
 
-#: src/unstrip.c:311
+#: src/unstrip.c:312
 #, c-format
 msgid "cannot create directory '%s'"
 msgstr "не вдалося створити каталог «%s»"
 
-#: src/unstrip.c:383 src/unstrip.c:803 src/unstrip.c:1610
+#: src/unstrip.c:384 src/unstrip.c:804 src/unstrip.c:1612
 #, c-format
 msgid "cannot get symbol table entry: %s"
 msgstr "не вдалося отримати запис таблиці символів: %s"
 
-#: src/unstrip.c:399 src/unstrip.c:620 src/unstrip.c:641 src/unstrip.c:653
-#: src/unstrip.c:1631 src/unstrip.c:1805 src/unstrip.c:1829
+#: src/unstrip.c:400 src/unstrip.c:621 src/unstrip.c:642 src/unstrip.c:654
+#: src/unstrip.c:1633 src/unstrip.c:1809 src/unstrip.c:1833
 #, c-format
 msgid "cannot update symbol table: %s"
 msgstr "не вдалося оновити таблицю символів: %s"
 
-#: src/unstrip.c:409
+#: src/unstrip.c:410
 #, c-format
 msgid "cannot update section header: %s"
 msgstr "не вдалося оновити заголовок розділу: %s"
 
-#: src/unstrip.c:448 src/unstrip.c:459
+#: src/unstrip.c:449 src/unstrip.c:460
 #, c-format
 msgid "cannot update relocation: %s"
 msgstr "не вдалося оновити пересування: %s"
 
-#: src/unstrip.c:547
+#: src/unstrip.c:548
 #, c-format
 msgid "cannot get symbol version: %s"
 msgstr "не вдалося отримати версію символу: %s"
 
-#: src/unstrip.c:560
+#: src/unstrip.c:561
 #, c-format
 msgid "unexpected section type in [%zu] with sh_link to symtab"
 msgstr "неочікуваний тип розділу у [%zu] з посиланням sh_link на symtab"
 
-#: src/unstrip.c:809
+#: src/unstrip.c:810
 #, c-format
 msgid "invalid string offset in symbol [%zu]"
 msgstr "некоректне зміщення рядка у символі [%zu]"
 
-#: src/unstrip.c:967 src/unstrip.c:1313
+#: src/unstrip.c:968 src/unstrip.c:1315
 #, c-format
 msgid "cannot read section [%zu] name: %s"
 msgstr "не вдалося прочитати назву розділу [%zu]: %s"
 
-#: src/unstrip.c:1008 src/unstrip.c:1027 src/unstrip.c:1062
+#: src/unstrip.c:1009 src/unstrip.c:1028 src/unstrip.c:1063
 #, c-format
 msgid "cannot read '.gnu.prelink_undo' section: %s"
 msgstr "не вдалося прочитати розділ «.gnu.prelink_undo»: %s"
 
-#: src/unstrip.c:1048
+#: src/unstrip.c:1049
 #, c-format
 msgid "invalid contents in '%s' section"
 msgstr "некоректний вміст розділу «%s»"
 
-#: src/unstrip.c:1054
+#: src/unstrip.c:1055
 #, c-format
 msgid "overflow with shnum = %zu in '%s' section"
 msgstr ""
 
-#: src/unstrip.c:1108 src/unstrip.c:1433
+#: src/unstrip.c:1109 src/unstrip.c:1435
 #, c-format
 msgid "cannot find matching section for [%zu] '%s'"
 msgstr "не вдалося знайти відповідний розділ для [%zu] «%s»"
 
-#: src/unstrip.c:1233 src/unstrip.c:1248 src/unstrip.c:1514 src/unstrip.c:1766
+#: src/unstrip.c:1234 src/unstrip.c:1249 src/unstrip.c:1516 src/unstrip.c:1768
 #, c-format
 msgid "cannot add section name to string table: %s"
 msgstr "не вдалося додати назву розділу до таблиці рядків: %s"
 
-#: src/unstrip.c:1257
+#: src/unstrip.c:1258
 #, c-format
 msgid "cannot update section header string table data: %s"
 msgstr "не вдалося оновити дані заголовка розділу у таблиці рядків: %s"
 
-#: src/unstrip.c:1284 src/unstrip.c:1288
+#: src/unstrip.c:1286 src/unstrip.c:1290
 #, c-format
 msgid "cannot get section header string table section index: %s"
 msgstr ""
 "не вдалося визначити індекс розділу заголовка розділу у таблиці рядків: %s"
 
-#: src/unstrip.c:1292 src/unstrip.c:1296 src/unstrip.c:1529
+#: src/unstrip.c:1294 src/unstrip.c:1298 src/unstrip.c:1531
 #, c-format
 msgid "cannot get section count: %s"
 msgstr "не вдалося отримати кількість розділів: %s"
 
-#: src/unstrip.c:1299
+#: src/unstrip.c:1301
 #, c-format
 msgid "more sections in stripped file than debug file -- arguments reversed?"
 msgstr ""
 "у очищеному файлі більше розділів ніж у файлі з даними для зневаджування — "
 "помилковий порядок параметрів?"
 
-#: src/unstrip.c:1358 src/unstrip.c:1448
+#: src/unstrip.c:1360 src/unstrip.c:1450
 #, c-format
 msgid "cannot read section header string table: %s"
 msgstr "не вдалося прочитати таблицю рядків заголовка розділу: %s"
 
-#: src/unstrip.c:1508
+#: src/unstrip.c:1510
 #, c-format
 msgid "cannot add new section: %s"
 msgstr "не вдалося додати новий розділ: %s"
 
-#: src/unstrip.c:1618
+#: src/unstrip.c:1620
 #, c-format
 msgid "symbol [%zu] has invalid section index"
 msgstr "символ [%zu] має некоректний індекс розділу"
 
-#: src/unstrip.c:1900
+#: src/unstrip.c:1904
 #, c-format
 msgid "cannot read section data: %s"
 msgstr "не вдалося прочитати дані розділу: %s"
 
-#: src/unstrip.c:1921
+#: src/unstrip.c:1925
 #, c-format
 msgid "cannot get ELF header: %s"
 msgstr "не вдалося отримати заголовок ELF: %s"
 
-#: src/unstrip.c:1953
+#: src/unstrip.c:1933
+#, c-format
+msgid "cannot update ELF header: %s"
+msgstr "не вдалося оновити заголовок ELF: %s"
+
+#: src/unstrip.c:1957
 #, c-format
 msgid "cannot update program header: %s"
 msgstr "не вдалося оновити заголовок програми: %s"
 
-#: src/unstrip.c:1958 src/unstrip.c:2040
+#: src/unstrip.c:1962 src/unstrip.c:2044
 #, c-format
 msgid "cannot write output file: %s"
 msgstr "не вдалося записати файл виведених даних: %s"
 
-#: src/unstrip.c:2009
+#: src/unstrip.c:2013
 #, c-format
 msgid "DWARF data not adjusted for prelinking bias; consider prelink -u"
 msgstr ""
 "Дані DWARF не скориговано відповідно до відхилення перед компонуванням; "
 "спробуйте виправити це командою prelink -u"
 
-#: src/unstrip.c:2012
+#: src/unstrip.c:2016
 #, c-format
 msgid ""
 "DWARF data in '%s' not adjusted for prelinking bias; consider prelink -u"
@@ -7176,76 +6577,76 @@ msgstr ""
 "Дані DWARF у «%s» не скориговано відповідно до відхилення перед "
 "компонуванням; спробуйте виправити це командою prelink -u"
 
-#: src/unstrip.c:2031 src/unstrip.c:2082 src/unstrip.c:2094 src/unstrip.c:2180
+#: src/unstrip.c:2035 src/unstrip.c:2086 src/unstrip.c:2098 src/unstrip.c:2184
 #, c-format
 msgid "cannot create ELF descriptor: %s"
 msgstr "не вдалося створити дескриптор ELF: %s"
 
-#: src/unstrip.c:2073
+#: src/unstrip.c:2077
 msgid "WARNING: "
 msgstr "УВАГА: "
 
-#: src/unstrip.c:2075
+#: src/unstrip.c:2079
 msgid ", use --force"
 msgstr ", скористайтеся --force"
 
-#: src/unstrip.c:2098
+#: src/unstrip.c:2102
 msgid "ELF header identification (e_ident) different"
 msgstr "Різні ідентифікатори заголовків ELF (e_ident)"
 
-#: src/unstrip.c:2101
+#: src/unstrip.c:2105
 msgid "ELF header type (e_type) different"
 msgstr "Різні типи заголовків ELF (e_type)"
 
-#: src/unstrip.c:2104
+#: src/unstrip.c:2108
 msgid "ELF header machine type (e_machine) different"
 msgstr "Різні типи архітектур заголовків ELF (e_machine)"
 
-#: src/unstrip.c:2107
+#: src/unstrip.c:2111
 msgid "stripped program header (e_phnum) smaller than unstripped"
 msgstr "очищений заголовок програми (e_phnum) є меншим за неочищений"
 
-#: src/unstrip.c:2137
+#: src/unstrip.c:2141
 #, c-format
 msgid "cannot find stripped file for module '%s': %s"
 msgstr "не вдалося знайти очищений файл для модуля «%s»: %s"
 
-#: src/unstrip.c:2141
+#: src/unstrip.c:2145
 #, c-format
 msgid "cannot open stripped file '%s' for module '%s': %s"
 msgstr "не вдалося відкрити очищений файл «%s» для модуля «%s»: %s"
 
-#: src/unstrip.c:2156
+#: src/unstrip.c:2160
 #, c-format
 msgid "cannot find debug file for module '%s': %s"
 msgstr "не вдалося знайти файл діагностичних даних для модуля «%s»: %s"
 
-#: src/unstrip.c:2160
+#: src/unstrip.c:2164
 #, c-format
 msgid "cannot open debug file '%s' for module '%s': %s"
 msgstr "не вдалося відкрити файл діагностичних даних «%s» для модуля «%s»: %s"
 
-#: src/unstrip.c:2173
+#: src/unstrip.c:2177
 #, c-format
 msgid "module '%s' file '%s' is not stripped"
 msgstr "у модулі «%s» файл «%s» не очищено strip"
 
-#: src/unstrip.c:2204
+#: src/unstrip.c:2208
 #, c-format
 msgid "cannot cache section addresses for module '%s': %s"
 msgstr "не вдалося кешувати адреси розділів для модуля «%s»: %s"
 
-#: src/unstrip.c:2337
+#: src/unstrip.c:2341
 #, c-format
 msgid "no matching modules found"
 msgstr "відповідних модулів не виявлено"
 
-#: src/unstrip.c:2346
+#: src/unstrip.c:2350
 #, c-format
 msgid "matched more than one module"
 msgstr "встановлено відповідність декількох модулів"
 
-#: src/unstrip.c:2390
+#: src/unstrip.c:2394
 msgid ""
 "STRIPPED-FILE DEBUG-FILE\n"
 "[MODULE...]"
@@ -7253,7 +6654,7 @@ msgstr ""
 "ОЧИЩЕНИЙ-ФАЙЛ ФАЙЛ-DEBUG\n"
 "[МОДУЛЬ...]"
 
-#: src/unstrip.c:2391
+#: src/unstrip.c:2395
 msgid ""
 "Combine stripped files with separate symbols and debug information.\vThe "
 "first form puts the result in DEBUG-FILE if -o was not given.\n"
@@ -7309,7 +6710,7 @@ msgstr ""
 "окремого файла діагностичних даних або «-», якщо файла діагностичних даних "
 "не вдалося знайти, і «.», якщо ФАЙЛ сам містить діагностичні дані."
 
-#: tests/backtrace.c:427
+#: tests/backtrace.c:430
 msgid "Run executable"
 msgstr "Запустити виконуваний файл"
 
@@ -7320,6 +6721,492 @@ msgstr "Додатково вивести назви функцій"
 #: tests/dwflmodtest.c:214
 msgid "Show instances of inlined functions"
 msgstr "Вивести екземпляри вбудованих функцій"
+
+#~ msgid "cannot allocate PLT section: %s"
+#~ msgstr "не вдалося розмістити PLT-розділ: %s"
+
+#~ msgid "cannot allocate PLTREL section: %s"
+#~ msgstr "не вдалося розмістити розділ PLTREL: %s"
+
+#~ msgid "cannot allocate GOT section: %s"
+#~ msgstr "не вдалося розмістити розділ GOT: %s"
+
+#~ msgid "cannot allocate GOTPLT section: %s"
+#~ msgstr "не вдалося розмістити розділ GOTPLT: %s"
+
+#~ msgid "initial-executable TLS relocation cannot be used "
+#~ msgstr ""
+#~ "не можна використовувати пересування TLS у початковому виконуваному файлі"
+
+#~ msgid "Input File Control:"
+#~ msgstr "Керування файлом вхідних даних:"
+
+#~ msgid "Include whole archives in the output from now on."
+#~ msgstr "Відтепер включати цілі архіви до виведених даних."
+
+#~ msgid "Stop including the whole archives in the output."
+#~ msgstr "Припинити включення цілих архівів до вихідних даних."
+
+#~ msgid "FILE"
+#~ msgstr "ФАЙЛ"
+
+#~ msgid "Start a group."
+#~ msgstr "Почати групу."
+
+#~ msgid "End a group."
+#~ msgstr "Завершити групу."
+
+#~ msgid "PATH"
+#~ msgstr "ШЛЯХ"
+
+#~ msgid "Add PATH to list of directories files are searched in."
+#~ msgstr "Додати ШЛЯХ до списку каталогів, у яких слід шукати файли."
+
+#~ msgid "Only set DT_NEEDED for following dynamic libs if actually used"
+#~ msgstr ""
+#~ "Встановлювати DT_NEEDED лише для наступних динамічних бібліотек, якщо він "
+#~ "справді використовується"
+
+#~ msgid "Always set DT_NEEDED for following dynamic libs"
+#~ msgstr "Завжди встановлювати DT_NEEDED для наступних динамічних бібліотек"
+
+#~ msgid "Ignore LD_LIBRARY_PATH environment variable."
+#~ msgstr "Ігнорувати змінну середовища LD_LIBRARY_PATH."
+
+#~ msgid "Output File Control:"
+#~ msgstr "Керування файлом виведених даних:"
+
+#~ msgid "Place output in FILE."
+#~ msgstr "Вивести дані до ФАЙЛА."
+
+#~ msgid "Object is marked to not use default search path at runtime."
+#~ msgstr ""
+#~ "Об’єкт позначено, як таких, який не використовує типовий шлях пошуку під "
+#~ "час запуску."
+
+#~ msgid "Same as --whole-archive."
+#~ msgstr "Те саме, що --whole-archive."
+
+#~ msgid ""
+#~ "Default rules of extracting from archive; weak references are not enough."
+#~ msgstr ""
+#~ "Типові правила видобування з архівів; слабкого посилання недостатньо."
+
+#~ msgid "Weak references cause extraction from archive."
+#~ msgstr "Слабкі посилання спричиняють видобування з архіву."
+
+#~ msgid "Allow multiple definitions; first is used."
+#~ msgstr "Дозволити декілька визначень. Використовуватиметься лише перше."
+
+#~ msgid "Disallow/allow undefined symbols in DSOs."
+#~ msgstr "Заборонити/Дозволити невизначені символи у DSO."
+
+#~ msgid "Object requires immediate handling of $ORIGIN."
+#~ msgstr "Об’єкт вимагає негайної обробки $ORIGIN."
+
+#~ msgid "Relocation will not be processed lazily."
+#~ msgstr "Переміщення не буде оброблятися у лінивому режимі."
+
+#~ msgid "Object cannot be unloaded at runtime."
+#~ msgstr "Об’єкт не можна вивантажувати під час запуску."
+
+#~ msgid "Mark object to be initialized first."
+#~ msgstr "Позначити об’єкт, як такий, що потребує ініціалізації."
+
+#~ msgid "Enable/disable lazy-loading flag for following dependencies."
+#~ msgstr ""
+#~ "Увімкнути/Вимкнути прапорець лінивого завантаження для наведених нижче "
+#~ "залежностей."
+
+#~ msgid "Mark object as not loadable with 'dlopen'."
+#~ msgstr ""
+#~ "Позначити об’єкт, як непридатний для завантаження за допомогою «dlopen»."
+
+#~ msgid "Ignore/record dependencies on unused DSOs."
+#~ msgstr "Ігнорувати/Записувати залежності невикористаних DSO."
+
+#~ msgid "Generated DSO will be a system library."
+#~ msgstr "Створена DSO буде системною бібліотекою."
+
+#~ msgid "ADDRESS"
+#~ msgstr "АДРЕСА"
+
+#~ msgid "Set entry point address."
+#~ msgstr "Встановити адресу точки входу."
+
+#~ msgid "Do not link against shared libraries."
+#~ msgstr "Не компонувати з бібліотеками спільного використання."
+
+#~ msgid "Prefer linking against shared libraries."
+#~ msgstr ""
+#~ "Надавати перевагу компонуванню з бібліотеками спільного використання."
+
+#~ msgid "Export all dynamic symbols."
+#~ msgstr "Експортувати всі динамічні символи."
+
+#~ msgid "Strip all symbols."
+#~ msgstr "Вилучити всі символи."
+
+#~ msgid "Strip debugging symbols."
+#~ msgstr "Вилучити символи зневаджування."
+
+#~ msgid "Assume pagesize for the target system to be SIZE."
+#~ msgstr ""
+#~ "Вважати розмір сторінки для системи призначення рівним значенню РОЗМІР."
+
+#~ msgid "Set runtime DSO search path."
+#~ msgstr "Встановити шлях пошуку DSO під час запуску."
+
+#~ msgid "Set link time DSO search path."
+#~ msgstr "Встановити шлях пошуку DSO під час компонування."
+
+#~ msgid "Generate dynamic shared object."
+#~ msgstr "Створити динамічний об’єкт спільного використання."
+
+#~ msgid "Generate relocatable object."
+#~ msgstr "Створити придатний для пересування об’єкт."
+
+#~ msgid "Causes symbol not assigned to a version be reduced to local."
+#~ msgstr ""
+#~ "Спричиняє перетворення символів, не прив’язаних до версії, на локальні."
+
+#~ msgid "Remove unused sections."
+#~ msgstr "Вилучити невикористані розділи."
+
+#~ msgid "Don't remove unused sections."
+#~ msgstr "Не вилучати невикористані розділи."
+
+#~ msgid "Set soname of shared object."
+#~ msgstr "Встановити soname об’єкта спільного використання."
+
+#~ msgid "Set the dynamic linker name."
+#~ msgstr "Встановити назву динамічного компонувальника."
+
+#~ msgid "Add/suppress addition indentifying link-editor to .comment section."
+#~ msgstr ""
+#~ "Додати/Придушити додавання ідентифікації редактора компонування до "
+#~ "розділу .comment."
+
+#~ msgid "Create .eh_frame_hdr section"
+#~ msgstr "Створити розділ .eh_frame_hdr"
+
+#~ msgid "Set hash style to sysv, gnu or both."
+#~ msgstr "Встановити формат хешування у значення sysv, gnu або both."
+
+#~ msgid "Generate build ID note (md5, sha1 (default), uuid)."
+#~ msgstr ""
+#~ "Створити запису ідентифікатора збирання (md5, sha1 (типовий), uuid)."
+
+#~ msgid "Linker Operation Control:"
+#~ msgstr "Керування роботою компонувальника:"
+
+#~ msgid "Verbose messages."
+#~ msgstr "Докладні повідомлення."
+
+#~ msgid "Trace file opens."
+#~ msgstr "Спостерігати за відкриттями файлів."
+
+#~ msgid "Trade speed for less memory usage"
+#~ msgstr "Зменшити споживання пам’яті за рахунок швидкості"
+
+#~ msgid "LEVEL"
+#~ msgstr "РІВЕНЬ"
+
+#~ msgid "Set optimization level to LEVEL."
+#~ msgstr "Встановити рівень оптимізації РІВЕНЬ."
+
+#~ msgid "Use linker script in FILE."
+#~ msgstr "Використати скрипт компонування у ФАЙЛі."
+
+#~ msgid "Select to get parser debug information"
+#~ msgstr "Позначте, щоб отримати діагностичні дані обробника"
+
+#~ msgid "Read version information from FILE."
+#~ msgstr "Прочитати відомості щодо версії з ФАЙЛа."
+
+#~ msgid "Set emulation to NAME."
+#~ msgstr "Встановити режим емуляції на основі НАЗВИ."
+
+#~ msgid "Combine object and archive files."
+#~ msgstr "Комбінує об’єктні файли і файли архівів."
+
+#~ msgid "[FILE]..."
+#~ msgstr "[ФАЙЛ]..."
+
+#~ msgid "At least one input file needed"
+#~ msgstr "Потрібен принаймні один файл вхідних даних"
+
+#~ msgid "error while preparing linking"
+#~ msgstr "помилка під час приготування до компонування"
+
+#~ msgid "cannot open linker script '%s'"
+#~ msgstr "не вдалося відкрити скрипт компонування «%s»"
+
+#~ msgid "-( without matching -)"
+#~ msgstr "-( без відповідника -)"
+
+#~ msgid "only one option of -G and -r is allowed"
+#~ msgstr "можна використовувати лише один з параметрів -G або -r"
+
+#~ msgid "more than one '-m' parameter"
+#~ msgstr "декілька параметрів «-m»"
+
+#~ msgid "unknown option `-%c %s'"
+#~ msgstr "невідомий параметр «-%c %s»"
+
+#~ msgid "invalid page size value '%s': ignored"
+#~ msgstr "некоректне значення розміру сторінки «%s»: проігноровано"
+
+#~ msgid "invalid hash style '%s'"
+#~ msgstr "некоректний формат хешування «%s»"
+
+#~ msgid "invalid build-ID style '%s'"
+#~ msgstr "некоректний формат ідентифікатора збирання «%s»"
+
+#~ msgid "More than one output file name given."
+#~ msgstr "Вказано декілька назв файлів виведення даних."
+
+#~ msgid "Invalid optimization level `%s'"
+#~ msgstr "Некоректний рівень оптимізації «%s»"
+
+#~ msgid "nested -( -) groups are not allowed"
+#~ msgstr "підтримки вкладених груп -( -) не передбачено"
+
+#~ msgid "-) without matching -("
+#~ msgstr "-) без відповідника -("
+
+#~ msgid "unknown option '-%c %s'"
+#~ msgstr "невідомий параметр «-%c %s»"
+
+#~ msgid "could not find input file to determine output file format"
+#~ msgstr ""
+#~ "не вдалося виявити файл вхідних даних для визначення формату файла "
+#~ "вихідних даних"
+
+#~ msgid "try again with an appropriate '-m' parameter"
+#~ msgstr "повторіть спробу з належним параметром «-m»"
+
+#~ msgid "cannot read version script '%s'"
+#~ msgstr "не вдалося прочитати скрипт версій «%s»"
+
+#~ msgid "duplicate definition of '%s' in linker script"
+#~ msgstr "повторне визначення «%s» у скрипті компонування"
+
+#~ msgid "cannot create string table"
+#~ msgstr "не вдалося створити таблицю рядків"
+
+#~ msgid "cannot load ld backend library '%s': %s"
+#~ msgstr "не вдалося завантажити бібліотеку сервера ld «%s»: %s"
+
+#~ msgid "cannot find init function in ld backend library '%s': %s"
+#~ msgstr "не вдалося виявити функцію init у бібліотеці сервера ld «%s»: %s"
+
+#~ msgid "%s listed more than once as input"
+#~ msgstr "%s вказано декілька разів як джерело даних"
+
+#~ msgid "%s (for -l%s)\n"
+#~ msgstr "%s (для -l%s)\n"
+
+#~ msgid "%s (for DT_NEEDED %s)\n"
+#~ msgstr "%s (для DT_NEEDED %s)\n"
+
+#~ msgid "Warning: type of `%s' changed from %s in %s to %s in %s"
+#~ msgstr "Попередження: тип «%s» змінився з %s у %s на %s у %s"
+
+#~ msgid ""
+#~ "Warning: size of `%s' changed from %<PRIu64> in %s to %<PRIu64> in %s"
+#~ msgstr ""
+#~ "Попередження: розмір «%s» змінено з %<PRIu64> у %s на %<PRIu64> у %s"
+
+#~ msgid "(%s+%#<PRIx64>): multiple definition of %s `%s'\n"
+#~ msgstr "(%s+%#<PRIx64>): повторне визначення %s «%s»\n"
+
+#~ msgid "(%s+%#<PRIx64>): first defined here\n"
+#~ msgstr "(%s+%#<PRIx64>): вперше визначено тут\n"
+
+#~ msgid "%s: cannot get section group data: %s"
+#~ msgstr "%s: не вдалося отримати дані групи розділів: %s"
+
+#~ msgid "%s: section '%s' with group flag set does not belong to any group"
+#~ msgstr ""
+#~ "%s: розділ «%s» з встановленим прапорцем групи не належить жодній групі"
+
+#~ msgid "%s: section [%2d] '%s' is not in the correct section group"
+#~ msgstr "%s: розділ [%2d] «%s» не належить до відповідної групи розділів"
+
+#~ msgid "%s: invalid ELF file (%s:%d)\n"
+#~ msgstr "%s: некоректний файл ELF (%s:%d)\n"
+
+#~ msgid "%s: only files of type ET_REL might contain section groups"
+#~ msgstr "%s: групи розділів можуть містити лише файли типу ET_REL"
+
+#~ msgid "%s: cannot determine signature of section group [%2zd] '%s': %s"
+#~ msgstr "%s: не вдалося визначити підпис групи розділів [%2zd] «%s»: %s"
+
+#~ msgid "%s: cannot get content of section group [%2zd] '%s': %s'"
+#~ msgstr "%s: не вдалося отримати вміст групи розділів [%2zd] «%s»: %s'"
+
+#~ msgid ""
+#~ "%s: group member %zu of section group [%2zd] '%s' has too high index: "
+#~ "%<PRIu32>"
+#~ msgstr ""
+#~ "%s: елемент групи %zu групи розділів [%2zd] «%s» має надто високий "
+#~ "індекс: %<PRIu32>"
+
+#~ msgid "%s: section '%s' has unknown type: %d"
+#~ msgstr "%s: розділ «%s» належить до невідомого типу: %d"
+
+#~ msgid "cannot get descriptor for ELF file (%s:%d): %s\n"
+#~ msgstr "не вдалося отримати дескриптор файла ELF (%s:%d): %s\n"
+
+#~ msgid "cannot read archive `%s': %s"
+#~ msgstr "не вдалося прочитати архів «%s»: %s"
+
+#~ msgid "file of type %s cannot be linked in\n"
+#~ msgstr "файл типу %s не можна скомпонувати у\n"
+
+#~ msgid "%s: input file incompatible with ELF machine type %s\n"
+#~ msgstr "%s: файл вхідних даних несумісний з типом архітектури ELF %s\n"
+
+#~ msgid "%s: cannot get section header string table index: %s\n"
+#~ msgstr ""
+#~ "%s: не вдалося отримати покажчик таблиці рядків заголовка розділу: %s\n"
+
+#~ msgid "cannot use DSO '%s' when generating relocatable object file"
+#~ msgstr ""
+#~ "не вдалося використати DSO «%s» під час створення придатного до "
+#~ "пересування об’єктного файла"
+
+#~ msgid "input file '%s' ignored"
+#~ msgstr "файл вхідних даних «%s» проігноровано"
+
+#~ msgid "undefined symbol `%s' in %s"
+#~ msgstr "невизначений символ «%s» у %s"
+
+#~ msgid "cannot create ELF descriptor for output file: %s"
+#~ msgstr "не вдалося створити дескриптор ELF для файла вихідних даних: %s"
+
+#~ msgid "could not create ELF header for output file: %s"
+#~ msgstr "не вдалося створити заголовок ELF для файла виведених даних: %s"
+
+#~ msgid "cannot create section for output file: %s"
+#~ msgstr "не вдалося створити розділ для файла вихідних даних: %s"
+
+#~ msgid "address computation expression contains variable '%s'"
+#~ msgstr "вираз обчислення адреси містить змінну «%s»"
+
+#~ msgid ""
+#~ "argument '%<PRIuMAX>' of ALIGN in address computation expression is no "
+#~ "power of two"
+#~ msgstr ""
+#~ "значення «%<PRIuMAX>» ALIGN у виразі обчислення адреси не є степенем "
+#~ "двійки"
+
+#~ msgid "cannot find entry symbol '%s': defaulting to %#0*<PRIx64>"
+#~ msgstr ""
+#~ "не вдалося знайти символ запису «%s»: встановлено типове значення "
+#~ "%#0*<PRIx64>"
+
+#~ msgid "no entry symbol specified: defaulting to %#0*<PRIx64>"
+#~ msgstr "не вказано символу запису: встановлено типове значення %#0*<PRIx64>"
+
+#~ msgid "cannot create GNU hash table section for output file: %s"
+#~ msgstr ""
+#~ "не вдалося створити розділ таблиці хешів GNU для файла вихідних даних: %s"
+
+#~ msgid "cannot create hash table section for output file: %s"
+#~ msgstr ""
+#~ "не вдалося створити розділ таблиці хешів для файла вихідних даних: %s"
+
+#~ msgid "cannot create build ID section: %s"
+#~ msgstr "не вдалося створити розділу ідентифікатора збирання: %s"
+
+#~ msgid "cannot convert section data to file format: %s"
+#~ msgstr "не вдалося перетворити дані розділу у формат файла: %s"
+
+#~ msgid "cannot convert section data to memory format: %s"
+#~ msgstr "не вдалося перетворити дані розділу у формат вмісту пам’яті: %s"
+
+#~ msgid "cannot read enough data for UUID"
+#~ msgstr "не вдалося прочитати достатньо даних для встановлення UUID"
+
+#~ msgid "cannot create symbol table for output file: %s"
+#~ msgstr "не вдалося створити таблицю символів для файла вихідних даних: %s"
+
+#~ msgid "section index too large in dynamic symbol table"
+#~ msgstr "у таблиці динамічних символів покажчик є занадто великим"
+
+#~ msgid "cannot create versioning section: %s"
+#~ msgstr "не вдалося створити розділ версій: %s"
+
+#~ msgid "cannot create dynamic symbol table for output file: %s"
+#~ msgstr ""
+#~ "не вдалося створити динамічну таблицю символів для файла вихідних даних: "
+#~ "%s"
+
+#~ msgid "cannot create versioning data: %s"
+#~ msgstr "не вдалося створити даних версії: %s"
+
+#~ msgid "cannot create section header string section: %s"
+#~ msgstr "не вдалося створити розділ рядків заголовка розділу: %s"
+
+#~ msgid "cannot create section header string section"
+#~ msgstr "не вдалося створити розділ рядків заголовка розділу"
+
+#~ msgid "cannot create program header: %s"
+#~ msgstr "не вдалося створити заголовок програми: %s"
+
+#~ msgid "while determining file layout: %s"
+#~ msgstr "під час визначення компонування файла: %s"
+
+#~ msgid "internal error: non-nobits section follows nobits section"
+#~ msgstr ""
+#~ "внутрішня помилка: небезбітовий розділ слідом за безбітовим розділом"
+
+#~ msgid "cannot get header of 0th section: %s"
+#~ msgstr "не вдалося отримати заголовок 0-го розділу: %s"
+
+#~ msgid "linker backend didn't specify function to relocate section"
+#~ msgstr "у сервері компонування не визначено функції для розділу пересування"
+
+#~ msgid "while writing output file: %s"
+#~ msgstr "під час запису файла вихідних даних: %s"
+
+#~ msgid "while finishing output file: %s"
+#~ msgstr "під час закриття файла вихідних даних: %s"
+
+#~ msgid "cannot stat output file"
+#~ msgstr "не вдалося обробити stat файл виводу даних"
+
+#~ msgid "WARNING: temporary output file overwritten before linking finished"
+#~ msgstr ""
+#~ "ПОПЕРЕДЖЕННЯ: файл тимчасового виводу даних було перезаписано до "
+#~ "завершення компонування"
+
+#~ msgid "no machine specific '%s' implementation"
+#~ msgstr "не специфічна для архітектури реалізація «%s»"
+
+#~ msgid "mode for segment invalid\n"
+#~ msgstr "режим сегмента є некоректним\n"
+
+#~ msgid "while reading version script '%s': %s at line %d"
+#~ msgstr "під час читання скрипту версій «%s»: %s у рядку %d"
+
+#~ msgid "while reading linker script '%s': %s at line %d"
+#~ msgstr "під час читання скрипту компонування «%s»: %s у рядку %d"
+
+#~ msgid ""
+#~ "symbol '%s' is declared both local and global for unnamed version '%s'"
+#~ msgstr ""
+#~ "символ «%s» оголошено локально і на загальному рівні для версії без назви "
+#~ "«%s»"
+
+#~ msgid "symbol '%s' is declared both local and global for version '%s'"
+#~ msgstr ""
+#~ "символ «%s» оголошено локально і на загальному рівні для версії «%s»"
+
+#~ msgid "default visibility set as local and global"
+#~ msgstr "типову видимість визначено як локальну і загальну"
 
 #~ msgid "cannot get section header of section %Zu: %s"
 #~ msgstr "не вдалося отримати заголовок розділу %Zu: %s"

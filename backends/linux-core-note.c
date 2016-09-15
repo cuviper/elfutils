@@ -41,7 +41,9 @@
 #define ALIGN_SHORT		2
 #define TYPE_SHORT		ELF_T_HALF
 #define	INT			int32_t
-#define ALIGN_INT		4
+#ifndef ALIGN_INT
+# define ALIGN_INT		4
+#endif
 #define TYPE_INT		ELF_T_SWORD
 #ifndef PR_REG
 # define PR_REG			ULONG
@@ -107,7 +109,11 @@ struct EBLHOOK(prstatus)
 #endif
     ;
   FIELD (INT, pr_fpvalid);
-};
+}
+#ifdef ALIGN_PRSTATUS
+  __attribute__ ((packed, aligned (ALIGN_PRSTATUS)))
+#endif
+;
 
 #define	FNAMESZ	16
 #define	PRARGSZ	80

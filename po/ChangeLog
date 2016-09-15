@@ -1,3 +1,16 @@
+2016-08-24  Mark Wielaard  <mjw@redhat.com>
+
+	* *.po: Regenerate.
+
+2016-08-04  Mark Wielaard  <mjw@redhat.com>
+
+	* *.po: Update for 0.167.
+
+2016-07-06  Mark Wielaard  <mjw@redhat.com>
+
+	* po/POTFILES.in: Removed libebl/eblobjecttypename.c,
+	src/i386_ld.c, src/ld.c, src/ldgeneric.c and src/ldscript.y.
+
 2016-03-31  Mark Wielaard  <mjw@redhat.com>
 
 	* *.po: Update for 0.166.

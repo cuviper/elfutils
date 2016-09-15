@@ -1,3 +1,38 @@
+2016-08-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sparc_attrs.c (sparc_check_object_attribute): Fix the
+	calculation of GNU_SParc_HWCAPS and GNU_SParc_HWCAPS2 values as
+	comma-separated list of hw capability names.
+
+2016-07-10  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* m68k_corenote.c (ALIGN_PRSTATUS): Define.
+	* linux-core-note.c (struct EBLHOOK(prstatus)): Set alignment to
+	ALIGN_PRSTATUS if defined.
+
+2016-06-28  Richard Henderson <rth@redhat.com>
+
+	* Makefile.am (modules): Add bpf.
+	(libebl_pic): Add libebl_bpf_pic.a.
+	(am_libebl_bpf_pic_a_OBJECTS): New.
+	* bpf_init.c, bpf_regs.c, bpf_reloc.def: New files.
+	* common-reloc.c (copy_reloc_p): Honor NO_COPY_RELOC.
+	(init_reloc): Likewise.
+
+2016-05-20  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* Makefile.am (modules): Add m68k.
+	(libebl_pic): Add libebl_m68k_pic.a.
+	(m68k_SRCS, libebl_m68k_pic_a_SOURCES)
+	(am_libebl_m68k_pic_a_OBJECTS): Define.
+	* m68k_init.c: New file.
+	* m68k_symbol.c: New file.
+	* m68k_regs.c: New file.
+	* m68k_retval.c: New file.
+	* m68k_corenote.c: New file.
+	* m68k_reloc.def: New file.
+	* linux-core-note.c (ALIGN_INT): Only define if not defined.
+
 2016-02-26  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* sparc_initreg.c (EBLHOOK): Provide a dummy

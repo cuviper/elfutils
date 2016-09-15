@@ -1,3 +1,57 @@
+2016-08-25  Mark Wielaard  <mjw@redhat.com>
+
+	* strip.c (handle_elf): Recompress with ELF_CHF_FORCE.
+
+2016-08-06  Mark Wielaard  <mjw@redhat.com>
+
+	* strip.c (handle_elf): Uncompress and recompress relocation target
+	section if necessary.
+
+2016-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (strip_LDADD): Add libdw.
+	* elfcompress.c (process_file): Use dwelf_strtab functions instead of
+	ebl_strtab.
+	* strip.c (handle_elf): Likewise.
+	* unstrip.c (new_shstrtab): Likewise.
+
+2016-07-06  Mark Wielaard  <mjw@redhat.com>
+
+	* elf32-i386.script, i386_ld.c, ld.c, ld.h, ldgeneric.c, ldlex.l,
+	ldscript.y, libld_elf_i386.map, none_ld.c, sectionhash.c,
+	sectionhash.h, symbolhash.c, symbolhash.h, unaligned.h,
+	versionhash.c, versionhash.h, xelf.h: Removed.
+	* Makefile.am (YACC): Removed.
+	(AM_YFLAGS): Removed.
+	(AM_LFLAGS): Removed.
+	(native_ld): Removed.
+	(base_cpu): Removed.
+	(bin_PROGRAMS): Removed ld.
+	(ld_dsos): Removed.
+	(ld_SOURCES): Removed.
+	(noinst_LIBRARIES): Only libar.a.
+	(EXTRA_DIST): Just arlib.h and debugpred.h.
+	(ld_LDADD): Removed.
+	(ld_LDFLAGS): Removed.
+	(ldlex.o): Removed.
+	(ldscript.h): Removed.
+	(libld*): Removed.
+	(CLEANFILES): Just *.gconv.
+	(MAINTAINERCLEANFILES): Removed.
+
+2016-07-06  Mark Wielaard  <mjw@redhat.com>
+
+	* unstrip.c (copy_elided_sections): Use unstripped_strent[] from
+	index zero, instead of one.
+
+2016-06-28  Richard Henderson <rth@redhat.com>
+
+	* elflint.c (valid_e_machine): Add EM_BPF.
+
+2016-04-11  David Abdurachmanov  <davidlt@cern.ch>
+
+	* elfcmp.c (main): Fix self-comparison error with GCC 6.
+
 2016-03-21  Mark Wielaard  <mjw@redhat.com>
 
 	* nm.c (show_symbols): Check for malloc size argument overflow.

@@ -1,3 +1,88 @@
+2016-08-25  Mark Wielaard  <mjw@redhat.com>
+
+	* backtrace-child.c: Disable and add documentation about why we disable
+	RAISE_JMP_PATCHING even on x86_64.
+	* backtrace.c (is_x86_64_native): Rename to...
+	(use_raise_jmp_patching): ... this.
+	(callback_verify): Use use_raise_jmp_patching instead of
+	is_x86_64_native.
+	(see_exec_module): Return DWARF_CB_ABORT after finding the correct exe
+	path.
+	(prepare_thread): Use RAISE_JMP_PATCHING instead of __x86_64__
+	conditional.
+	(exec_dump): Only assert on data.mod != NULL. Drop ptrdiff. Use
+	RAISE_JMP_PATCHING instead of __x86_64__ conditional. Use
+	use_raise_jmp_patching instead of is_x86_64_native.
+
+2016-08-24  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (EXTRA_DIST): Add testfilesparc64attrs.o.bz2.
+
+2016-08-09  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* testfilesparc64attrs.o.bz2: New file.
+	* run-readelf-A.sh: Check attributes in a sparc object.
+
+2016-08-06  Mark Wielaard  <mjw@redhat.com>
+
+	* run-strip-reloc.sh: Add explicit compressed and uncompressed
+	test cases.
+
+2016-08-10  Richard Henderson  <rth@redhat.com>
+
+	* file-bpf-dis1.expect.bz2: Fix expected mod and endian operations
+	output.
+
+2016-07-08  Mark Wielaard  <mjw@redhat.com>
+
+	* update3_LDADD: Use libdw instead of libebl.
+	* update4_LDADD: Likewise.
+	* alldts_LDADD: Likewise.
+	* elfstrmerge_LDADD: Likewise.
+	* alldts.c (main): Use dwelf_strtab instead of ebl_strtab.
+	* elfstrmerge.c (release): Likewise.
+	(main): Likewise.
+	* update3.c (main): Likewise.
+	* update4.c (main): Likewise.
+
+2016-07-10  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* Makefile.am (TESTS): Add run-strip-test11.sh.
+	(EXTRA_DIST): Add run-strip-test11.sh, hello_m68k.ko.bz2,
+	testfile-m86k-core.bz2, testfile-m68k.bz2, testfile-m68k-s.bz2.
+	(run-strip-test11.sh): New file.
+	(hello_m68k.ko.bz2): New file.
+	(testfile-m68k-core.bz2): New file.
+	(testfile-m68k.bz2): New file.
+	(testfile-m68k-s.bz2): New file.
+	* run-allregs.sh: Add test for testfile-m68k-core.
+	* run-readelf-mixed-corenote.sh: Likewise.
+	* run-strip-reloc.sh: Add test for hello_m68k.ko.
+
+2016-07-06  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (check_PROGRAMS): Add vendorelf.
+	(TESTS): Likewise.
+	(vendorelf_LDADD): New variable.
+	* vendorelf.c: New test.
+	* elfshphehdr.c (test): Check elf_getphdrnum succeeds.
+
+2016-06-24  Mark Wielaard  <mjw@redhat.com>
+
+	* Makefile.am (check_PROGRAMS): Add emptyfile.
+	(TESTS): Likewise.
+	(emptyfile_LDADD): New variable.
+	* emptyfile.c: New test.
+
+2016-06-28  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.am (TESTS): Add run-disasm-bpf.sh, conditionally.
+	(EXTRA_DIST): Add run-disasm-bpf.sh, testfile-bpf-dis1.expect.bz2,
+	testfile-bpf-dis1.o.bz2
+	(run-disasm-bpf.sh): New file.
+	(testfile-bpf-dis1.expect.bz2): New file.
+	(testfile-bpf-dis1.o.bz2): New file.
+
 2016-02-09  Mark Wielaard  <mjw@redhat.com>
 
 	* testfile-s390x-hash-both.bz2: New testfile.

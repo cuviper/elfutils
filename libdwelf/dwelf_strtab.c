@@ -1,5 +1,5 @@
-/* ELF string table handling.
-   Copyright (C) 2000, 2001, 2002 Red Hat, Inc.
+/* ELF/DWARF string table handling.
+   Copyright (C) 2000, 2001, 2002, 2005, 2016 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2000.
 
@@ -38,10 +38,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <wchar.h>
 #include <sys/param.h>
 
-#include "libebl.h"
+#include "libdwelfP.h"
 #include <system.h>
 
 #ifndef MIN
@@ -49,15 +48,15 @@
 #endif
 
 
-struct Ebl_WStrent
+struct Dwelf_Strent
 {
-  const wchar_t *string;
+  const char *string;
   size_t len;
-  struct Ebl_WStrent *next;
-  struct Ebl_WStrent *left;
-  struct Ebl_WStrent *right;
+  struct Dwelf_Strent *next;
+  struct Dwelf_Strent *left;
+  struct Dwelf_Strent *right;
   size_t offset;
-  wchar_t reverse[0];
+  char reverse[0];
 };
 
 
@@ -68,71 +67,76 @@ struct memoryblock
 };
 
 
-struct Ebl_WStrtab
+struct Dwelf_Strtab
 {
-  struct Ebl_WStrent *root;
+  struct Dwelf_Strent *root;
   struct memoryblock *memory;
   char *backp;
   size_t left;
   size_t total;
   bool nullstr;
 
-  struct Ebl_WStrent null;
+  struct Dwelf_Strent null;
 };
 
 
-/* Cache for the pagesize.  We correct this value a bit so that `malloc'
-   is not allocating more than a page.  */
+/* Cache for the pagesize.  */
 static size_t ps;
+/* We correct this value a bit so that `malloc' is not allocating more
+   than a page. */
+#define MALLOC_OVERHEAD (2 * sizeof (void *))
 
 
-struct Ebl_WStrtab *
-ebl_wstrtabinit (bool nullstr)
+Dwelf_Strtab *
+dwelf_strtab_init (bool nullstr)
 {
-  struct Ebl_WStrtab *ret;
-
   if (ps == 0)
     {
-      ps = sysconf (_SC_PAGESIZE) - 2 * sizeof (void *);
-      assert (sizeof (struct memoryblock) < ps);
+      ps = sysconf (_SC_PAGESIZE);
+      assert (sizeof (struct memoryblock) < ps - MALLOC_OVERHEAD);
     }
 
-  ret = (struct Ebl_WStrtab *) calloc (1, sizeof (struct Ebl_WStrtab));
+  Dwelf_Strtab *ret
+    = (Dwelf_Strtab *) calloc (1, sizeof (struct Dwelf_Strtab));
   if (ret != NULL)
     {
       ret->nullstr = nullstr;
+
       if (nullstr)
 	{
 	  ret->null.len = 1;
-	  ret->null.string = L"";
+	  ret->null.string = "";
 	}
     }
+
   return ret;
 }
 
 
 static int
-morememory (struct Ebl_WStrtab *st, size_t len)
+morememory (Dwelf_Strtab *st, size_t len)
 {
-  struct memoryblock *newmem;
+  size_t overhead = offsetof (struct memoryblock, memory);
+  len += overhead + MALLOC_OVERHEAD;
 
-  if (len < ps)
-    len = ps;
-  newmem = (struct memoryblock *) malloc (len);
+  /* Allocate nearest multiple of pagesize >= len.  */
+  len = ((len / ps) + (len % ps != 0)) * ps - MALLOC_OVERHEAD;
+
+  struct memoryblock *newmem = (struct memoryblock *) malloc (len);
   if (newmem == NULL)
     return 1;
 
   newmem->next = st->memory;
   st->memory = newmem;
   st->backp = newmem->memory;
-  st->left = len - offsetof (struct memoryblock, memory);
+  st->left = len - overhead;
 
   return 0;
 }
 
 
 void
-ebl_wstrtabfree (struct Ebl_WStrtab *st)
+dwelf_strtab_free (Dwelf_Strtab *st)
 {
   struct memoryblock *mb = st->memory;
 
@@ -147,42 +151,37 @@ ebl_wstrtabfree (struct Ebl_WStrtab *st)
 }
 
 
-static struct Ebl_WStrent *
-newstring (struct Ebl_WStrtab *st, const wchar_t *str, size_t len)
+static Dwelf_Strent *
+newstring (Dwelf_Strtab *st, const char *str, size_t len)
 {
-  struct Ebl_WStrent *newstr;
-  size_t align;
-  int i;
-
   /* Compute the amount of padding needed to make the structure aligned.  */
-  align = ((__alignof__ (struct Ebl_WStrent)
-	    - (((uintptr_t) st->backp)
-	       & (__alignof__ (struct Ebl_WStrent) - 1)))
-	   & (__alignof__ (struct Ebl_WStrent) - 1));
+  size_t align = ((__alignof__ (struct Dwelf_Strent)
+		   - (((uintptr_t) st->backp)
+		      & (__alignof__ (struct Dwelf_Strent) - 1)))
+		  & (__alignof__ (struct Dwelf_Strent) - 1));
 
   /* Make sure there is enough room in the memory block.  */
-  if (st->left < align + sizeof (struct Ebl_WStrent) + len * sizeof (wchar_t))
+  if (st->left < align + sizeof (struct Dwelf_Strent) + len)
     {
-      if (morememory (st,
-		      sizeof (struct Ebl_WStrent) + len * sizeof (wchar_t)))
+      if (morememory (st, sizeof (struct Dwelf_Strent) + len))
 	return NULL;
 
       align = 0;
     }
 
   /* Create the reserved string.  */
-  newstr = (struct Ebl_WStrent *) (st->backp + align);
+  Dwelf_Strent *newstr = (Dwelf_Strent *) (st->backp + align);
   newstr->string = str;
   newstr->len = len;
   newstr->next = NULL;
   newstr->left = NULL;
   newstr->right = NULL;
   newstr->offset = 0;
-  for (i = len - 2; i >= 0; --i)
+  for (int i = len - 2; i >= 0; --i)
     newstr->reverse[i] = str[len - 2 - i];
-  newstr->reverse[len - 1] = L'\0';
-  st->backp += align + sizeof (struct Ebl_WStrent) + len * sizeof (wchar_t);
-  st->left -= align + sizeof (struct Ebl_WStrent) + len * sizeof (wchar_t);
+  newstr->reverse[len - 1] = '\0';
+  st->backp += align + sizeof (struct Dwelf_Strent) + len;
+  st->left -= align + sizeof (struct Dwelf_Strent) + len;
 
   return newstr;
 }
@@ -191,11 +190,9 @@ newstring (struct Ebl_WStrtab *st, const wchar_t *str, size_t len)
 /* XXX This function should definitely be rewritten to use a balancing
    tree algorith (AVL, red-black trees).  For now a simple, correct
    implementation is enough.  */
-static struct Ebl_WStrent **
-searchstring (struct Ebl_WStrent **sep, struct Ebl_WStrent *newstr)
+static Dwelf_Strent **
+searchstring (Dwelf_Strent **sep, Dwelf_Strent *newstr)
 {
-  int cmpres;
-
   /* More strings?  */
   if (*sep == NULL)
     {
@@ -204,8 +201,8 @@ searchstring (struct Ebl_WStrent **sep, struct Ebl_WStrent *newstr)
     }
 
   /* Compare the strings.  */
-  cmpres = wmemcmp ((*sep)->reverse, newstr->reverse,
-		    MIN ((*sep)->len, newstr->len) - 1);
+  int cmpres = memcmp ((*sep)->reverse, newstr->reverse,
+		       MIN ((*sep)->len, newstr->len) - 1);
   if (cmpres == 0)
     /* We found a matching string.  */
     return sep;
@@ -217,39 +214,31 @@ searchstring (struct Ebl_WStrent **sep, struct Ebl_WStrent *newstr)
 
 
 /* Add new string.  The actual string is assumed to be permanent.  */
-struct Ebl_WStrent *
-ebl_wstrtabadd (struct Ebl_WStrtab *st, const wchar_t *str, size_t len)
+static Dwelf_Strent *
+strtab_add (Dwelf_Strtab *st, const char *str, size_t len)
 {
-  struct Ebl_WStrent *newstr;
-  struct Ebl_WStrent **sep;
-
-  /* Compute the string length if the caller doesn't know it.  */
-  if (len == 0)
-    len = wcslen (str) + 1;
-
   /* Make sure all "" strings get offset 0 but only if the table was
      created with a special null entry in mind.  */
   if (len == 1 && st->null.string != NULL)
     return &st->null;
 
   /* Allocate memory for the new string and its associated information.  */
-  newstr = newstring (st, str, len);
+  Dwelf_Strent *newstr = newstring (st, str, len);
   if (newstr == NULL)
     return NULL;
 
   /* Search in the array for the place to insert the string.  If there
      is no string with matching prefix and no string with matching
      leading substring, create a new entry.  */
-  sep = searchstring (&st->root, newstr);
+  Dwelf_Strent **sep = searchstring (&st->root, newstr);
   if (*sep != newstr)
     {
       /* This is not the same entry.  This means we have a prefix match.  */
       if ((*sep)->len > newstr->len)
 	{
-	  struct Ebl_WStrent *subs;
-
 	  /* Check whether we already know this string.  */
-	  for (subs = (*sep)->next; subs != NULL; subs = subs->next)
+	  for (Dwelf_Strent *subs = (*sep)->next; subs != NULL;
+	       subs = subs->next)
 	    if (subs->len == newstr->len)
 	      {
 		/* We have an exact match with a substring.  Free the memory
@@ -294,21 +283,30 @@ ebl_wstrtabadd (struct Ebl_WStrtab *st, const wchar_t *str, size_t len)
   return newstr;
 }
 
+Dwelf_Strent *
+dwelf_strtab_add (Dwelf_Strtab *st, const char *str)
+{
+  return strtab_add (st, str, strlen (str) + 1);
+}
+
+Dwelf_Strent *
+dwelf_strtab_add_len (Dwelf_Strtab *st, const char *str, size_t len)
+{
+  return strtab_add (st, str, len);
+}
 
 static void
-copystrings (struct Ebl_WStrent *nodep, wchar_t **freep, size_t *offsetp)
+copystrings (Dwelf_Strent *nodep, char **freep, size_t *offsetp)
 {
-  struct Ebl_WStrent *subs;
-
   if (nodep->left != NULL)
     copystrings (nodep->left, freep, offsetp);
 
   /* Process the current node.  */
   nodep->offset = *offsetp;
-  *freep = wmempcpy (*freep, nodep->string, nodep->len);
-  *offsetp += nodep->len * sizeof (wchar_t);
+  *freep = (char *) mempcpy (*freep, nodep->string, nodep->len);
+  *offsetp += nodep->len;
 
-  for (subs = nodep->next; subs != NULL; subs = subs->next)
+  for (Dwelf_Strent *subs = nodep->next; subs != NULL; subs = subs->next)
     {
       assert (subs->len < nodep->len);
       subs->offset = nodep->offset + nodep->len - subs->len;
@@ -320,22 +318,20 @@ copystrings (struct Ebl_WStrent *nodep, wchar_t **freep, size_t *offsetp)
 }
 
 
-void
-ebl_wstrtabfinalize (struct Ebl_WStrtab *st, Elf_Data *data)
+Elf_Data *
+dwelf_strtab_finalize (Dwelf_Strtab *st, Elf_Data *data)
 {
-  size_t copylen;
-  wchar_t *endp;
   size_t nulllen = st->nullstr ? 1 : 0;
 
   /* Fill in the information.  */
-  data->d_buf = malloc ((st->total + nulllen) * sizeof (wchar_t));
+  data->d_buf = malloc (st->total + nulllen);
   if (data->d_buf == NULL)
-    abort ();
+    return NULL;
 
   /* The first byte must always be zero if we created the table with a
      null string.  */
   if (st->nullstr)
-    *((wchar_t *) data->d_buf) = L'\0';
+    *((char *) data->d_buf) = '\0';
 
   data->d_type = ELF_T_BYTE;
   data->d_size = st->total + nulllen;
@@ -345,15 +341,25 @@ ebl_wstrtabfinalize (struct Ebl_WStrtab *st, Elf_Data *data)
 
   /* Now run through the tree and add all the string while also updating
      the offset members of the elfstrent records.  */
-  endp = (wchar_t *) data->d_buf + nulllen;
-  copylen = sizeof (wchar_t) * nulllen;
-  copystrings (st->root, &endp, &copylen);
-  assert (copylen == (st->total + nulllen) * sizeof (wchar_t));
+  char *endp = (char *) data->d_buf + nulllen;
+  size_t copylen = nulllen;
+  if (st->root)
+    copystrings (st->root, &endp, &copylen);
+  assert (copylen == st->total + nulllen);
+
+  return data;
 }
 
 
 size_t
-ebl_wstrtaboffset (struct Ebl_WStrent *se)
+dwelf_strent_off (Dwelf_Strent *se)
 {
   return se->offset;
+}
+
+
+const char *
+dwelf_strent_str (Dwelf_Strent *se)
+{
+  return se->string;
 }

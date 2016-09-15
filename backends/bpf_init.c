@@ -1,7 +1,5 @@
-/* Return object file type name.
-   Copyright (C) 2001, 2002 Red Hat, Inc.
+/* Initialization of BPF specific backend library.
    This file is part of elfutils.
-   Written by Ulrich Drepper <drepper@redhat.com>, 2001.
 
    This file is free software; you can redistribute it and/or modify
    it under the terms of either
@@ -31,29 +29,32 @@
 # include <config.h>
 #endif
 
-#include <stdio.h>
-#include <libeblP.h>
+#define BACKEND		bpf_
+#define RELOC_PREFIX	R_BPF_
+#include "libebl_CPU.h"
+
+/* This defines the common reloc hooks based on bpf_reloc.def.  */
+#define NO_RELATIVE_RELOC
+#define NO_COPY_RELOC
+#include "common-reloc.c"
 
 
 const char *
-ebl_object_type_name (Ebl *ebl, int object, char *buf, size_t len)
+bpf_init (Elf *elf __attribute__ ((unused)),
+	  GElf_Half machine __attribute__ ((unused)),
+	  Ebl *eh, size_t ehlen)
 {
-  const char *res;
+  /* Check whether the Elf_BH object has a sufficent size.  */
+  if (ehlen < sizeof (Ebl))
+    return NULL;
 
-  res = ebl != NULL ? ebl->object_type_name (object, buf, len) : NULL;
-  if (res == NULL)
-    {
-      /* Handle OS-specific section names.  */
-      if (object >= ET_LOOS && object <= ET_HIOS)
-	snprintf (buf, len, "LOOS+%x", object - ET_LOOS);
-      /* Handle processor-specific section names.  */
-      else if (object >= ET_LOPROC && object <= ET_HIPROC)
-	snprintf (buf, len, "LOPROC+%x", object - ET_LOPROC);
-      else
-	snprintf (buf, len, "%s: %d", gettext ("<unknown>"), object);
+  /* We handle it.  */
+  eh->name = "BPF";
+  bpf_init_reloc (eh);
+  HOOK (eh, register_info);
+#ifdef HAVE_LINUX_BPF_H
+  HOOK (eh, disasm);
+#endif
 
-      res = buf;
-    }
-
-  return res;
+  return MODVERSION;
 }

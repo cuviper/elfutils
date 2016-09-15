@@ -1,5 +1,5 @@
 /* Compress or decompress a section.
-   Copyright (C) 2015 Red Hat, Inc.
+   Copyright (C) 2015, 2016 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -117,6 +117,7 @@ __libelf_compress (Elf_Scn *scn, size_t hsize, int ei_data,
   int zrc = deflateInit (&z, Z_BEST_COMPRESSION);
   if (zrc != Z_OK)
     {
+      free (out_buf);
       __libelf_seterrno (ELF_E_COMPRESS_ERROR);
       return NULL;
     }
@@ -294,6 +295,7 @@ __libelf_decompress_elf (Elf_Scn *scn, size_t *size_out, size_t *addralign)
   return buf_out;
 }
 
+/* Assumes buf is a malloced buffer.  */
 void
 internal_function
 __libelf_reset_rawdata (Elf_Scn *scn, void *buf, size_t size, size_t align,
@@ -313,10 +315,12 @@ __libelf_reset_rawdata (Elf_Scn *scn, void *buf, size_t size, size_t align,
     free (scn->data_base);
   scn->data_base = NULL;
   if (scn->elf->map_address == NULL
-      || scn->rawdata_base == scn->zdata_base)
+      || scn->rawdata_base == scn->zdata_base
+      || (scn->flags & ELF_F_MALLOCED) != 0)
     free (scn->rawdata_base);
 
   scn->rawdata_base = buf;
+  scn->flags |= ELF_F_MALLOCED;
 }
 
 int

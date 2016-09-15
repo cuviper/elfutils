@@ -134,7 +134,6 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
-  rm -f .%{_bindir}/eu-ld
   rm -f .%{_includedir}/elfutils/libasm.h
   rm -f .%{_libdir}/libasm.so
   rm -f .%{_libdir}/libasm.a
@@ -176,7 +175,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-ar
 %{_bindir}/eu-unstrip
 %{_bindir}/eu-make-debug-archive
-#%{_bindir}/eu-ld
 %{_bindir}/eu-elfcompress
 %{_libdir}/libasm-%{version}.so
 %{_libdir}/libdw-%{version}.so
@@ -228,7 +226,16 @@ rm -rf ${RPM_BUILD_ROOT}
 %config(noreplace) %{_sysctldir}/10-default-yama-scope.conf
 
 %changelog
-* Thu Mar 31 2016 Mark Wielaard <mark@gmail.com> 0.166-1
+* Thu Aug  4 2016 Mark Wielaard <mjw@redhat.com> 0.167-1
+- libasm: Add eBPF disassembler for EM_BPF files.
+- backends: Add m68k and BPF backends.
+- ld: Removed.
+- dwelf: Add ELF/DWARF string table creation functions.
+  dwelf_strtab_init, dwelf_strtab_add, dwelf_strtab_add_len,
+  dwelf_strtab_finalize, dwelf_strent_off, dwelf_strent_str and
+  dwelf_strtab_free.
+
+* Thu Mar 31 2016 Mark Wielaard <mjw@redhat.com> 0.166-1
 - config: The default program prefix for the installed tools is now
   eu-. Use configure --program-prefix="" to not use a program prefix.
 

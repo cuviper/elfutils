@@ -1,3 +1,38 @@
+2016-08-07  Mark Wielaard  <mjw@redhat.com>
+
+	* elf_compress.c (__libelf_reset_rawdata): Check scn->flags and
+	free rawdata_base when malloced. Set ELF_F_MALLOCED for scn->flags.
+	* elf_end.c (elf_end): Check scn->flags and free rawdata_base if
+	malloced.
+	* libelfP.h (struct Elf_Scn): Document flags ELF_F_MALLOCED usage.
+
+2016-07-06  Mark Wielaard  <mjw@redhat.com>
+
+	* elf-knowledge.h (SH_FLAGS_COMBINE): Removed.
+	(SH_FLAGS_IMPORTANT): Likewise.
+
+2016-07-06  Mark Wielaard  <mjw@redhat.com>
+
+	* elf32_updatenull.c (updatenull_wrlock): Ignore e_type when
+	updating phdrs.
+	* elf_getphdrnum.c (__elf_getphdrnum_chk_rdlock): Only do sanity
+	checking if phdrs haven't been read in yet.
+
+2016-06-24  John Ogness  <john.ogness@linutronix.de>
+
+	* elf32_updatenull.c (updatenull_wrlock): Find first section.
+	* elf_nextscn.c (elf_nextscn): When scn is NULL start from 0th
+	section.
+
+2016-06-28  Richard Henderson  <rth@redhat.com>
+
+	* elf.h: Update from glibc.  Add lots of new EM_* definitions.
+
+2016-04-14  Mark Wielaard  <mjw@redhat.com>
+
+	* elf_compress.c (__libelf_compress): Free out_buf if deflateInit
+	fails.
+
 2016-02-13  Mark Wielaard  <mjw@redhat.com>
 
 	* elf32_updatefile.c (updatemmap): Free scns when out of memory.

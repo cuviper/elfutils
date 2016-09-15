@@ -1,7 +1,5 @@
-/* Return combines section header flags value.
-   Copyright (C) 2001, 2002 Red Hat, Inc.
+/* Register names and numbers for BPF DWARF.
    This file is part of elfutils.
-   Written by Ulrich Drepper <drepper@redhat.com>, 2001.
 
    This file is free software; you can redistribute it and/or modify
    it under the terms of either
@@ -31,11 +29,36 @@
 # include <config.h>
 #endif
 
-#include <libeblP.h>
+#include <stdio.h>
+#include <string.h>
 
+#ifdef HAVE_LINUX_BPF_H
+#include <linux/bpf.h>
+#else
+#define MAX_BPF_REG 10
+#endif
 
-GElf_Word
-ebl_sh_flags_combine (Ebl *ebl, GElf_Word flags1, GElf_Word flags2)
+#define BACKEND bpf_
+#include "libebl_CPU.h"
+
+ssize_t
+bpf_register_info (Ebl *ebl __attribute__ ((unused)),
+		   int regno, char *name, size_t namelen,
+		   const char **prefix, const char **setname,
+		   int *bits, int *type)
 {
-  return ebl->sh_flags_combine (flags1, flags2);
+  ssize_t len;
+
+  if (name == NULL)
+    return MAX_BPF_REG;
+  if (regno < 0 || regno >= MAX_BPF_REG)
+    return -1;
+
+  *prefix = "";
+  *setname = "integer";
+  *bits = 64;
+  *type = DW_ATE_signed;
+
+  len = snprintf(name, namelen, "r%d", regno);
+  return ((size_t)len < namelen ? len : -1);
 }
