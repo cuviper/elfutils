@@ -41,7 +41,7 @@ noinst_PROGRAMS = libdw.so
 include_HEADERS = dwarf.h
 pkginclude_HEADERS = libdw.h known-dwarf.h
 
-libdw_a_CFLAGS = -fpic -fvisibility=hidden $(AM_CFLAGS)
+libdw_a_CFLAGS = -fPIC -fvisibility=hidden $(AM_CFLAGS)
 libdw_a_SOURCES = dwarf_begin.c dwarf_begin_elf.c dwarf_end.c dwarf_getelf.c \
 		  dwarf_getpubnames.c dwarf_getabbrev.c dwarf_tag.c \
 		  dwarf_error.c dwarf_nextcu.c dwarf_diename.c dwarf_offdie.c \

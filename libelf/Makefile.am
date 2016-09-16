@@ -41,7 +41,7 @@ include_HEADERS = libelf.h gelf.h nlist.h
 
 pkginclude_HEADERS = elf-knowledge.h
 
-libelf_a_CFLAGS = -fpic -fvisibility=hidden $(AM_CFLAGS)
+libelf_a_CFLAGS = -fPIC -fvisibility=hidden $(AM_CFLAGS)
 libelf_a_SOURCES = elf_version.c elf_hash.c elf_error.c elf_fill.c \
 		   elf_begin.c elf_next.c elf_rand.c elf_end.c elf_kind.c \
 		   gelf_getclass.c elf_getbase.c elf_getident.c \

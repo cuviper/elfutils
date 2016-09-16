@@ -52,7 +52,7 @@ noinst_LIBRARIES += libcpu_bpf.a
 libcpu_bpf_a_SOURCES = bpf_disasm.c
 libcpu_bpf_a_CFLAGS = $(AM_CFLAGS) -Wno-format-nonliteral
 libcpu_static_pic_a_SOURCES += $(libcpu_bpf_a_SOURCES)
-bpf_disasm_CFLAGS = -Wno-format-nonliteral
+bpf_disasm_CFLAGS = -fPIC -Wno-format-nonliteral
 endif
 
 %_defs: $(srcdir)/defs/i386
