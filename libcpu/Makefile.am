@@ -51,6 +51,8 @@ if HAVE_LINUX_BPF_H
 noinst_LIBRARIES += libcpu_bpf.a
 libcpu_bpf_a_SOURCES = bpf_disasm.c
 libcpu_bpf_a_CFLAGS = $(AM_CFLAGS) -Wno-format-nonliteral
+libcpu_static_pic_a_SOURCES += $(libcpu_bpf_a_SOURCES)
+libcpu_static_pic_a_CFLAGS = $(AM_CFLAGS) -Wno-format-nonliteral
 endif
 
 %_defs: $(srcdir)/defs/i386
