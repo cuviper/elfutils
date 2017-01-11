@@ -35,9 +35,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/param.h>
 
 #include <elf-knowledge.h>
+#include <libeu.h>
 #include <system.h>
 #include "../libelf/libelfP.h"
 #include "../libelf/common.h"
@@ -48,7 +48,6 @@
 
 
 /* Name and version of program.  */
-static void print_version (FILE *stream, struct argp_state *state);
 ARGP_PROGRAM_VERSION_HOOK_DEF = print_version;
 
 /* Bug report address.  */
@@ -210,6 +209,7 @@ parse_opt (int key, char *arg __attribute__ ((unused)),
 
     case 'd':
       is_debuginfo = true;
+      break;
 
     case ARGP_gnuld:
       gnuld = true;
@@ -224,20 +224,6 @@ parse_opt (int key, char *arg __attribute__ ((unused)),
       return ARGP_ERR_UNKNOWN;
     }
   return 0;
-}
-
-
-/* Print the version information.  */
-static void
-print_version (FILE *stream, struct argp_state *state __attribute__ ((unused)))
-{
-  fprintf (stream, "elflint (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-  fprintf (stream, gettext ("\
-Copyright (C) %s Red Hat, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
-  fprintf (stream, gettext ("Written by %s.\n"), "Ulrich Drepper");
 }
 
 
@@ -3963,6 +3949,7 @@ section [%2zu] '%s': merge flag set but entry size is zero\n"),
 	    case SHT_NOBITS:
 	      if (is_debuginfo)
 		break;
+	      /* Fallthrough */
 	    default:
 	      ERROR (gettext ("\
 section [%2zu] '%s' has unexpected type %d for an executable section\n"),
@@ -4305,7 +4292,7 @@ section [%2d] '%s': unknown core file note type %" PRIu32
 	    if (nhdr.n_namesz == sizeof "Linux"
 		&& !memcmp (data->d_buf + name_offset, "Linux", sizeof "Linux"))
 	      break;
-
+	    /* Fallthrough */
 	  default:
 	    if (shndx == 0)
 	      ERROR (gettext ("\

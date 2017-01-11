@@ -41,7 +41,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/param.h>
 
 #include "../libebl/libeblP.h"
 
@@ -820,7 +819,7 @@ i386_disasm (Ebl *ebl __attribute__((unused)),
 			      ++param_start;
 			      break;
 			    }
-
+			  /* Fallthrough */
 			default:
 			  assert (! "INVALID not handled");
 			}

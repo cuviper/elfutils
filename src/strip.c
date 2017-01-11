@@ -36,19 +36,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
 #include <elf-knowledge.h>
 #include <libebl.h>
 #include "libdwelf.h"
+#include <libeu.h>
 #include <system.h>
 
 typedef uint8_t GElf_Byte;
 
 /* Name and version of program.  */
-static void print_version (FILE *stream, struct argp_state *state);
 ARGP_PROGRAM_VERSION_HOOK_DEF = print_version;
 
 /* Bug report address.  */
@@ -208,20 +207,6 @@ Only one input file allowed together with '-o' and '-f'"));
     }
 
   return result;
-}
-
-
-/* Print the version information.  */
-static void
-print_version (FILE *stream, struct argp_state *state __attribute__ ((unused)))
-{
-  fprintf (stream, "strip (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-  fprintf (stream, gettext ("\
-Copyright (C) %s Red Hat, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
-  fprintf (stream, gettext ("Written by %s.\n"), "Ulrich Drepper");
 }
 
 
@@ -1341,15 +1326,12 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 
 		    /* Get the full section index, if necessary from the
 		       XINDEX table.  */
-		    if (sym->st_shndx != SHN_XINDEX)
-		      sec = shdr_info[sym->st_shndx].idx;
-		    else
-		      {
-			elf_assert (shndxdata != NULL
-				    && shndxdata->d_buf != NULL);
-
-			sec = shdr_info[xshndx].idx;
-		      }
+		    if (sym->st_shndx == SHN_XINDEX)
+		      elf_assert (shndxdata != NULL
+				  && shndxdata->d_buf != NULL);
+		    size_t sidx = (sym->st_shndx != SHN_XINDEX
+				   ? sym->st_shndx : xshndx);
+		    sec = shdr_info[sidx].idx;
 
 		    if (sec != 0)
 		      {
@@ -1387,6 +1369,24 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 			    shdr_info[cnt].shdr.sh_info = destidx - 1;
 			  }
 		      }
+		    else if ((shdr_info[cnt].shdr.sh_flags & SHF_ALLOC) != 0
+			     && GELF_ST_TYPE (sym->st_info) != STT_SECTION
+			     && shdr_info[sidx].shdr.sh_type != SHT_GROUP)
+		      {
+			/* Removing a real symbol from an allocated
+			   symbol table is hard and probably a
+			   mistake.  Really removing it means
+			   rewriting the dynamic segment and hash
+			   sections.  Just warn and set the symbol
+			   section to UNDEF.  */
+			error (0, 0,
+			       gettext ("Cannot remove symbol [%zd] from allocated symbol table [%zd]"), inner, cnt);
+			sym->st_shndx = SHN_UNDEF;
+			if (gelf_update_sym (shdr_info[cnt].data, destidx,
+					     sym) == 0)
+			  INTERNAL_ERROR (fname);
+			shdr_info[cnt].newsymidx[inner] = destidx++;
+		      }
 		    else if (debug_fname != NULL
 			     && shdr_info[cnt].debug_data == NULL)
 		      /* The symbol points to a section that is discarded
@@ -1394,8 +1394,6 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 			 this is a section or group signature symbol
 			 for a section which has been removed.  */
 		      {
-			size_t sidx = (sym->st_shndx != SHN_XINDEX
-					? sym->st_shndx : xshndx);
 			elf_assert (GELF_ST_TYPE (sym->st_info) == STT_SECTION
 				    || ((shdr_info[sidx].shdr.sh_type
 					 == SHT_GROUP)

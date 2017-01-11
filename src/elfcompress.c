@@ -34,10 +34,10 @@
 #include ELFUTILS_HEADER(ebl)
 #include ELFUTILS_HEADER(dwelf)
 #include <gelf.h>
+#include "libeu.h"
 #include "system.h"
 
 /* Name and version of program.  */
-static void print_version (FILE *stream, struct argp_state *state);
 ARGP_PROGRAM_VERSION_HOOK_DEF = print_version;
 
 /* Bug report address.  */
@@ -53,12 +53,6 @@ static const char *foutput = NULL;
 #define T_COMPRESS_ZLIB 2 /* zlib */
 #define T_COMPRESS_GNU  3 /* zlib-gnu */
 static int type = T_UNSET;
-
-static void
-print_version (FILE *stream, struct argp_state *state __attribute__ ((unused)))
-{
-  fprintf (stream, "elfcompress (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-}
 
 struct section_pattern
 {
@@ -154,7 +148,8 @@ parse_opt (int key, char *arg __attribute__ ((unused)),
 	argp_error (state,
 		    N_("Only one input file allowed together with '-o'"));
       /* We only use this for checking the number of arguments, we don't
-	 actually want to consume them, so fallthrough.  */
+	 actually want to consume them.  */
+      /* Fallthrough */
     default:
       return ARGP_ERR_UNKNOWN;
     }

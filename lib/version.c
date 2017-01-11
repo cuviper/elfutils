@@ -1,7 +1,6 @@
-/* Create new ELF header.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2015 Red Hat, Inc.
+/* Common argp_print_version_hook for all tools.
+   Copyright (C) 2016 Red Hat, Inc.
    This file is part of elfutils.
-   Written by Ulrich Drepper <drepper@redhat.com>, 1998.
 
    This file is free software; you can redistribute it and/or modify
    it under the terms of either
@@ -31,16 +30,18 @@
 # include <config.h>
 #endif
 
-#include <gelf.h>
-#include <stdlib.h>
+#include <argp.h>
+#include <libintl.h>
+#include <stdio.h>
+#include "system.h"
 
-#include "libelfP.h"
-
-
-void *
-gelf_newehdr (Elf *elf, int class)
+void
+print_version (FILE *stream, struct argp_state *state)
 {
-  return (class == ELFCLASS32
-	  ? (void *) INTUSE(elf32_newehdr) (elf)
-	  : (void *) INTUSE(elf64_newehdr) (elf));
+  fprintf (stream, "%s (%s) %s\n", state->name, PACKAGE_NAME, PACKAGE_VERSION);
+  fprintf (stream, gettext ("\
+Copyright (C) %s The elfutils developers <%s>.\n\
+This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
+"), "2016", PACKAGE_URL);
 }

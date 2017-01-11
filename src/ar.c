@@ -1,5 +1,5 @@
 /* Create, modify, and extract from archives.
-   Copyright (C) 2005-2012 Red Hat, Inc.
+   Copyright (C) 2005-2012, 2016 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2005.
 
@@ -46,7 +46,6 @@
 
 
 /* Name and version of program.  */
-static void print_version (FILE *stream, struct argp_state *state);
 ARGP_PROGRAM_VERSION_HOOK_DEF = print_version;
 
 /* Prototypes for local functions.  */
@@ -274,20 +273,6 @@ MEMBER parameter required for 'a', 'b', and 'i' modifiers"));
     }
 
   return status;
-}
-
-
-/* Print the version information.  */
-static void
-print_version (FILE *stream, struct argp_state *state __attribute__ ((unused)))
-{
-  fprintf (stream, "ar (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-  fprintf (stream, gettext ("\
-Copyright (C) %s Red Hat, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
-  fprintf (stream, gettext ("Written by %s.\n"), "Ulrich Drepper");
 }
 
 
@@ -853,7 +838,10 @@ write_member (struct armem *memb, off_t *startp, off_t *lenp, Elf *elf,
 	      off_t end_off, int newfd)
 {
   struct ar_hdr arhdr;
-  char tmpbuf[sizeof (arhdr.ar_name) + 1];
+  /* The ar_name is not actually zero teminated, but we need that for
+     snprintf.  Also if the name is too long, then the string starts
+     with '/' plus an index off number (decimal).  */
+  char tmpbuf[sizeof (arhdr.ar_name) + 2];
 
   bool changed_header = memb->long_name_off != -1;
   if (changed_header)
@@ -1455,7 +1443,11 @@ do_oper_insert (int oper, const char *arfname, char **argv, int argc,
 
 	      /* Create the header.  */
 	      struct ar_hdr arhdr;
-	      char tmpbuf[sizeof (arhdr.ar_name) + 1];
+	      /* The ar_name is not actually zero teminated, but we
+		 need that for snprintf.  Also if the name is too
+		 long, then the string starts with '/' plus an index
+		 off number (decimal).  */
+	      char tmpbuf[sizeof (arhdr.ar_name) + 2];
 	      if (all->long_name_off == -1)
 		{
 		  size_t namelen = strlen (all->name);
@@ -1465,7 +1457,7 @@ do_oper_insert (int oper, const char *arfname, char **argv, int argc,
 		}
 	      else
 		{
-		  snprintf (tmpbuf, sizeof (arhdr.ar_name) + 1, "/%-*ld",
+		  snprintf (tmpbuf, sizeof (tmpbuf), "/%-*ld",
 			    (int) sizeof (arhdr.ar_name), all->long_name_off);
 		  memcpy (arhdr.ar_name, tmpbuf, sizeof (arhdr.ar_name));
 		}

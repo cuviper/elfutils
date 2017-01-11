@@ -81,8 +81,8 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-strip-test9.sh run-strip-test10.sh \
 	run-strip-groups.sh run-strip-reloc.sh run-strip-strmerge.sh \
 	run-strip-nobitsalign.sh \
-	run-unstrip-test.sh run-unstrip-test2.sh \
-	run-unstrip-test3.sh run-unstrip-M.sh run-elfstrmerge-test.sh \
+	run-unstrip-test.sh run-unstrip-test2.sh run-unstrip-test3.sh \
+	run-unstrip-test4.sh run-unstrip-M.sh run-elfstrmerge-test.sh \
 	run-ecp-test.sh run-ecp-test2.sh run-alldts.sh \
 	run-elflint-test.sh run-elflint-self.sh run-ranlib-test.sh \
 	run-ranlib-test2.sh run-ranlib-test3.sh run-ranlib-test4.sh \
@@ -176,6 +176,8 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     run-unstrip-test.sh run-unstrip-test2.sh \
 	     testfile-info-link.bz2 testfile-info-link.debuginfo.bz2 \
 	     testfile-info-link.stripped.bz2 run-unstrip-test3.sh \
+	     run-unstrip-test4.sh testfile-strtab.bz2 \
+	     testfile-strtab.stripped.bz2 testfile-strtab.debuginfo.bz2 \
 	     run-unstrip-M.sh run-elfstrmerge-test.sh \
 	     run-elflint-self.sh run-ranlib-test.sh run-ranlib-test2.sh \
 	     run-ranlib-test3.sh run-ranlib-test4.sh \
@@ -425,15 +427,15 @@ funcretval_LDADD = $(libdw) $(argp_LDADD)
 allregs_LDADD = $(libdw) $(argp_LDADD)
 find_prologues_LDADD = $(libdw) $(argp_LDADD)
 #show_ciefde_LDADD = ../libdwarf/libdwarf.so $(libelf)
-asm_tst1_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst2_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst3_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst4_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst5_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst6_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst7_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst8_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
-asm_tst9_LDADD = $(libasm) $(libebl) $(libdw_static) $(libelf) -ldl
+asm_tst1_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst2_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst3_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst4_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst5_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst6_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst7_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst8_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
+asm_tst9_LDADD = $(libasm) $(libebl) $(libelf) $(libdw) -ldl
 dwflmodtest_LDADD = $(libdw) $(libebl) $(libelf) $(argp_LDADD) -ldl
 rdwrmmap_LDADD = $(libelf)
 dwfl_bug_addr_overflow_LDADD = $(libdw) $(libebl) $(libelf) -ldl

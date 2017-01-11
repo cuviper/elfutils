@@ -40,10 +40,10 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/param.h>
 #include <sys/stat.h>
 #include <signal.h>
 
+#include <libeu.h>
 #include <system.h>
 #include "../libelf/libelfP.h"
 #include "../libelf/common.h"
@@ -57,7 +57,6 @@
 
 
 /* Name and version of program.  */
-static void print_version (FILE *stream, struct argp_state *state);
 ARGP_PROGRAM_VERSION_HOOK_DEF = print_version;
 
 /* Bug report address.  */
@@ -85,7 +84,8 @@ static const struct argp_option options[] =
   { "relocs", 'r', NULL, 0, N_("Display relocations"), 0 },
   { "section-headers", 'S', NULL, 0, N_("Display the sections' headers"), 0 },
   { "sections", 'S', NULL, OPTION_ALIAS | OPTION_HIDDEN, NULL, 0 },
-  { "symbols", 's', NULL, 0, N_("Display the symbol table"), 0 },
+  { "symbols", 's', "SECTION", OPTION_ARG_OPTIONAL,
+    N_("Display the symbol table sections"), 0 },
   { "version-info", 'V', NULL, 0, N_("Display versioning information"), 0 },
   { "notes", 'n', NULL, 0, N_("Display the ELF notes"), 0 },
   { "arch-specific", 'A', NULL, 0,
@@ -156,6 +156,9 @@ static bool print_section_header;
 
 /* True if the symbol table should be printed.  */
 static bool print_symbol_table;
+
+/* A specific section name, or NULL to print all symbol tables.  */
+static char *symbol_table_section;
 
 /* True if the version information should be printed.  */
 static bool print_version_info;
@@ -389,6 +392,7 @@ parse_opt (int key, char *arg,
     case 's':
       print_symbol_table = true;
       any_control_option = true;
+      symbol_table_section = arg;
       break;
     case 'V':
       print_version_info = true;
@@ -498,20 +502,6 @@ parse_opt (int key, char *arg,
       return ARGP_ERR_UNKNOWN;
     }
   return 0;
-}
-
-
-/* Print the version information.  */
-static void
-print_version (FILE *stream, struct argp_state *state __attribute__ ((unused)))
-{
-  fprintf (stream, "readelf (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-  fprintf (stream, gettext ("\
-Copyright (C) %s Red Hat, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
-  fprintf (stream, gettext ("Written by %s.\n"), "Ulrich Drepper");
 }
 
 
@@ -2236,6 +2226,19 @@ print_symtab (Ebl *ebl, int type)
 
       if (shdr != NULL && shdr->sh_type == (GElf_Word) type)
 	{
+	  if (symbol_table_section != NULL)
+	    {
+	      /* Get the section header string table index.  */
+	      size_t shstrndx;
+	      const char *sname;
+	      if (unlikely (elf_getshdrstrndx (ebl->elf, &shstrndx) < 0))
+		error (EXIT_FAILURE, 0,
+		       gettext ("cannot get section header string table index"));
+	      sname = elf_strptr (ebl->elf, shstrndx, shdr->sh_name);
+	      if (sname == NULL || strcmp (sname, symbol_table_section) != 0)
+		continue;
+	    }
+
 	  if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
 	    {
 	      if (elf_compress (scn, 0, 0) < 0)

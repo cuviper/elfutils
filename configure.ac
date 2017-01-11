@@ -17,7 +17,7 @@ dnl  GNU General Public License for more details.
 dnl
 dnl  You should have received a copy of the GNU General Public License
 dnl  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-AC_INIT([elfutils],[0.167],[https://bugzilla.redhat.com/],[elfutils])
+AC_INIT([elfutils],[0.168],[https://sourceware.org/bugzilla],[elfutils],[http://elfutils.org/])
 
 # We want eu- as default program prefix if none was given by the user.
 # But if the user explicitly provided --program-prefix="" then pretend
@@ -35,7 +35,7 @@ fi
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_FILES([config/Makefile])
 
-AC_COPYRIGHT([Copyright (C) 1996-2016 Red Hat, Inc.])
+AC_COPYRIGHT([Copyright (C) 1996-2016 The elfutils developers.])
 AC_PREREQ(2.63)			dnl Minimum Autoconf version required.
 
 dnl We use GNU make extensions; automake 1.10 defaults to -Wportability.
@@ -144,6 +144,15 @@ dnl tests, because the choice of the file model can (in principle) affect
 dnl whether functions and headers are available, whether they work, etc.
 AC_SYS_LARGEFILE
 
+dnl Older glibc had a broken fts that didn't work with Large File Systems.
+dnl We want the version that can handler LFS, but include workaround if we
+dnl get a bad one. Add define to CFLAGS (not AC_DEFINE it) since we need to
+dnl check it before including config.h (which might define _FILE_OFFSET_BITS).
+AC_CACHE_CHECK([whether fts.h is bad when included (with LFS)], ac_cv_bad_fts,
+  [AC_COMPILE_IFELSE([AC_LANG_SOURCE([[#include <fts.h>]])],
+		     ac_cv_bad_fts=no, ac_cv_bad_fts=yes)])
+AS_IF([test "x$ac_cv_bad_fts" = "xyes"], [CFLAGS="$CFLAGS -DBAD_FTS=1"])
+
 dnl enable debugging of branch prediction.
 AC_ARG_ENABLE([debugpred],
 AS_HELP_STRING([--enable-debugpred],[build binaries with support to debug branch prediction]),
@@ -245,6 +254,11 @@ zip_LIBS="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST([zip_LIBS])
 
+AC_CHECK_DECLS([memrchr, rawmemchr],[],[],
+               [#define _GNU_SOURCE
+                #include <string.h>])
+AC_CHECK_DECLS([powerof2],[],[],[#include <sys/param.h>])
+
 AC_CHECK_LIB([stdc++], [__cxa_demangle], [dnl
 AC_DEFINE([USE_DEMANGLE], [1], [Defined if demangling is enabled])])
 AM_CONDITIONAL(DEMANGLE, test "x$ac_cv_lib_stdcpp___cxa_demangle" = "xyes")
@@ -305,6 +319,16 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],
 CFLAGS="$old_CFLAGS"])
 AM_CONDITIONAL(HAVE_NULL_DEREFERENCE_WARNING,
 	       [test "x$ac_cv_null_dereference" != "xno"])
+
+# -Wimplicit-fallthrough was added by GCC7
+AC_CACHE_CHECK([whether gcc accepts -Wimplicit-fallthrough], ac_cv_implicit_fallthrough, [dnl
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Wimplicit-fallthrough -Werror"
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([])],
+		  ac_cv_implicit_fallthrough=yes, ac_cv_implicit_fallthrough=no)
+CFLAGS="$old_CFLAGS"])
+AM_CONDITIONAL(HAVE_IMPLICIT_FALLTHROUGH_WARNING,
+	       [test "x$ac_cv_implicit_fallthrough" != "xno"])
 
 dnl Check if we have argp available from our libc
 AC_LINK_IFELSE(

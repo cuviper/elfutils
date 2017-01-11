@@ -49,6 +49,7 @@
 #include <libebl.h>
 #include <libdwfl.h>
 #include "libdwelf.h"
+#include "libeu.h"
 #include "system.h"
 
 #ifndef _
@@ -56,7 +57,6 @@
 #endif
 
 /* Name and version of program.  */
-static void print_version (FILE *stream, struct argp_state *state);
 ARGP_PROGRAM_VERSION_HOOK_DEF = print_version;
 
 /* Bug report address.  */
@@ -223,19 +223,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       return ARGP_ERR_UNKNOWN;
     }
   return 0;
-}
-
-/* Print the version information.  */
-static void
-print_version (FILE *stream, struct argp_state *state __attribute__ ((unused)))
-{
-  fprintf (stream, "unstrip (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-  fprintf (stream, _("\
-Copyright (C) %s Red Hat, Inc.\n\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\
-"), "2012");
-  fprintf (stream, gettext ("Written by %s.\n"), "Roland McGrath");
 }
 
 #define ELF_CHECK(call, msg)						      \
@@ -1362,6 +1349,7 @@ more sections in stripped file than debug file -- arguments reversed?"));
   /* Match each debuginfo section with its corresponding stripped section.  */
   bool check_prelink = false;
   Elf_Scn *unstripped_symtab = NULL;
+  size_t unstripped_strndx = 0;
   size_t alloc_avail = 0;
   scn = NULL;
   while ((scn = elf_nextscn (unstripped, scn)) != NULL)
@@ -1373,11 +1361,12 @@ more sections in stripped file than debug file -- arguments reversed?"));
       if (shdr->sh_type == SHT_SYMTAB)
 	{
 	  unstripped_symtab = scn;
+	  unstripped_strndx = shdr->sh_link;
 	  continue;
 	}
 
       const size_t ndx = elf_ndxscn (scn);
-      if (ndx == unstripped_shstrndx)
+      if (ndx == unstripped_shstrndx || ndx == unstripped_strndx)
 	continue;
 
       const char *name = get_section_name (ndx, shdr, shstrtab);
@@ -1484,13 +1473,11 @@ more sections in stripped file than debug file -- arguments reversed?"));
 	    }
 
 	  if (unstripped_symtab != NULL && stripped_symtab != NULL
-	      && secndx == stripped_symtab->shdr.sh_link)
+	      && secndx == stripped_symtab->shdr.sh_link
+	      && unstripped_strndx != 0)
 	    {
 	      /* ... nor its string table.  */
-	      GElf_Shdr shdr_mem;
-	      GElf_Shdr *shdr = gelf_getshdr (unstripped_symtab, &shdr_mem);
-	      ELF_CHECK (shdr != NULL, _("cannot get section header: %s"));
-	      ndx_section[secndx - 1] = shdr->sh_link;
+	      ndx_section[secndx - 1] = unstripped_strndx;
 	      continue;
 	    }
 

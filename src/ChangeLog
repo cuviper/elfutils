@@ -1,3 +1,71 @@
+2016-12-24  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (findtextrel_LDADD): Add $(libeu).
+	(addr2line_LDADD): Likewise.
+	(elfcmp_LDADD): Likewise.
+	* addr2line.c (print_version): Removed.
+	* ar.c (print_version): Likewise.
+	* elfcmp.c (print_version): Likewise.
+	* elfcompress.c (print_version): Likewise.
+	* elflint.c (print_version): Likewise.
+	* findtextrel.c (print_version): Likewise.
+	* nm.c (print_version): Likewise.
+	* objdump.c: Likewise.
+	* ranlib.c: Likewise.
+	* readelf.c: Likewise.
+	* size.c: Likewise.
+	* stack.c: Likewise.
+	* strings.c: Likewise.
+	* strip.c: Likewise.
+	* unstrip.c: Likewise.
+
+2016-11-17  Mark Wielaard  <mjw@redhat.com>
+
+	* readelf.c (options): Add optional arg SECTION for symbols.
+	(symbol_table_section): New static variable.
+	(parse_opt): Set symbol_table_section on 's'.
+	(print_symtab): Filter on symbol_table_section name is set.
+
+2016-11-10  Mark Wielaard  <mjw@redhat.com>
+
+	* ar.c (write_member): Make sure tmpbuf is large enough to contain
+	a starting '/' and ending '\0' char.
+	(do_oper_insert): Likewise.
+	* arlib.c (arlib_finalize): Format tmpbuf as PRId32 decimal.
+
+2016-11-02  Mark Wielaard  <mjw@redhat.com>
+
+	* addr2line.c (handle_address): Add fallthrough comment.
+	* elfcompress.c (parse_opt): Adjust fallthrough comment.
+	* elflint.c (parse_opt): Add missing break after 'd' case.
+	(check_sections): Add fallthrough comments.
+	* objdump.c (parse_opt): Add explantion for fallthrough comment.
+
+2016-10-22  Kevin Cernekee  <cernekee@chromium.org>
+
+	* unstrip.c: Fix "invalid string offset" error caused by using the
+	  unstripped .symtab with the stripped .strtab.
+
+2016-10-11  Akihiko Odaki  <akihiko.odaki.4i@stu.hosei.ac.jp>
+
+	* arlib.c: Remove system.h include, add libeu.h include.
+	* arlib2.c: Remove sys/param.h include.
+	* elfcompress.c: Add libeu.h include.
+	* elflint.c: Remove sys/param.h include, add libeu.h include.
+	* nm.c: Likewise.
+	* objdump.c: Likewise.
+	* ranlib.c: Likewise.
+	* readelf.c: Likewise.
+	* size.c: Remove sys/param.h include.
+	* strings.c: Likewise, add libeu.h include.
+	* strip.c: Likewise.
+	* unstrip.c: Likewise.
+
+2016-10-06  Mark Wielaard  <mjw@redhat.com>
+
+	* strip.c (handle_elf): Don't remove real symbols from allocated
+	symbol tables.
+
 2016-08-25  Mark Wielaard  <mjw@redhat.com>
 
 	* strip.c (handle_elf): Recompress with ELF_CHF_FORCE.
