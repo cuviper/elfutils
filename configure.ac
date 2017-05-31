@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Configure input file for elfutils.                     -*-autoconf-*-
 dnl
-dnl Copyright (C) 1996-2016 Red Hat, Inc.
+dnl Copyright (C) 1996-2017 Red Hat, Inc.
 dnl
 dnl This file is part of elfutils.
 dnl
@@ -17,7 +17,13 @@ dnl  GNU General Public License for more details.
 dnl
 dnl  You should have received a copy of the GNU General Public License
 dnl  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-AC_INIT([elfutils],[0.168],[https://sourceware.org/bugzilla],[elfutils],[http://elfutils.org/])
+AC_INIT([elfutils],[0.169],[https://sourceware.org/bugzilla],[elfutils],[http://elfutils.org/])
+
+dnl Workaround for older autoconf < 2.64
+m4_ifndef([AC_PACKAGE_URL],
+         [AC_DEFINE([PACKAGE_URL], ["http://elfutils.org/"],
+                    [Define to home page for this package])
+          AC_SUBST([PACKAGE_URL], ["http://elfutils.org/"])])
 
 dnl Workaround for older autoconf < 2.64
 m4_ifndef([AC_PACKAGE_URL],
@@ -41,7 +47,7 @@ fi
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_FILES([config/Makefile])
 
-AC_COPYRIGHT([Copyright (C) 1996-2016 The elfutils developers.])
+AC_COPYRIGHT([Copyright (C) 1996-2017 The elfutils developers.])
 AC_PREREQ(2.63)			dnl Minimum Autoconf version required.
 
 dnl We use GNU make extensions; automake 1.10 defaults to -Wportability.
@@ -159,6 +165,27 @@ AC_CACHE_CHECK([whether fts.h is bad when included (with LFS)], ac_cv_bad_fts,
 		     ac_cv_bad_fts=no, ac_cv_bad_fts=yes)])
 AS_IF([test "x$ac_cv_bad_fts" = "xyes"], [CFLAGS="$CFLAGS -DBAD_FTS=1"])
 
+# See if we can add -D_FORTIFY_SOURCE=2. Don't do it if it is already
+# (differently) defined or if it generates warnings/errors because we
+# don't use the right optimisation level (string.h will warn about that).
+AC_MSG_CHECKING([whether to add -D_FORTIFY_SOURCE=2 to CFLAGS])
+case "$CFLAGS" in
+  *-D_FORTIFY_SOURCE=2*)
+    AC_MSG_RESULT([no, already there])
+    ;;
+  *)
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="-D_FORTIFY_SOURCE=2 -Werror $CFLAGS"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+      #include <string.h>
+      int main() { return 0; }
+    ]])], [ AC_MSG_RESULT([yes])
+            CFLAGS="-D_FORTIFY_SOURCE=2 $save_CFLAGS" ],
+          [ AC_MSG_RESULT([no])
+            CFLAGS="$save_CFLAGS"])
+  ;;
+esac
+
 dnl enable debugging of branch prediction.
 AC_ARG_ENABLE([debugpred],
 AS_HELP_STRING([--enable-debugpred],[build binaries with support to debug branch prediction]),
@@ -264,6 +291,9 @@ AC_CHECK_DECLS([memrchr, rawmemchr],[],[],
                [#define _GNU_SOURCE
                 #include <string.h>])
 AC_CHECK_DECLS([powerof2],[],[],[#include <sys/param.h>])
+AC_CHECK_DECLS([mempcpy],[],[],
+               [#define _GNU_SOURCE
+                #include <string.h>])
 
 AC_CHECK_LIB([stdc++], [__cxa_demangle], [dnl
 AC_DEFINE([USE_DEMANGLE], [1], [Defined if demangling is enabled])])

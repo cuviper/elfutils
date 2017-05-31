@@ -52,14 +52,14 @@ libdw = ../libdw/libdw.so
 # each others files.
 static_SRCS = i386_init.c i386_symbol.c i386_corenote.c i386_cfi.c \
 	     i386_retval.c i386_regs.c i386_auxv.c i386_syscall.c \
-	     i386_initreg.c \
+	     i386_initreg.c i386_unwind.c \
 	     x86_64_init.c x86_64_symbol.c x86_64_corenote.c x86_64_cfi.c \
 	     x86_64_retval.c x86_64_regs.c x86_64_syscall.c \
-	     x86_64_initreg.c x32_corenote.c \
+	     x86_64_initreg.c x86_64_unwind.c x32_corenote.c \
 	     ia64_init.c ia64_symbol.c ia64_regs.c ia64_retval.c \
 	     aarch64_init.c aarch64_regs.c aarch64_symbol.c   \
 	     aarch64_corenote.c aarch64_retval.c aarch64_cfi.c \
-	     aarch64_initreg.c \
+	     aarch64_initreg.c aarch64_unwind.c \
 	     ppc_init.c ppc_symbol.c ppc_retval.c ppc_regs.c \
 	     ppc_corenote.c ppc_auxv.c ppc_attrs.c ppc_syscall.c \
 	     ppc_cfi.c ppc_initreg.c \
@@ -74,7 +74,7 @@ am_libebl_static_pic_a_OBJECTS = $(static_SRCS:.c=.os)
 
 i386_SRCS = i386_init.c i386_symbol.c i386_corenote.c i386_cfi.c \
 	    i386_retval.c i386_regs.c i386_auxv.c i386_syscall.c \
-	    i386_initreg.c
+	    i386_initreg.c i386_unwind.c
 cpu_i386 = ../libcpu/libcpu_i386.a
 libebl_i386_pic_a_SOURCES = $(i386_SRCS)
 am_libebl_i386_pic_a_OBJECTS = $(i386_SRCS:.c=.os)
@@ -85,7 +85,7 @@ am_libebl_sh_pic_a_OBJECTS = $(sh_SRCS:.c=.os)
 
 x86_64_SRCS = x86_64_init.c x86_64_symbol.c x86_64_corenote.c x86_64_cfi.c \
 	      x86_64_retval.c x86_64_regs.c i386_auxv.c x86_64_syscall.c \
-	      x86_64_initreg.c x32_corenote.c
+	      x86_64_initreg.c x86_64_unwind.c x32_corenote.c
 cpu_x86_64 = ../libcpu/libcpu_x86_64.a
 libebl_x86_64_pic_a_SOURCES = $(x86_64_SRCS)
 am_libebl_x86_64_pic_a_OBJECTS = $(x86_64_SRCS:.c=.os)
@@ -106,7 +106,7 @@ am_libebl_arm_pic_a_OBJECTS = $(arm_SRCS:.c=.os)
 
 aarch64_SRCS = aarch64_init.c aarch64_regs.c aarch64_symbol.c	\
 	       aarch64_corenote.c aarch64_retval.c aarch64_cfi.c \
-	       aarch64_initreg.c
+	       aarch64_initreg.c aarch64_unwind.c
 libebl_aarch64_pic_a_SOURCES = $(aarch64_SRCS)
 am_libebl_aarch64_pic_a_OBJECTS = $(aarch64_SRCS:.c=.os)
 

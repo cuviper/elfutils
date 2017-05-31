@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 ##
-## Copyright (C) 1996-2016 Red Hat, Inc.
+## Copyright (C) 1996-2017 Red Hat, Inc.
 ## This file is part of elfutils.
 ##
 ## This file is free software; you can redistribute it and/or modify
@@ -50,10 +50,12 @@ check_PROGRAMS = arextract arsymtest newfile saridx scnnames sectiondump \
 		  test-elf_cntl_gelf_getshdr dwflsyms dwfllines \
 		  dwfl-report-elf-align varlocs backtrace backtrace-child \
 		  backtrace-data backtrace-dwarf debuglink debugaltlink \
-		  buildid deleted deleted-lib.so aggregate_size vdsosyms \
+		  buildid deleted deleted-lib.so aggregate_size peel_type \
+		  vdsosyms \
 		  getsrc_die strptr newdata elfstrtab dwfl-proc-attach \
 		  elfshphehdr elfstrmerge dwelfgnucompressed elfgetchdr \
-		  elfgetzdata elfputzdata zstrptr emptyfile vendorelf
+		  elfgetzdata elfputzdata zstrptr emptyfile vendorelf \
+		  fillfile
 
 asm_TESTS = asm-tst1 asm-tst2 asm-tst3 asm-tst4 asm-tst5 \
 	    asm-tst6 asm-tst7 asm-tst8 asm-tst9
@@ -113,21 +115,25 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-backtrace-native.sh run-backtrace-data.sh run-backtrace-dwarf.sh \
 	run-backtrace-native-biarch.sh run-backtrace-native-core.sh \
 	run-backtrace-native-core-biarch.sh run-backtrace-core-x86_64.sh \
+	run-backtrace-fp-core-x86_64.sh \
+	run-backtrace-fp-core-aarch64.sh \
 	run-backtrace-core-x32.sh \
-	run-backtrace-core-i386.sh run-backtrace-core-ppc.sh \
+	run-backtrace-core-i386.sh run-backtrace-fp-core-i386.sh \
+	run-backtrace-core-ppc.sh \
 	run-backtrace-core-s390x.sh run-backtrace-core-s390.sh \
 	run-backtrace-core-aarch64.sh run-backtrace-core-sparc.sh \
 	run-backtrace-demangle.sh run-stack-d-test.sh run-stack-i-test.sh \
 	run-stack-demangled-test.sh run-readelf-zx.sh run-readelf-zp.sh \
 	run-readelf-dwz-multi.sh run-allfcts-multi.sh run-deleted.sh \
-	run-linkmap-cut.sh run-aggregate-size.sh vdsosyms run-readelf-A.sh \
+	run-linkmap-cut.sh run-aggregate-size.sh run-peel-type.sh \
+	vdsosyms run-readelf-A.sh \
 	run-getsrc-die.sh run-strptr.sh newdata elfstrtab dwfl-proc-attach \
 	elfshphehdr run-lfs-symbols.sh run-dwelfgnucompressed.sh \
 	run-elfgetchdr.sh \
 	run-elfgetzdata.sh run-elfputzdata.sh run-zstrptr.sh \
 	run-compress-test.sh \
 	run-readelf-zdebug.sh run-readelf-zdebug-rel.sh \
-	emptyfile vendorelf
+	emptyfile vendorelf fillfile
 
 if !BIARCH
 export ELFUTILS_DISABLE_BIARCH = 1
@@ -290,9 +296,15 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     run-backtrace-native.sh run-backtrace-native-biarch.sh \
 	     run-backtrace-native-core.sh run-backtrace-native-core-biarch.sh \
 	     run-backtrace-core-x86_64.sh run-backtrace-core-i386.sh \
+	     run-backtrace-fp-core-x86_64.sh \
 	     run-backtrace-core-x32.sh \
+	     run-backtrace-fp-core-aarch64.sh \
+	     backtrace.aarch64.fp.core.bz2 backtrace.aarch64.fp.exec.bz2 \
 	     backtrace-subr.sh backtrace.i386.core.bz2 backtrace.i386.exec.bz2 \
+	     run-backtrace-fp-core-i386.sh \
+	     backtrace.i386.fp.core.bz2 backtrace.i386.fp.exec.bz2 \
 	     backtrace.x86_64.core.bz2 backtrace.x86_64.exec.bz2 \
+	     backtrace.x86_64.fp.core.bz2 backtrace.x86_64.fp.exec.bz2 \
 	     backtrace.ppc.core.bz2 backtrace.ppc.exec.bz2 \
 	     run-backtrace-core-ppc.sh testfile66.bz2 testfile66.core.bz2 \
 	     backtrace.s390x.core.bz2 backtrace.s390x.exec.bz2 \
@@ -315,9 +327,9 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     run-deleted.sh run-linkmap-cut.sh linkmap-cut-lib.so.bz2 \
 	     linkmap-cut.bz2 linkmap-cut.core.bz2 \
 	     run-aggregate-size.sh testfile-sizes1.o.bz2 testfile-sizes2.o.bz2 \
-	     testfile-sizes3.o.bz2 \
+	     testfile-sizes3.o.bz2 run-peel-type.sh \
 	     run-readelf-A.sh testfileppc32attrs.o.bz2 \
-	     testfilesparc64attrs.o.bz2 \
+	     testfilesparc64attrs.o.bz2 testfileppc64attrs.o.bz2 \
 	     testfile-debug-types.bz2 \
 	     run-getsrc-die.sh run-strptr.sh \
 	     testfile-x32-core.bz2 testfile-x32.bz2 \
@@ -475,6 +487,7 @@ deleted_LDADD = ./deleted-lib.so
 deleted_lib_so_LDFLAGS = -shared -rdynamic
 deleted_lib_so_CFLAGS = -fPIC -fasynchronous-unwind-tables
 aggregate_size_LDADD = $(libdw) $(libelf) $(argp_LDADD)
+peel_type_LDADD = $(libdw) $(libelf) $(argp_LDADD)
 vdsosyms_LDADD = $(libdw) $(libelf)
 getsrc_die_LDADD = $(libdw) $(libelf)
 strptr_LDADD = $(libelf)
@@ -491,6 +504,7 @@ elfputzdata_LDADD = $(libelf)
 zstrptr_LDADD = $(libelf)
 emptyfile_LDADD = $(libelf)
 vendorelf_LDADD = $(libelf)
+fillfile_LDADD = $(libelf)
 
 # We want to test the libelf header against the system elf.h header.
 # Don't include any -I CPPFLAGS.

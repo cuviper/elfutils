@@ -3,6 +3,7 @@
 
 # Files from the compatibility library
 lib/color.c
+lib/printversion.c
 lib/xmalloc.c
 
 # Library sources

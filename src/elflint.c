@@ -1,5 +1,5 @@
 /* Pedantic checking of ELF files compliance with gABI/psABI spec.
-   Copyright (C) 2001-2015 Red Hat, Inc.
+   Copyright (C) 2001-2015, 2017 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2001.
 
@@ -39,6 +39,7 @@
 #include <elf-knowledge.h>
 #include <libeu.h>
 #include <system.h>
+#include <printversion.h>
 #include "../libelf/libelfP.h"
 #include "../libelf/common.h"
 #include "../libebl/libeblP.h"
@@ -455,6 +456,24 @@ invalid number of section header table entries\n"));
 	ERROR (gettext ("invalid section header index\n"));
     }
 
+  /* Check the shdrs actually exist.  And uncompress them before
+     further checking.  Indexes between sections reference the
+     uncompressed data.  */
+  unsigned int scnt;
+  Elf_Scn *scn = NULL;
+  for (scnt = 1; scnt < shnum; ++scnt)
+     {
+	scn = elf_nextscn (ebl->elf, scn);
+	if (scn == NULL)
+	  break;
+	/* If the section wasn't compressed this does nothing, but
+	   returns an error.  We don't care.  */
+	elf_compress (scn, 0, 0);
+     }
+  if (scnt < shnum)
+    ERROR (gettext ("Can only check %u headers, shnum was %u\n"), scnt, shnum);
+  shnum = scnt;
+
   phnum = ehdr->e_phnum;
   if (ehdr->e_phnum == PN_XNUM)
     {
@@ -472,6 +491,19 @@ invalid number of program header table entries\n"));
 	    phnum = shdr->sh_info;
 	}
     }
+
+  /* Check the phdrs actually exist. */
+  unsigned int pcnt;
+  for (pcnt = 0; pcnt < phnum; ++pcnt)
+     {
+	GElf_Phdr phdr_mem;
+	GElf_Phdr *phdr = gelf_getphdr (ebl->elf, pcnt, &phdr_mem);
+	if (phdr == NULL)
+	  break;
+     }
+  if (pcnt < phnum)
+    ERROR (gettext ("Can only check %u headers, phnum was %u\n"), pcnt, phnum);
+  phnum = pcnt;
 
   /* Check the e_flags field.  */
   if (!ebl_machine_flag_check (ebl, ehdr->e_flags))
@@ -1958,7 +1990,8 @@ section [%2d] '%s': extended section index in section [%2zu] '%s' refers to same
       return;
     }
 
-  if (*((Elf32_Word *) data->d_buf) != 0)
+  if (data->d_size < sizeof (Elf32_Word)
+      || *((Elf32_Word *) data->d_buf) != 0)
     ERROR (gettext ("symbol 0 should have zero extended section index\n"));
 
   for (size_t cnt = 1; cnt < data->d_size / sizeof (Elf32_Word); ++cnt)
@@ -1991,11 +2024,14 @@ check_sysv_hash (Ebl *ebl, GElf_Shdr *shdr, Elf_Data *data, int idx,
   Elf32_Word nbucket = ((Elf32_Word *) data->d_buf)[0];
   Elf32_Word nchain = ((Elf32_Word *) data->d_buf)[1];
 
-  if (shdr->sh_size < (2 + nbucket + nchain) * shdr->sh_entsize)
-    ERROR (gettext ("\
+  if (shdr->sh_size < (2 + nbucket + nchain) * sizeof (Elf32_Word))
+    {
+      ERROR (gettext ("\
 section [%2d] '%s': hash table section is too small (is %ld, expected %ld)\n"),
-	   idx, section_name (ebl, idx), (long int) shdr->sh_size,
-	   (long int) ((2 + nbucket + nchain) * shdr->sh_entsize));
+	     idx, section_name (ebl, idx), (long int) shdr->sh_size,
+	     (long int) ((2 + nbucket + nchain) * sizeof (Elf32_Word)));
+      return;
+    }
 
   size_t maxidx = nchain;
 
@@ -2042,11 +2078,14 @@ check_sysv_hash64 (Ebl *ebl, GElf_Shdr *shdr, Elf_Data *data, int idx,
   Elf64_Xword nbucket = ((Elf64_Xword *) data->d_buf)[0];
   Elf64_Xword nchain = ((Elf64_Xword *) data->d_buf)[1];
 
-  if (shdr->sh_size < (2 + nbucket + nchain) * shdr->sh_entsize)
-    ERROR (gettext ("\
+  if (shdr->sh_size < (2 + nbucket + nchain) * sizeof (Elf64_Xword))
+    {
+      ERROR (gettext ("\
 section [%2d] '%s': hash table section is too small (is %ld, expected %ld)\n"),
-	   idx, section_name (ebl, idx), (long int) shdr->sh_size,
-	   (long int) ((2 + nbucket + nchain) * shdr->sh_entsize));
+	     idx, section_name (ebl, idx), (long int) shdr->sh_size,
+	     (long int) ((2 + nbucket + nchain) * sizeof (Elf64_Xword)));
+      return;
+    }
 
   size_t maxidx = nchain;
 
@@ -2286,10 +2325,12 @@ section [%2d] '%s': hash table not for dynamic symbol table\n"),
 section [%2d] '%s': invalid sh_link symbol table section index [%2d]\n"),
 	   idx, section_name (ebl, idx), shdr->sh_link);
 
-  if (shdr->sh_entsize != (tag == SHT_GNU_HASH
+  size_t expect_entsize = (tag == SHT_GNU_HASH
 			   ? (gelf_getclass (ebl->elf) == ELFCLASS32
 			      ? sizeof (Elf32_Word) : 0)
-			   : (size_t) ebl_sysvhash_entrysize (ebl)))
+			   : (size_t) ebl_sysvhash_entrysize (ebl));
+
+  if (shdr->sh_entsize != expect_entsize)
     ERROR (gettext ("\
 section [%2d] '%s': hash table entry size incorrect\n"),
 	   idx, section_name (ebl, idx));
@@ -2298,7 +2339,7 @@ section [%2d] '%s': hash table entry size incorrect\n"),
     ERROR (gettext ("section [%2d] '%s': not marked to be allocated\n"),
 	   idx, section_name (ebl, idx));
 
-  if (shdr->sh_size < (tag == SHT_GNU_HASH ? 4 : 2) * (shdr->sh_entsize ?: 4))
+  if (shdr->sh_size < (tag == SHT_GNU_HASH ? 4 : 2) * (expect_entsize ?: 4))
     {
       ERROR (gettext ("\
 section [%2d] '%s': hash table has not even room for initial administrative entries\n"),
@@ -2645,9 +2686,12 @@ section [%2d] '%s': section size not multiple of sizeof(Elf32_Word)\n"),
 	       idx, section_name (ebl, idx));
 
       if (data->d_size < elsize)
-	ERROR (gettext ("\
+	{
+	  ERROR (gettext ("\
 section [%2d] '%s': section group without flags word\n"),
 	       idx, section_name (ebl, idx));
+	  return;
+	}
       else if (be_strict)
 	{
 	  if (data->d_size < 2 * elsize)

@@ -18,15 +18,19 @@
 
 . $srcdir/test-subr.sh
 
-# See run-addrcfi.sh for testfilearm.
-
 # = testfileppc32attrs.s =
 # .gnu_attribute 8,1
 # .gnu_attribute 12,1
 #
 # gcc -m32 -c testfileppc32attrs.s
 
-testfiles testfileppc32attrs.o
+# = testfileppc64attrs.s =
+# .gnu_attribute 4,3
+#
+# gcc -c testfileppc64attrs.s
+
+
+testfiles testfileppc32attrs.o testfileppc64attrs.o
 
 testrun_compare ${abs_top_builddir}/src/readelf -A testfileppc32attrs.o <<\EOF
 
@@ -36,6 +40,15 @@ Object attributes section [ 4] '.gnu.attributes' of 18 bytes at offset 0x34:
     File:           9
       GNU_Power_ABI_Vector: Generic
       GNU_Power_ABI_Struct_Return: r3/r4
+EOF
+
+testrun_compare ${abs_top_builddir}/src/readelf -A testfileppc64attrs.o <<\EOF
+
+Object attributes section [ 4] '.gnu.attributes' of 16 bytes at offset 0x40:
+  Owner          Size
+  gnu              15
+    File:           7
+      GNU_Power_ABI_FP: Single-precision hard float
 EOF
 
 exit 0

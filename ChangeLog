@@ -1,3 +1,20 @@
+2017-05-05  Mark Wielaard  <mark@klomp.org>
+
+	* configure.ac: Set version to 0.169. Update copyright year.
+	* NEWS: Add 0.169 section.
+
+2017-04-21  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* .gitignore: Add fillfile and peel_type tests.
+
+2017-02-15  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* configure.ac: Add check for mempcpy.
+
+2017-02-09  Mark Wielaard  <mark@klomp.org>
+
+	* configure.ac: Add check for adding -D_FORTIFY_SOURCE=2 to CFLAGS.
+
 2017-01-12  Mark Wielaard  <mark@klomp.org>
 
 	* configure.ac: Define PACKAGE_URL for older autoconf.

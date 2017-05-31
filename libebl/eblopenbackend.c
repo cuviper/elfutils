@@ -39,6 +39,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <system.h>
 #include <libeblP.h>
 
 const char *i386_init (Elf *elf, GElf_Half machine, Ebl *eh, size_t ehlen);

@@ -1,3 +1,118 @@
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* derelocate.c (compare_secrefs): Compare by end address and then by
+	section number if addresses are equal.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* linux-kernel-modules.c: Always return NULL from kernel_release() on
+	non-linux systems and set errno to ENOTSUP.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* libdwflP.h: Don't include config.h.
+	* argp-std.c: Include config.h.
+	* cu.c: Likewise.
+	* derelocate.c: Likewise.
+	* dwfl_addrdie.c: Likewise.
+	* dwfl_addrdwarf.c: Likewise.
+	* dwfl_addrmodule.c: Likewise.
+	* dwfl_begin.c: Likewise.
+	* dwfl_build_id_find_debuginfo.c: Likewise.
+	* dwfl_build_id_find_elf.c: Likewise.
+	* dwfl_cumodule.c: Likewise.
+	* dwfl_dwarf_line.c: Likewise.
+	* dwfl_end.c: Likewise.
+	* dwfl_frame.c: Likewise.
+	* dwfl_frame_regs.c: Likewise.
+	* dwfl_getdwarf.c: Likewise.
+	* dwfl_getmodules.c: Likewise.
+	* dwfl_getsrc.c: Likewise.
+	* dwfl_getsrclines.c: Likewise.
+	* dwfl_line_comp_dir.c: Likewise.
+	* dwfl_linecu.c: Likewise.
+	* dwfl_lineinfo.c: Likewise.
+	* dwfl_linemodule.c: Likewise.
+	* dwfl_module.c: Likewise.
+	* dwfl_module_addrdie.c: Likewise.
+	* dwfl_module_addrname.c: Likewise.
+	* dwfl_module_addrsym.c: Likewise.
+	* dwfl_module_build_id.c: Likewise.
+	* dwfl_module_dwarf_cfi.c: Likewise.
+	* dwfl_module_eh_cfi.c: Likewise.
+	* dwfl_module_getdarf.c: Likewise.
+	* dwfl_module_getelf.c: Likewise.
+	* dwfl_module_getsrc.c: Likewise.
+	* dwfl_module_getsrc_file.c: Likewise.
+	* dwfl_module_getsym.c: Likewise.
+	* dwfl_module_info.c: Likewise.
+	* dwfl_module_nextcu.c: Likewise.
+	* dwfl_module_register_names.c: Likewise.
+	* dwfl_module_report_build_id.c: Likewise.
+	* dwfl_module_return_value_location.c: Likewise.
+	* dwfl_nextcu.c: Likewise.
+	* dwfl_onesrcline.c: Likewise.
+	* dwfl_report_elf.c: Likewise.
+	* dwfl_validate_address.c: Likewise.
+	* dwfl_version.c: Likewise.
+	* find-debuginfo.c: Likewise.
+	* gzip.c: Likewise.
+	* image-header.c: Likewise.
+	* lines.c: Likewise.
+	* linux-core-attach.c: Likewise.
+	* linux-pid-attach.c: Likewise.
+	* offline.c: Likewise.
+	* open.c: Likewise.
+	* relocate.c: Likewise.
+	* segment.c: Likewise.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* libdwfl.h: Use __const_attribute__.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* elf-from-memory.c: Explicitly cast phnum to size_t.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* dwfl_module_getdwarf.c: Check shnum for 0 before subtracting from
+	it.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* dwfl_frame.c: Drop unused sys/ptrace.h include.
+	* frame_unwind.c: Likewise.
+	* linux-pid-attach.c: Include sys/ptrace.h and sys/syscall.h only on
+	linux.
+
+2017-04-20  Ulf Hermann <ulf.hermann@qt.io>
+
+	* linux-kernel-modules.c: Include sys/types.h before fts.h
+
+2017-03-24  Mark Wielaard  <mark@klomp.org>
+
+	* linux-core-attach.c (core_next_thread): If n_namesz == 0 then
+	the note name data is the empty string.
+	(dwfl_core_file_attach): Likewise.
+
+2017-02-15  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* linux-kernel-modules.c: Include system.h.
+
+2017-02-15  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* linux-kernel-modules.c: Use sysconf(_SC_PAGESIZE) to get page size.
+	* linux-proc-maps.c: Likewise.
+
+2016-12-29  Luiz Angelo Daros de Luca  <luizluca@gmail.com>
+
+	* dwfl_build_id_find_elf.c: Include system.h.
+	* dwfl_module_getdwarf.c: Likewise.
+	* libdwfl_crc32_file.c: Don't define LIB_SYSTEM_H.
+
 2016-11-23  Mark Wielaard  <mjw@redhat.com>
 
 	* linux-kernel-modules.c: Only include fts.h early if BAD_FTS is

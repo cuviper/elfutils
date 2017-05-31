@@ -29,11 +29,6 @@
 #ifndef LIB_SYSTEM_H
 #define LIB_SYSTEM_H	1
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
-#include <argp.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -68,6 +63,11 @@
 #define powerof2(x) (((x) & ((x) - 1)) == 0)
 #endif
 
+#if !HAVE_DECL_MEMPCPY
+#define mempcpy(dest, src, n) \
+    ((void *) ((char *) memcpy (dest, src, n) + (size_t) n))
+#endif
+
 /* A special gettext function we use if the strings are too short.  */
 #define sgettext(Str) \
   ({ const char *__res = strrchr (gettext (Str), '|');			      \
@@ -81,7 +81,7 @@
      do \
        __res = expression; \
      while (__res == -1 && errno == EINTR); \
-     __res; });
+     __res; })
 #endif
 
 static inline ssize_t __attribute__ ((unused))
@@ -139,21 +139,6 @@ pread_retry (int fd, void *buf, size_t len, off_t off)
 
   return recvd;
 }
-
-
-/* We need define two variables, argp_program_version_hook and
-   argp_program_bug_address, in all programs.  argp.h declares these
-   variables as non-const (which is correct in general).  But we can
-   do better, it is not going to change.  So we want to move them into
-   the .rodata section.  Define macros to do the trick.  */
-#define ARGP_PROGRAM_VERSION_HOOK_DEF \
-  void (*const apvh) (FILE *, struct argp_state *) \
-   __asm ("argp_program_version_hook")
-#define ARGP_PROGRAM_BUG_ADDRESS_DEF \
-  const char *const apba__ __asm ("argp_program_bug_address")
-
-/* Defined in version.c.  Common ARGP_PROGRAM_VERSION_HOOK_DEF.  */
-void print_version (FILE *stream, struct argp_state *state);
 
 /* The demangler from libstdc++.  */
 extern char *__cxa_demangle (const char *mangled_name, char *output_buffer,

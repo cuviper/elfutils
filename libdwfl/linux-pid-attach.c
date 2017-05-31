@@ -26,18 +26,23 @@
    the GNU Lesser General Public License along with this program.  If
    not, see <http://www.gnu.org/licenses/>.  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include "libelfP.h"
 #include "libdwflP.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <dirent.h>
-#include <sys/syscall.h>
 #include <unistd.h>
 
 #ifdef __linux__
+
+#include <sys/ptrace.h>
+#include <sys/syscall.h>
 
 static bool
 linux_proc_pid_is_stopped (pid_t pid)

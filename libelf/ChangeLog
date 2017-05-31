@@ -1,3 +1,34 @@
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* libelfP.h: Don't include config.h.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* elf_begin.c: Use F_GETFD rather than F_GETFL.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* libelf.h: Define macros for various function attributes and use
+	them.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* elf_update.c: Set ELF_F_MMAPPED flag if we mmap from elf_update.
+
+2017-04-19  Mark Wielaard  <mark@klomp.org>
+
+	* elf_getarsym.c (elf_getarsym): Initialize n to zero.
+
+2017-03-27  Mark Wielaard  <mark@klomp.org>
+
+	* elf32_updatefile.c (updatemmap): Always update last_positition.
+	(updatefile): Likewise.
+
+2017-03-24  Mark Wielaard  <mark@klomp.org>
+
+	* elf_compress.c (__libelf_decompress): Check insane compression
+	ratios before trying to allocate output buffer.
+
 2016-10-11  Akihiko Odaki  <akihiko.odaki.4i@stu.hosei.ac.jp>
 	    Mark Wielaard  <mjw@redhat.com>
 

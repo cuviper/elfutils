@@ -40,13 +40,26 @@ check_gsignal()
   false
 }
 
+
+# Makes sure we saw the function that initiated the backtrace
+# when the core was generated through the tests backtrace --gencore.
+# This might disappear when frame pointer chasing gone bad.
+check_backtracegen()
+{
+  if grep -w backtracegen $1; then
+    return
+  fi
+  echo >&2 $2: no backtracegen
+  false
+}
+
 # Verify the STDERR output does not contain unexpected errors.
 # In some cases we cannot reliably find out we got behind _start as some
 # operating system do not properly terminate CFI by undefined PC.
 # Ignore it here as it is a bug of OS, not a bug of elfutils.
 check_err()
 {
-  if [ $(egrep -v <$1 'dwfl_thread_getframes: (No DWARF information found|no matching address range)$' \
+  if [ $(egrep -v <$1 'dwfl_thread_getframes: (No DWARF information found|no matching address range|address out of range|Invalid register)$' \
          | wc -c) \
        -eq 0 ]
   then
@@ -105,6 +118,7 @@ check_core()
   cat backtrace.$arch.{bt,err}
   check_unsupported backtrace.$arch.err backtrace.$arch.core
   check_all backtrace.$arch.{bt,err} backtrace.$arch.core
+  check_backtracegen backtrace.$arch.bt backtrace.$arch.core
 }
 
 # Backtrace live process.

@@ -26,6 +26,10 @@
    the GNU Lesser General Public License along with this program.  If
    not, see <http://www.gnu.org/licenses/>.  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include "libdwflP.h"
 #include <inttypes.h>
 #include <sys/types.h>
@@ -418,7 +422,7 @@ dwfl_linux_proc_find_elf (Dwfl_Module *mod __attribute__ ((unused)),
       if (fd < 0)
 	goto detach;
 
-      *elfp = elf_from_remote_memory (base, getpagesize (), NULL,
+      *elfp = elf_from_remote_memory (base, sysconf (_SC_PAGESIZE), NULL,
 				      &read_proc_memory, &fd);
 
       close (fd);

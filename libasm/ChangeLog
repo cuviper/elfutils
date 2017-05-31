@@ -1,4 +1,16 @@
-2015-10-11  Akihiko Odaki  <akihiko.odaki.4i@stu.hosei.ac.jp>
+2017-04-27  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* asm_end.c (binary_end): Fix nesting of braces.
+
+2017-02-12  Mark Wielaard  <mjw@redhat.com>
+
+	* asm_newsym.c (asm_newsym): Increase TEMPSYMLEN to 13.
+
+2017-02-15  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* disasm_str.c: Include system.h.
+
+2016-10-11  Akihiko Odaki  <akihiko.odaki.4i@stu.hosei.ac.jp>
 
 	* asm_align.c: Remove sys/param.h include.
 

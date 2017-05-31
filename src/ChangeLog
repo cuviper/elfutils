@@ -1,3 +1,73 @@
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* readelf.c: Include strings.h.
+
+2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* unstrip.c: Check shnum for 0 before subtracting from it.
+
+2017-04-20  Ulf Hermann <ulf.hermann@qt.io>
+
+	* readelf.c: Replace YESSTR and NOSTR with gettext ("yes") and
+	gettext ("no"), respectively.
+
+2017-04-05  Mark Wielaard  <mark@klomp.org>
+
+	* elflint.c (check_elf_header): Decompress all sections.
+
+2017-03-28  Mark Wielaard  <mark@klomp.org>
+
+	* elflint (check_group): Don't check if there is no flag word.
+
+2017-03-27  Mark Wielaard  <mark@klomp.org>
+
+	* elflint.c (check_elf_header): Sanity check phnum and shnum.
+
+2017-03-27  Mark Wielaard  <mark@klomp.org>
+
+	* elflint.c (check_sysv_hash): Return early if section size is
+	too small.
+	(check_sysv_hash64): Likewise.
+	(check_hash): Calculate expect_entsize to check section size.
+
+2017-03-27  Mark Wielaard  <mark@klomp.org>
+
+	* elflint.c (check_symtab_shndx): Check data->d_size.
+
+2017-03-24  Mark Wielaard  <mjw@redhat.com>
+
+	* elfcmp.c (main): If n_namesz == 0 then the note name data is the
+	empty string.
+	* readelf.c (handle_notes_data): Likewise.
+
+2017-03-24  Mark Wielaard  <mjw@redhat.com>
+
+	* readelf.c (handle_gnu_hash): Check inner < max_nsyms before
+	indexing into chain array.
+
+2017-02-16  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* addr2line.c: Include printversion.h
+	* ar.c: Likewise.
+	* elflint.c: Likewise.
+	* nm.c: Likewise.
+	* objdump.c: Likewise.
+	* ranlib.c: Likewise.
+	* readelf.c: Likewise.
+	* size.c: Likewise.
+	* stack.c: Likewise.
+	* strings.c: Likewise.
+	* strip.c: Likewise.
+	* elfcmp.c: Include printversion.h, remove system.h include.
+	* elfcompress.c: Likewise.
+	* findtextrel.c: Likewise.
+	* unstrip.c: Likewise.
+
+2017-02-14  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* nm.c: Include color.h.
+	* objdump.c: Likewise.
+
 2016-12-24  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (findtextrel_LDADD): Add $(libeu).
