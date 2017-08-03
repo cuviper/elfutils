@@ -55,7 +55,7 @@ check_PROGRAMS = arextract arsymtest newfile saridx scnnames sectiondump \
 		  getsrc_die strptr newdata elfstrtab dwfl-proc-attach \
 		  elfshphehdr elfstrmerge dwelfgnucompressed elfgetchdr \
 		  elfgetzdata elfputzdata zstrptr emptyfile vendorelf \
-		  fillfile
+		  fillfile dwarf_default_lower_bound
 
 asm_TESTS = asm-tst1 asm-tst2 asm-tst3 asm-tst4 asm-tst5 \
 	    asm-tst6 asm-tst7 asm-tst8 asm-tst9
@@ -81,8 +81,9 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-strip-test3.sh run-strip-test4.sh run-strip-test5.sh \
 	run-strip-test6.sh run-strip-test7.sh run-strip-test8.sh \
 	run-strip-test9.sh run-strip-test10.sh \
+	run-strip-nothing.sh run-strip-g.sh \
 	run-strip-groups.sh run-strip-reloc.sh run-strip-strmerge.sh \
-	run-strip-nobitsalign.sh \
+	run-strip-nobitsalign.sh run-strip-remove-keep.sh \
 	run-unstrip-test.sh run-unstrip-test2.sh run-unstrip-test3.sh \
 	run-unstrip-test4.sh run-unstrip-M.sh run-elfstrmerge-test.sh \
 	run-ecp-test.sh run-ecp-test2.sh run-alldts.sh \
@@ -117,6 +118,7 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-backtrace-native-core-biarch.sh run-backtrace-core-x86_64.sh \
 	run-backtrace-fp-core-x86_64.sh \
 	run-backtrace-fp-core-aarch64.sh \
+	run-backtrace-fp-core-ppc64le.sh \
 	run-backtrace-core-x32.sh \
 	run-backtrace-core-i386.sh run-backtrace-fp-core-i386.sh \
 	run-backtrace-core-ppc.sh \
@@ -133,7 +135,7 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
 	run-elfgetzdata.sh run-elfputzdata.sh run-zstrptr.sh \
 	run-compress-test.sh \
 	run-readelf-zdebug.sh run-readelf-zdebug-rel.sh \
-	emptyfile vendorelf fillfile
+	emptyfile vendorelf fillfile dwarf_default_lower_bound
 
 if !BIARCH
 export ELFUTILS_DISABLE_BIARCH = 1
@@ -154,10 +156,7 @@ endif
 
 if HAVE_LIBASM
 check_PROGRAMS += $(asm_TESTS)
-TESTS += $(asm_TESTS)
-if HAVE_LINUX_BPF_H
-TESTS += run-disasm-bpf.sh
-endif
+TESTS += $(asm_TESTS) run-disasm-bpf.sh
 endif
 
 EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
@@ -174,6 +173,7 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     run-strip-test4.sh run-strip-test5.sh run-strip-test6.sh \
 	     run-strip-test7.sh run-strip-test8.sh run-strip-groups.sh \
 	     run-strip-test9.sh run-strip-test10.sh run-strip-test11.sh \
+	     run-strip-nothing.sh run-strip-remove-keep.sh run-strip-g.sh \
 	     run-strip-strmerge.sh run-strip-nobitsalign.sh \
 	     testfile-nobitsalign.bz2 testfile-nobitsalign.strip.bz2 \
 	     run-strip-reloc.sh hello_i386.ko.bz2 hello_x86_64.ko.bz2 \
@@ -303,6 +303,8 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
 	     backtrace-subr.sh backtrace.i386.core.bz2 backtrace.i386.exec.bz2 \
 	     run-backtrace-fp-core-i386.sh \
 	     backtrace.i386.fp.core.bz2 backtrace.i386.fp.exec.bz2 \
+	     run-backtrace-fp-core-ppc64le.sh \
+	     backtrace.ppc64le.fp.core.bz2 backtrace.ppc64le.fp.exec.bz2 \
 	     backtrace.x86_64.core.bz2 backtrace.x86_64.exec.bz2 \
 	     backtrace.x86_64.fp.core.bz2 backtrace.x86_64.fp.exec.bz2 \
 	     backtrace.ppc.core.bz2 backtrace.ppc.exec.bz2 \
@@ -505,6 +507,7 @@ zstrptr_LDADD = $(libelf)
 emptyfile_LDADD = $(libelf)
 vendorelf_LDADD = $(libelf)
 fillfile_LDADD = $(libelf)
+dwarf_default_lower_bound_LDADD = $(libdw)
 
 # We want to test the libelf header against the system elf.h header.
 # Don't include any -I CPPFLAGS.

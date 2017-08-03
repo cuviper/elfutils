@@ -1,5 +1,5 @@
 /* This file defines standard DWARF types, structures, and macros.
-   Copyright (C) 2000-2011, 2014, 2016 Red Hat, Inc.
+   Copyright (C) 2000-2011, 2014, 2016, 2017 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -37,15 +37,21 @@ enum
     DW_TAG_entry_point = 0x03,
     DW_TAG_enumeration_type = 0x04,
     DW_TAG_formal_parameter = 0x05,
+    /* 0x06 reserved.  */
+    /* 0x07 reserved.  */
     DW_TAG_imported_declaration = 0x08,
+    /* 0x09 reserved.  */
     DW_TAG_label = 0x0a,
     DW_TAG_lexical_block = 0x0b,
+    /* 0x0c reserved.  */
     DW_TAG_member = 0x0d,
+    /* 0x0e reserved.  */
     DW_TAG_pointer_type = 0x0f,
     DW_TAG_reference_type = 0x10,
     DW_TAG_compile_unit = 0x11,
     DW_TAG_string_type = 0x12,
     DW_TAG_structure_type = 0x13,
+    /* 0x14 reserved.  */
     DW_TAG_subroutine_type = 0x15,
     DW_TAG_typedef = 0x16,
     DW_TAG_union_type = 0x17,
@@ -87,15 +93,20 @@ enum
     DW_TAG_unspecified_type = 0x3b,
     DW_TAG_partial_unit = 0x3c,
     DW_TAG_imported_unit = 0x3d,
-    /* 0x3e reserved.  */
+    /* 0x3e reserved.  Was DW_TAG_mutable_type.  */
     DW_TAG_condition = 0x3f,
     DW_TAG_shared_type = 0x40,
     DW_TAG_type_unit = 0x41,
     DW_TAG_rvalue_reference_type = 0x42,
     DW_TAG_template_alias = 0x43,
-
-    /* DWARF 5.  */
+    DW_TAG_coarray_type = 0x44,
+    DW_TAG_generic_subrange = 0x45,
+    DW_TAG_dynamic_type = 0x46,
     DW_TAG_atomic_type = 0x47,
+    DW_TAG_call_site = 0x48,
+    DW_TAG_call_site_parameter = 0x49,
+    DW_TAG_skeleton_unit = 0x4a,
+    DW_TAG_immutable_type = 0x4b,
 
     DW_TAG_lo_user = 0x4080,
 
@@ -131,17 +142,23 @@ enum
     DW_AT_sibling = 0x01,
     DW_AT_location = 0x02,
     DW_AT_name = 0x03,
+    /* 0x04 reserved.  */
+    /* 0x05 reserved.  */
+    /* 0x06 reserved.  */
+    /* 0x07 reserved.  */
+    /* 0x08 reserved.  */
     DW_AT_ordering = 0x09,
-    DW_AT_subscr_data = 0x0a,
+    /* 0x0a reserved.  */
     DW_AT_byte_size = 0x0b,
-    DW_AT_bit_offset = 0x0c,
+    DW_AT_bit_offset = 0x0c,  /* Deprecated in DWARF4.  */
     DW_AT_bit_size = 0x0d,
-    DW_AT_element_list = 0x0f,
+    /* 0x0e reserved.  */
+    /* 0x0f reserved.  */
     DW_AT_stmt_list = 0x10,
     DW_AT_low_pc = 0x11,
     DW_AT_high_pc = 0x12,
     DW_AT_language = 0x13,
-    DW_AT_member = 0x14,
+    /* 0x14 reserved.  */
     DW_AT_discr = 0x15,
     DW_AT_discr_value = 0x16,
     DW_AT_visibility = 0x17,
@@ -152,15 +169,24 @@ enum
     DW_AT_const_value = 0x1c,
     DW_AT_containing_type = 0x1d,
     DW_AT_default_value = 0x1e,
+    /* 0x1f reserved.  */
     DW_AT_inline = 0x20,
     DW_AT_is_optional = 0x21,
     DW_AT_lower_bound = 0x22,
+    /* 0x23 reserved.  */
+    /* 0x24 reserved.  */
     DW_AT_producer = 0x25,
+    /* 0x26 reserved.  */
     DW_AT_prototyped = 0x27,
+    /* 0x28 reserved.  */
+    /* 0x29 reserved.  */
     DW_AT_return_addr = 0x2a,
+    /* 0x2b reserved.  */
     DW_AT_start_scope = 0x2c,
+    /* 0x2d reserved.  */
     DW_AT_bit_stride = 0x2e,
     DW_AT_upper_bound = 0x2f,
+    /* 0x30 reserved.  */
     DW_AT_abstract_origin = 0x31,
     DW_AT_accessibility = 0x32,
     DW_AT_address_class = 0x33,
@@ -179,7 +205,7 @@ enum
     DW_AT_frame_base = 0x40,
     DW_AT_friend = 0x41,
     DW_AT_identifier_case = 0x42,
-    DW_AT_macro_info = 0x43,
+    DW_AT_macro_info = 0x43, /* Deprecated in DWARF5.  */
     DW_AT_namelist_item = 0x44,
     DW_AT_priority = 0x45,
     DW_AT_segment = 0x46,
@@ -223,9 +249,36 @@ enum
     DW_AT_const_expr = 0x6c,
     DW_AT_enum_class = 0x6d,
     DW_AT_linkage_name = 0x6e,
-
-    /* DWARF5 attribute values.  */
+    DW_AT_string_length_bit_size = 0x6f,
+    DW_AT_string_length_byte_size = 0x70,
+    DW_AT_rank = 0x71,
+    DW_AT_str_offsets_base = 0x72,
+    DW_AT_addr_base = 0x73,
+    DW_AT_rnglists_base = 0x74,
+    /* 0x75 reserved.  */
+    DW_AT_dwo_name = 0x76,
+    DW_AT_reference = 0x77,
+    DW_AT_rvalue_reference = 0x78,
+    DW_AT_macros = 0x79,
+    DW_AT_call_all_calls = 0x7a,
+    DW_AT_call_all_source_calls = 0x7b,
+    DW_AT_call_all_tail_calls = 0x7c,
+    DW_AT_call_return_pc = 0x7d,
+    DW_AT_call_value = 0x7e,
+    DW_AT_call_origin = 0x7f,
+    DW_AT_call_parameter = 0x80,
+    DW_AT_call_pc = 0x81,
+    DW_AT_call_tail_call = 0x82,
+    DW_AT_call_target = 0x83,
+    DW_AT_call_target_clobbered = 0x84,
+    DW_AT_call_data_location = 0x85,
+    DW_AT_call_data_value = 0x86,
     DW_AT_noreturn = 0x87,
+    DW_AT_alignment = 0x88,
+    DW_AT_export_symbols = 0x89,
+    DW_AT_deleted = 0x8a,
+    DW_AT_defaulted = 0x8b,
+    DW_AT_loclists_base = 0x8c,
 
     DW_AT_lo_user = 0x2000,
 
@@ -278,6 +331,15 @@ enum
     DW_AT_hi_user = 0x3fff
   };
 
+/* Old unofficially attribute names.  Should not be used.
+   Will not appear in known-dwarf.h  */
+
+/* DWARF1 array subscripts and element data types.  */
+#define DW_AT_subscr_data	0x0a
+/* DWARF1 enumeration literals.  */
+#define DW_AT_element_list	0x0f
+/* DWARF1 reference for variable to member structure, class or union.  */
+#define DW_AT_member		0x14
 
 /* DWARF form encodings.  */
 enum
@@ -509,6 +571,8 @@ enum
     DW_ATE_unsigned_fixed = 0xe,
     DW_ATE_decimal_float = 0xf,
     DW_ATE_UTF = 0x10,
+    DW_ATE_UCS = 0x11,
+    DW_ATE_ASCII = 0x12,
 
     DW_ATE_lo_user = 0x80,
     DW_ATE_hi_user = 0xff
@@ -588,14 +652,23 @@ enum
     DW_LANG_UPC = 0x0012,	     /* Unified Parallel C */
     DW_LANG_D = 0x0013,		     /* D */
     DW_LANG_Python = 0x0014,	     /* Python */
+    DW_LANG_OpenCL = 0x0015,	     /* OpenCL */
     DW_LANG_Go = 0x0016,	     /* Go */
+    DW_LANG_Modula3 = 0x0017,	     /* Modula-3 */
     DW_LANG_Haskell = 0x0018,	     /* Haskell */
+    DW_LANG_C_plus_plus_03 = 0x0019, /* ISO C++:2003 */
     DW_LANG_C_plus_plus_11 = 0x001a, /* ISO C++:2011 */
+    DW_LANG_OCaml = 0x001b,	     /* OCaml */
+    DW_LANG_Rust = 0x001c,	     /* Rust */
     DW_LANG_C11 = 0x001d,	     /* ISO C:2011 */
+    DW_LANG_Swift = 0x001e,	     /* Swift */
+    DW_LANG_Julia = 0x001f,	     /* Julia */
+    DW_LANG_Dylan = 0x0020,	     /* Dylan */
     DW_LANG_C_plus_plus_14 = 0x0021, /* ISO C++:2014 */
     DW_LANG_Fortran03 = 0x0022,	     /* ISO/IEC 1539-1:2004 */
     DW_LANG_Fortran08 = 0x0023,	     /* ISO/IEC 1539-1:2010 */
-
+    DW_LANG_RenderScript = 0x0024,   /* RenderScript Kernal Language */
+    DW_LANG_BLISS = 0x0025,	     /* BLISS */
 
     DW_LANG_lo_user = 0x8000,
     DW_LANG_Mips_Assembler = 0x8001, /* Assembler */
@@ -615,12 +688,17 @@ enum
   };
 
 
-/* DWARF calling conventions encodings.  */
+/* DWARF calling conventions encodings.
+   Used as values of DW_AT_calling_convention for subroutines
+   (normal, program or nocall) or structures, unions and class types
+   (normal, reference or value).  */
 enum
   {
     DW_CC_normal = 0x1,
     DW_CC_program = 0x2,
     DW_CC_nocall = 0x3,
+    DW_CC_pass_by_reference = 0x4,
+    DW_CC_pass_by_value = 0x5,
     DW_CC_lo_user = 0x40,
     DW_CC_hi_user = 0xff
   };
@@ -649,6 +727,14 @@ enum
   {
     DW_DSC_label = 0,
     DW_DSC_range = 1
+  };
+
+/* DWARF defaulted member function encodings.  */
+enum
+  {
+    DW_DEFAULTED_no = 0,
+    DW_DEFAULTED_in_class = 1,
+    DW_DEFAULTED_out_of_class = 2
   };
 
 
@@ -694,19 +780,37 @@ enum
   };
 
 
-/* DWARF debug_macro type encodings.  GNU/DWARF5 extension.  */
+/* DWARF debug_macro type encodings.  */
 enum
   {
-    DW_MACRO_GNU_define = 0x01,
-    DW_MACRO_GNU_undef = 0x02,
-    DW_MACRO_GNU_start_file = 0x03,
-    DW_MACRO_GNU_end_file = 0x04,
-    DW_MACRO_GNU_define_indirect = 0x05,
-    DW_MACRO_GNU_undef_indirect = 0x06,
-    DW_MACRO_GNU_transparent_include = 0x07,
-    DW_MACRO_GNU_lo_user = 0xe0,
-    DW_MACRO_GNU_hi_user = 0xff
+    DW_MACRO_define = 0x01,
+    DW_MACRO_undef = 0x02,
+    DW_MACRO_start_file = 0x03,
+    DW_MACRO_end_file = 0x04,
+    DW_MACRO_define_strp = 0x05,
+    DW_MACRO_undef_strp = 0x06,
+    DW_MACRO_import = 0x07,
+    DW_MACRO_define_sup = 0x08,
+    DW_MACRO_undef_sup = 0x09,
+    DW_MACRO_import_sup = 0x0a,
+    DW_MACRO_define_strx = 0x0b,
+    DW_MACRO_undef_strx = 0x0c,
+    DW_MACRO_lo_user = 0xe0,
+    DW_MACRO_hi_user = 0xff
   };
+
+/* Old GNU extension names for DWARF5 debug_macro type encodings.
+   There are no equivalents for the supplementary object file (sup)
+   and indirect string references (strx).  */
+#define DW_MACRO_GNU_define		 DW_MACRO_define
+#define DW_MACRO_GNU_undef		 DW_MACRO_undef
+#define DW_MACRO_GNU_start_file		 DW_MACRO_start_file
+#define DW_MACRO_GNU_end_file		 DW_MACRO_end_file
+#define DW_MACRO_GNU_define_indirect	 DW_MACRO_define_strp
+#define DW_MACRO_GNU_undef_indirect	 DW_MACRO_undef_strp
+#define DW_MACRO_GNU_transparent_include DW_MACRO_import
+#define DW_MACRO_GNU_lo_user		 DW_MACRO_lo_user
+#define DW_MACRO_GNU_hi_user		 DW_MACRO_hi_user
 
 
 /* DWARF call frame instruction encodings.  */

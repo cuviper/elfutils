@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 ##
-## Copyright (C) 2002-2010, 2012, 2014 Red Hat, Inc.
+## Copyright (C) 2002-2010, 2012, 2014, 2016 Red Hat, Inc.
 ## This file is part of elfutils.
 ##
 ## This file is free software; you can redistribute it and/or modify
@@ -66,7 +66,7 @@ libdw_a_SOURCES = dwarf_begin.c dwarf_begin_elf.c dwarf_end.c dwarf_getelf.c \
 		  dwarf_lineendsequence.c dwarf_lineblock.c \
 		  dwarf_lineprologueend.c dwarf_lineepiloguebegin.c \
 		  dwarf_lineisa.c dwarf_linediscriminator.c \
-		  dwarf_lineop_index.c \
+		  dwarf_lineop_index.c dwarf_line_file.c \
 		  dwarf_onesrcline.c dwarf_formblock.c \
 		  dwarf_getsrcfiles.c dwarf_filesrc.c dwarf_getsrcdirs.c \
 		  dwarf_getlocation.c dwarf_getstring.c dwarf_offabbrev.c \
@@ -90,7 +90,7 @@ libdw_a_SOURCES = dwarf_begin.c dwarf_begin_elf.c dwarf_end.c dwarf_getelf.c \
 		  dwarf_aggregate_size.c dwarf_getlocation_implicit_pointer.c \
 		  dwarf_getlocation_die.c dwarf_getlocation_attr.c \
 		  dwarf_getalt.c dwarf_setalt.c dwarf_cu_getdwarf.c \
-		  dwarf_cu_die.c dwarf_peel_type.c
+		  dwarf_cu_die.c dwarf_peel_type.c dwarf_default_lower_bound.c
 
 # Minimal library with symbols needed by those libebl backends that we
 # ship statically.  This is so that e.g. strip doesn't end up bringing
@@ -104,7 +104,8 @@ libdw_static_pic_a_SOURCES = libdw_form.c dwarf_child.c dwarf_attr.c \
 		dwarf_hasattr_integrate.c dwarf_hasattr.c \
 		dwarf_aggregate_size.c dwarf_siblingof.c dwarf_formsdata.c \
 		dwarf_srclang.c dwarf_formflag.c dwarf_diecu.c \
-		dwarf_bytesize.c dwarf_bitsize.c dwarf_peel_type.c
+		dwarf_bytesize.c dwarf_bitsize.c dwarf_peel_type.c \
+		dwarf_default_lower_bound.c
 
 if MAINTAINER_MODE
 BUILT_SOURCES = $(srcdir)/known-dwarf.h
@@ -118,19 +119,22 @@ libdw_pic_a_SOURCES =
 am_libdw_pic_a_OBJECTS = $(libdw_a_SOURCES:.c=.os)
 am_libdw_static_pic_a_OBJECTS = $(libdw_static_pic_a_SOURCES:.c=.os)
 
-libdw_so_SOURCES =
-libdw.so$(EXEEXT): $(srcdir)/libdw.map libdw_pic.a ../libdwelf/libdwelf_pic.a \
+libdw_so_LIBS = libdw_pic.a ../libdwelf/libdwelf_pic.a \
 	  ../libdwfl/libdwfl_pic.a ../libebl/libebl.a \
 	  ../backends/libebl_static_pic.a \
-	  ../libcpu/libcpu_static_pic.a \
-	  ../libelf/libelf.so
+	  ../libcpu/libcpu_static_pic.a
+libdw_so_DEPS = ../lib/libeu.a ../libelf/libelf.so
+libdw_so_LDLIBS = $(libdw_so_DEPS) -ldl -lz $(argp_LDADD) $(zip_LIBS)
+libdw_so_SOURCES =
+libdw.so$(EXEEXT): $(srcdir)/libdw.map $(libdw_so_LIBS) $(libdw_so_DEPS)
 # The rpath is necessary for libebl because its $ORIGIN use will
 # not fly in a setuid executable that links in libdw.
-	$(AM_V_CCLD)$(LINK) -shared -o $@ -Wl,--soname,$@.$(VERSION),-z,defs \
+	$(AM_V_CCLD)$(LINK) -shared -o $@ \
+		-Wl,--soname,$@.$(VERSION),-z,defs,-z,relro \
 		-Wl,--enable-new-dtags,-rpath,$(pkglibdir) \
 		-Wl,--version-script,$<,--no-undefined \
-		-Wl,--whole-archive $(filter-out $<,$^) -Wl,--no-whole-archive\
-		-ldl -lz $(argp_LDADD) $(zip_LIBS)
+		-Wl,--whole-archive $(libdw_so_LIBS) -Wl,--no-whole-archive \
+		$(libdw_so_LDLIBS)
 	@$(textrel_check)
 	$(AM_V_at)ln -fs $@ $@.$(VERSION)
 

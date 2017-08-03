@@ -1,3 +1,63 @@
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf-getmacros.c (mac): Use DW_MACRO names instead of DW_MACRO_GNU.
+
+2016-10-27  Mark Wielaard  <mjw@redhat.com>
+
+	* dwarf_default_lower_bound.c: New test.
+	* Makefile.am (check_PROGRAMS): Add dwarf_default_lower_bound.
+	(TESTS): Likewise.
+	(dwarf_default_lower_bound_LDADD): New variable.
+
+2017-07-21  Mark Wielaard  <mark@klomp.org>
+
+	* get-lines.c (main): Add dwarf_line_file test.
+
+2017-07-19  Gustavo Romero <gromero@linux.vnet.ibm.com>
+
+	* run-addrcfi.sh: Update generic SPRs names to HTM SPRs names
+	* run-allregs.sh: Update generic SPRs names to HTM SPRs names
+
+2017-07-20  Mark Wielaard  <mark@klomp.org>
+
+	* run-strip-g.sh: New test.
+	* Makefile.am (TESTS): Add run-strip-g.sh.
+	(EXTRA_DIST): Likewise.
+
+2017-07-18  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (TESTS): Always add run-disasm-bpf.sh if HAVE_LIBASM.
+
+2017-05-04  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* elfshphehdr.c: For writing, use /dev/null rather than /dev/zero.
+
+2017-07-14  Mark Wielaard  <mark@klomp.org>
+
+	* run-strip-remove-keep.sh: New test.
+	* Makefile.am (TESTS): Add run-strip-remove-keep.sh.
+	(EXTRA_DIST): Likewise.
+
+2017-06-07  Mark Wielaard  <mark@klomp.org>
+
+	* run-strip-nothing.sh: New test.
+	* Makefile.am (TESTS): Add run-strip-nothing.sh.
+	(EXTRA_DIST): Likewise.
+
+2017-06-06  Mark Wielaard  <mark@klomp.org>
+
+	* run-strip-test.sh: Test strip -g doesn't introduce extra .shstrtab.
+
+2017-05-30  Mark Wielaard  <mark@klomp.org>
+
+	* run-backtrace-fp-core-ppc64le.sh: New test.
+	* backtrace.ppc64le.fp.core.bz2: New test file.
+	* backtrace.ppc64le.fp.exec.bz2: New testfile.
+	* backtrace-subr.sh (check_backtracegen): Accept '(null)'.
+	* Makefile.am (TESTS): Add run-backtrace-fp-core-ppc64le.sh.
+	(EXTRA_DIST): Add run-backtrace-fp-core-ppc64le.sh,
+	backtrace.ppc64le.fp.core.bz2 and backtrace.ppc64le.fp.exec.bz2.
+
 2017-02-13  Ulf Hermann  <ulf.hermann@qt.io>
 	    Mark Wielaard  <mark@klomp.org>
 

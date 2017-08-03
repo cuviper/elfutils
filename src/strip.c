@@ -1,5 +1,5 @@
 /* Discard section not used at runtime from object files.
-   Copyright (C) 2000-2012, 2014, 2015, 2016 Red Hat, Inc.
+   Copyright (C) 2000-2012, 2014, 2015, 2016, 2017 Red Hat, Inc.
    This file is part of elfutils.
    Written by Ulrich Drepper <drepper@redhat.com>, 2000.
 
@@ -26,6 +26,7 @@
 #include <endian.h>
 #include <error.h>
 #include <fcntl.h>
+#include <fnmatch.h>
 #include <gelf.h>
 #include <libelf.h>
 #include <libintl.h>
@@ -60,6 +61,7 @@ ARGP_PROGRAM_BUG_ADDRESS_DEF = PACKAGE_BUGREPORT;
 #define OPT_PERMISSIVE		0x101
 #define OPT_STRIP_SECTIONS	0x102
 #define OPT_RELOC_DEBUG 	0x103
+#define OPT_KEEP_SECTION 	0x104
 
 
 /* Definitions of arguments for argp functions.  */
@@ -83,7 +85,8 @@ static const struct argp_option options[] =
     N_("Resolve all trivial relocations between debug sections if the removed sections are placed in a debug file (only relevant for ET_REL files, operation is not reversable, needs -f)"), 0 },
   { "remove-comment", OPT_REMOVE_COMMENT, NULL, 0,
     N_("Remove .comment section"), 0 },
-  { "remove-section", 'R', "SECTION", OPTION_HIDDEN, NULL, 0 },
+  { "remove-section", 'R', "SECTION", 0, N_("Remove the named section.  SECTION is an extended wildcard pattern.  May be given more than once.  Only non-allocated sections can be removed."), 0 },
+  { "keep-section", OPT_KEEP_SECTION, "SECTION", 0, N_("Keep the named section.  SECTION is an extended wildcard pattern.  May be given more than once."), 0 },
   { "permissive", OPT_PERMISSIVE, NULL, 0,
     N_("Relax a few rules to handle slightly broken ELF files"), 0 },
   { NULL, 0, NULL, 0, NULL, 0 }
@@ -157,6 +160,58 @@ static bool permissive;
 /* If true perform relocations between debug sections.  */
 static bool reloc_debug;
 
+/* Sections the user explicitly wants to keep or remove.  */
+struct section_pattern
+{
+  char *pattern;
+  struct section_pattern *next;
+};
+
+static struct section_pattern *keep_secs = NULL;
+static struct section_pattern *remove_secs = NULL;
+
+static void
+add_pattern (struct section_pattern **patterns, const char *pattern)
+{
+  struct section_pattern *p = xmalloc (sizeof *p);
+  p->pattern = xstrdup (pattern);
+  p->next = *patterns;
+  *patterns = p;
+}
+
+static void
+free_sec_patterns (struct section_pattern *patterns)
+{
+  struct section_pattern *pattern = patterns;
+  while (pattern != NULL)
+    {
+      struct section_pattern *p = pattern;
+      pattern = p->next;
+      free (p->pattern);
+      free (p);
+    }
+}
+
+static void
+free_patterns (void)
+{
+  free_sec_patterns (keep_secs);
+  free_sec_patterns (remove_secs);
+}
+
+static bool
+section_name_matches (struct section_pattern *patterns, const char *name)
+{
+  struct section_pattern *pattern = patterns;
+  while (pattern != NULL)
+    {
+      if (fnmatch (pattern->pattern, name, FNM_EXTMATCH) == 0)
+	return true;
+      pattern = pattern->next;
+    }
+  return false;
+}
+
 
 int
 main (int argc, char *argv[])
@@ -207,6 +262,7 @@ Only one input file allowed together with '-o' and '-f'"));
       while (++remaining < argc);
     }
 
+  free_patterns ();
   return result;
 }
 
@@ -257,14 +313,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'R':
-      if (!strcmp (arg, ".comment"))
+      if (fnmatch (arg, ".comment", FNM_EXTMATCH) == 0)
 	remove_comment = true;
-      else
-	{
-	  argp_error (state,
-		      gettext ("-R option supports only .comment section"));
-	  return EINVAL;
-	}
+      add_pattern (&remove_secs, arg);
+      break;
+
+    case OPT_KEEP_SECTION:
+      add_pattern (&keep_secs, arg);
       break;
 
     case 'g':
@@ -282,6 +337,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 's':			/* Ignored for compatibility.  */
+      break;
+
+    case ARGP_KEY_SUCCESS:
+      if (remove_comment == true
+	  && section_name_matches (keep_secs, ".comment"))
+	{
+	  argp_error (state,
+		      gettext ("cannot both keep and remove .comment section"));
+	  return EINVAL;
+	}
       break;
 
     default:
@@ -622,6 +687,28 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 	  goto fail_close;
 	}
 
+      /* Sanity check the user.  */
+      if (section_name_matches (remove_secs, shdr_info[cnt].name))
+	{
+	  if ((shdr_info[cnt].shdr.sh_flags & SHF_ALLOC) != 0)
+	    {
+	      error (0, 0,
+		     gettext ("Cannot remove allocated section '%s'"),
+		     shdr_info[cnt].name);
+	      result = 1;
+	      goto fail_close;
+	    }
+
+	  if (section_name_matches (keep_secs, shdr_info[cnt].name))
+	    {
+	      error (0, 0,
+		     gettext ("Cannot both keep and remove section '%s'"),
+		     shdr_info[cnt].name);
+	      result = 1;
+	      goto fail_close;
+	    }
+	}
+
       /* Mark them as present but not yet investigated.  */
       shdr_info[cnt].idx = 1;
 
@@ -709,14 +796,22 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
        know how to handle them
      - if a section is referred to from a section which is not removed
        in the sh_link or sh_info element it cannot be removed either
+     - the user might have explicitly said to remove or keep a section
   */
   for (cnt = 1; cnt < shnum; ++cnt)
-    /* Check whether the section can be removed.  */
+    /* Check whether the section can be removed.  Since we will create
+       a new .shstrtab assume it will be removed too.  */
     if (remove_shdrs ? !(shdr_info[cnt].shdr.sh_flags & SHF_ALLOC)
-	: ebl_section_strip_p (ebl, ehdr, &shdr_info[cnt].shdr,
-			       shdr_info[cnt].name, remove_comment,
-			       remove_debug))
+	: (ebl_section_strip_p (ebl, ehdr, &shdr_info[cnt].shdr,
+				shdr_info[cnt].name, remove_comment,
+				remove_debug)
+	   || cnt == ehdr->e_shstrndx
+	   || section_name_matches (remove_secs, shdr_info[cnt].name)))
       {
+	/* The user might want to explicitly keep this one.  */
+	if (section_name_matches (keep_secs, shdr_info[cnt].name))
+	  continue;
+
 	/* For now assume this section will be removed.  */
 	shdr_info[cnt].idx = 0;
 
@@ -865,8 +960,19 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 		      if (shdr_info[scnidx].idx == 0)
 			/* This symbol table has a real symbol in
 			   a discarded section.  So preserve the
-			   original table in the debug file.  */
-			shdr_info[cnt].debug_data = symdata;
+			   original table in the debug file.  Unless
+			   it is a redundant data marker to a debug
+			   (data only) section.  */
+			if (! (ebl_section_strip_p (ebl, ehdr,
+						    &shdr_info[scnidx].shdr,
+						    shdr_info[scnidx].name,
+						    remove_comment,
+						    remove_debug)
+			       && ebl_data_marker_symbol (ebl, sym,
+					elf_strptr (elf,
+						    shdr_info[cnt].shdr.sh_link,
+						    sym->st_name))))
+			  shdr_info[cnt].debug_data = symdata;
 		    }
 		}
 
@@ -1061,13 +1167,17 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 	shdr_info[cnt].se = dwelf_strtab_add (shst, shdr_info[cnt].name);
       }
 
-  /* Test whether we are doing anything at all.  */
-  if (cnt == idx)
-    /* Nope, all removable sections are already gone.  */
-    goto fail_close;
+  /* Test whether we are doing anything at all.  Either all removable
+     sections are already gone.  Or the only section we would remove is
+     the .shstrtab section which we would add again.  */
+  bool removing_sections = !(cnt == idx
+			     || (cnt == idx + 1
+				 && shdr_info[ehdr->e_shstrndx].idx == 0));
+  if (output_fname == NULL && !removing_sections)
+      goto fail_close;
 
-  /* Create the reference to the file with the debug info.  */
-  if (debug_fname != NULL && !remove_shdrs)
+  /* Create the reference to the file with the debug info (if any).  */
+  if (debug_fname != NULL && !remove_shdrs && removing_sections)
     {
       /* Add the section header string table section name.  */
       shdr_info[cnt].se = dwelf_strtab_add_len (shst, ".gnu_debuglink", 15);
@@ -1194,7 +1304,10 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 	shdr_info[cnt].shdr.sh_name = dwelf_strent_off (shdr_info[cnt].se);
 
 	/* Update the section header from the input file.  Some fields
-	   might be section indeces which now have to be adjusted.  */
+	   might be section indeces which now have to be adjusted.  Keep
+	   the index to the "current" sh_link in case we need it to lookup
+	   symbol table names.  */
+	size_t sh_link = shdr_info[cnt].shdr.sh_link;
 	if (shdr_info[cnt].shdr.sh_link != 0)
 	  shdr_info[cnt].shdr.sh_link =
 	    shdr_info[shdr_info[cnt].shdr.sh_link].idx;
@@ -1393,13 +1506,17 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 		      /* The symbol points to a section that is discarded
 			 but isn't preserved in the debug file. Check that
 			 this is a section or group signature symbol
-			 for a section which has been removed.  */
+			 for a section which has been removed.  Or a special
+			 data marker symbol to a debug section.  */
 		      {
 			elf_assert (GELF_ST_TYPE (sym->st_info) == STT_SECTION
 				    || ((shdr_info[sidx].shdr.sh_type
 					 == SHT_GROUP)
 					&& (shdr_info[sidx].shdr.sh_info
-					    == inner)));
+					    == inner))
+				    || ebl_data_marker_symbol (ebl, sym,
+						elf_strptr (elf, sh_link,
+							    sym->st_name)));
 		      }
 		  }
 
@@ -1755,7 +1872,8 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
   /* Remove any relocations between debug sections in ET_REL
      for the debug file when requested.  These relocations are always
      zero based between the unallocated sections.  */
-  if (debug_fname != NULL && reloc_debug && ehdr->e_type == ET_REL)
+  if (debug_fname != NULL && removing_sections
+      && reloc_debug && ehdr->e_type == ET_REL)
     {
       scn = NULL;
       cnt = 0;
@@ -1993,7 +2111,7 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
 
   /* Now that we have done all adjustments to the data,
      we can actually write out the debug file.  */
-  if (debug_fname != NULL)
+  if (debug_fname != NULL && removing_sections)
     {
       /* Finally write the file.  */
       if (unlikely (elf_update (debugelf, ELF_C_WRITE) == -1))
@@ -2167,14 +2285,14 @@ while computing checksum for debug information"));
   if (shdr_info != NULL)
     {
       /* For some sections we might have created an table to map symbol
-	 table indices.  */
-      if (any_symtab_changes)
-	for (cnt = 1; cnt <= shdridx; ++cnt)
-	  {
-	    free (shdr_info[cnt].newsymidx);
-	    if (shdr_info[cnt].debug_data != NULL)
-	      free (shdr_info[cnt].debug_data->d_buf);
-	  }
+	 table indices.  Or we might kept (original) data around to put
+	 into the .debug file.  */
+      for (cnt = 1; cnt <= shdridx; ++cnt)
+	{
+	  free (shdr_info[cnt].newsymidx);
+	  if (shdr_info[cnt].debug_data != NULL)
+	    free (shdr_info[cnt].debug_data->d_buf);
+	}
 
       /* Free data we allocated for the .gnu_debuglink section. */
       free (debuglink_buf);
@@ -2226,7 +2344,11 @@ cannot set access and modification date of '%s'"),
 
   /* Close the file descriptor if we created a new file.  */
   if (output_fname != NULL)
-    close (fd);
+    {
+      close (fd);
+      if (result != 0)
+       unlink (output_fname);
+    }
 
   return result;
 }

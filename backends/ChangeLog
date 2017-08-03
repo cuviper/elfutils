@@ -1,3 +1,49 @@
+2017-07-27  Mark Wielaard  <mark@klomp.org>
+
+	* sparc_reloc.def: GOTDATA_OP_HIX22, GOTDATA_OP_LOX10 and
+	GOTDATA_OP can be used in ET_REL files.
+
+2017-07-19  Gustavo Romero <gromero@linux.vnet.ibm.com>
+
+	* ppc_corenote.c: Add offsets for ppc64 HTM SPRs: thfar, tfiar,
+	and texasr.
+	* ppc_regs.c: Add names for ppc64 HTM SPRs mappings.
+
+2017-07-20  Mark Wielaard  <mark@klomp.org>
+
+	* aarch64_init.c (aarch64_init): Hook data_marker_symbol.
+	* aarch64_symbol.c (aarch64_data_marker_symbol): New function.
+	* arm_init.c (arm_init): Hook data_marker_symbol.
+	* arm_symbol.c (aarch64_data_marker_symbol): New function.
+
+2017-07-18  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (cpu_bpf): Always define.
+	* bpf_init.c (disasm): Always hook.
+	* bpf_regs.c: Include bpf.h instead of linux/bpf.h. Don't define
+	MAX_BPF_REG.
+
+2017-02-17  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* Makefile.am: Add libeu.
+	(libebl_%so): Link with --no-undefined,-z,defs,-z,relro
+	and libeu.a.
+
+2017-06-17  Mark Wielaard  <mark@klomp.org>
+
+	* s390_initreg.c: Swap sys/ptrace.h and asm/ptrace.h include order.
+
+2017-06-15  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* ppc_symbol.c (ppc_machine_flag_check): New function.
+	* ppc_init.c (ppc_init): Hook it.
+
+2017-05-30  Mark Wielaard  <mark@klomp.org>
+
+	* ppc64_unwind.c: New file.
+	* ppc64_init.c (pcc64_init): Hook unwind.
+	* Makefile.am (ppc64_SRCS): Add ppc64_unwind.c
+
 2017-04-06  Mark Wielaard  <mark@klomp.org>
 
 	* i386_unwind.c: New file.

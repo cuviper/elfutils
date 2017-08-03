@@ -46,6 +46,7 @@ lib_LIBRARIES = libebl_static_pic.a
 
 libelf = ../libelf/libelf.so
 libdw = ../libdw/libdw.so
+libeu = ../lib/libeu.a
 
 # The following is minimal set of backends that we link with libdw to
 # avoid dlopen. Note repeats files below because some backends reuse
@@ -64,7 +65,7 @@ static_SRCS = i386_init.c i386_symbol.c i386_corenote.c i386_cfi.c \
 	     ppc_corenote.c ppc_auxv.c ppc_attrs.c ppc_syscall.c \
 	     ppc_cfi.c ppc_initreg.c \
 	     ppc64_init.c ppc64_symbol.c ppc64_retval.c ppc64_corenote.c \
-	     ppc64_resolve_sym.c \
+	     ppc64_resolve_sym.c ppc64_unwind.c \
 	     s390_init.c s390_symbol.c s390_regs.c s390_retval.c \
 	     s390_corenote.c s390x_corenote.c s390_cfi.c s390_initreg.c \
 	     s390_unwind.c bpf_init.c bpf_regs.c
@@ -124,7 +125,7 @@ am_libebl_ppc_pic_a_OBJECTS = $(ppc_SRCS:.c=.os)
 
 ppc64_SRCS = ppc64_init.c ppc64_symbol.c ppc64_retval.c \
 	     ppc64_corenote.c ppc_regs.c ppc_auxv.c ppc_attrs.c ppc_syscall.c \
-	     ppc_cfi.c ppc_initreg.c ppc64_resolve_sym.c
+	     ppc_cfi.c ppc_initreg.c ppc64_unwind.c ppc64_resolve_sym.c
 libebl_ppc64_pic_a_SOURCES = $(ppc64_SRCS)
 am_libebl_ppc64_pic_a_OBJECTS = $(ppc64_SRCS:.c=.os)
 
@@ -145,24 +146,19 @@ libebl_m68k_pic_a_SOURCES = $(m68k_SRCS)
 am_libebl_m68k_pic_a_OBJECTS = $(m68k_SRCS:.c=.os)
 
 bpf_SRCS = bpf_init.c bpf_regs.c
-# The disam hook depends on this if we have linux/bpf.h.
-if HAVE_LINUX_BPF_H
 cpu_bpf = ../libcpu/libcpu_bpf.a
-else
-cpu_bpf = 
-endif
 libebl_bpf_pic_a_SOURCES = $(bpf_SRCS)
 am_libebl_bpf_pic_a_OBJECTS = $(bpf_SRCS:.c=.os)
 
 
-libebl_%.so libebl_%.map: libebl_%_pic.a $(libelf) $(libdw)
+libebl_%.so libebl_%.map: libebl_%_pic.a $(libelf) $(libdw) $(libeu)
 	@rm -f $(@:.so=.map)
 	$(AM_V_at)echo 'ELFUTILS_$(PACKAGE_VERSION) { global: $*_init; local: *; };' \
 	  > $(@:.so=.map)
 	$(AM_V_CCLD)$(LINK) -shared -o $(@:.map=.so) \
 		-Wl,--whole-archive $< $(cpu_$*) -Wl,--no-whole-archive \
-		-Wl,--version-script,$(@:.so=.map) \
-		-Wl,-z,defs -Wl,--as-needed $(libelf) $(libdw)
+		-Wl,--version-script,$(@:.so=.map),--no-undefined \
+		-Wl,-z,defs,-z,relro -Wl,--as-needed $(libelf) $(libdw) $(libeu)
 	@$(textrel_check)
 
 libebl_i386.so: $(cpu_i386)

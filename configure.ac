@@ -17,7 +17,7 @@ dnl  GNU General Public License for more details.
 dnl
 dnl  You should have received a copy of the GNU General Public License
 dnl  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-AC_INIT([elfutils],[0.169],[https://sourceware.org/bugzilla],[elfutils],[http://elfutils.org/])
+AC_INIT([elfutils],[0.170],[https://sourceware.org/bugzilla],[elfutils],[http://elfutils.org/])
 
 dnl Workaround for older autoconf < 2.64
 m4_ifndef([AC_PACKAGE_URL],
@@ -390,10 +390,6 @@ else
 	argp_LDADD=""
 fi
 AC_SUBST([argp_LDADD])
-
-dnl Check if we have <linux/bpf.h> for EM_BPF disassembly.
-AC_CHECK_HEADERS(linux/bpf.h)
-AM_CONDITIONAL(HAVE_LINUX_BPF_H, [test "x$ac_cv_header_linux_bpf_h" = "xyes"])
 
 dnl The directories with content.
 

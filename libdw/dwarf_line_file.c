@@ -1,4 +1,5 @@
-/* Register names and numbers for BPF DWARF.
+/* Find line information for address.
+   Copyright (C) 2017 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -29,32 +30,23 @@
 # include <config.h>
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include "libdwP.h"
 
-#include "bpf.h"
 
-#define BACKEND bpf_
-#include "libebl_CPU.h"
-
-ssize_t
-bpf_register_info (Ebl *ebl __attribute__ ((unused)),
-		   int regno, char *name, size_t namelen,
-		   const char **prefix, const char **setname,
-		   int *bits, int *type)
+int
+dwarf_line_file (Dwarf_Line *line, Dwarf_Files **files, size_t *idx)
 {
-  ssize_t len;
-
-  if (name == NULL)
-    return MAX_BPF_REG;
-  if (regno < 0 || regno >= MAX_BPF_REG)
+  if (line == NULL)
     return -1;
 
-  *prefix = "";
-  *setname = "integer";
-  *bits = 64;
-  *type = DW_ATE_signed;
+  if (line->file >= line->files->nfiles)
+    {
+      __libdw_seterrno (DWARF_E_INVALID_DWARF);
+      return -1;
+    }
 
-  len = snprintf(name, namelen, "r%d", regno);
-  return ((size_t)len < namelen ? len : -1);
+  *files = line->files;
+  *idx = line->file;
+
+  return 0;
 }

@@ -1,3 +1,80 @@
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf.h: Add DW_MACRO_* and compat defines for DW_MACRO_GNU_*.
+	* dwarf_getmacros.c (get_table_for_offset): Accept either version
+	4 or 5. Use DW_MACRO names instead of DW_MACRO_GNU names.
+	(read_macros): Use table version for fake_cu.
+
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf_peel_type.c (dwarf_peel_type): Handle DW_TAG_immutable_type,
+	DW_TAG_packed_type and DW_TAG_shared_type.
+	* libdw.h (dwarf_peel_type): Extend documentation.
+
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf.h: Add DW_DEFAULTED_no, DW_DEFAULTED_in_class and
+	DW_DEFAULTED_out_of_class.
+
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf.h: Add DW_CC_pass_by_reference and DW_CC_pass_by_reference.
+
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf_default_lower_bound.c: New file.
+	* Makefile.am (libdw_a_SOURCES): Add dwarf_default_lower_bound.c.
+	* dwarf_aggregate_size.c (array_size): Use dwarf_default_lower_bound.
+	* dwarf_error.c (errmsgs): Add DWARF_E_UNKNOWN_LANGUAGE.
+	* libdw.h: Add dwarf_default_lower_bound.
+	* libdw.map (ELFUTILS_0.170): Add dwarf_default_lower_bound.
+	* libdwP.h: Add DWARF_E_UNKNOWN_LANGUAGE and
+	dwarf_default_lower_bound INTDECL.
+
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf.h: Add DW_LANG_OpenCL, DW_LANG_Modula3,
+	DW_LANG_C_plus_plus_03, DW_LANG_OCaml, DW_LANG_Rust, DW_LANG_Swift,
+	DW_LANG_Julia, DW_LANG_Dylan, DW_LANG_RenderScript, DW_LANG_BLISS.
+	* dwarf_aggregate_size.c (array_size): Add lower bound for
+	DW_LANG_C_plus_plus_03, DW_LANG_Python, DW_LANG_OpenCL,
+	DW_LANG_Haskell, DW_LANG_OCaml, DW_LANG_Rust, DW_LANG_Swift,
+	DW_LANG_Dylan, DW_LANG_RenderScript, DW_LANG_Modula3,
+	DW_LANG_Julia and DW_LANG_BLISS.
+
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf.h: Add DW_ATE_UCS and DW_ATE_ASCII.
+
+2017-07-25  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf.h: Add DW_TAG_coarray_type, DW_TAG_generic_subrange,
+	DW_TAG_dynamic_type, DW_TAG_call_site, DW_TAG_call_site_parameter,
+	DW_TAG_skeleton_unit, DW_TAG_immutable_type. Add reserved comments
+	for currently unused numbers.
+
+2017-07-25  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf.h (DWARF attributes enum): Remove DW_AT_subscr_data,
+	DW_AT_element_list and DW_AT_member. Add DWARF5 attribute constants.
+	(DW_AT_subscr_data, DW_AT_element_list, DW_AT_member): New defines.
+
+2017-07-21  Mark Wielaard  <mark@klomp.org>
+
+	* dwarf_line_file.c: New file.
+	* Makefile.am (libdw_a_SOURCES): Add dwarf_line_file.c.
+	* libdw.h (dwarf_line_file): New function declaration.
+	* libdw.map (ELFUTILS_0.170): New. Add dwarf_line_file.
+
+2017-02-17  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* Makefile.am: Add libdw_so_LIBS to specify the archives libdw is is
+	made of, libdw_so_DEPS for libraries it depends on (including
+	libeu.a), libdw_so_LDLIBS to specify libraries libdw links against.
+	(libdw.so$(EXEEXT)): Add $(libdw_so_LDLIBS), remove enumeration of
+	library dependencies, use libdw_so_LIBS rather than relying on the
+	order of dependencies specified, add -z,relro.
+
 2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
 
 	* libdw.h: Remove attribute macro declarations and use

@@ -1,3 +1,45 @@
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* readelf.c (print_debug_macro_section): Accept either version 4 or
+	version 5. Use DW_MACRO names instead of DW_MACRO_GNU names. Add
+	minimal support for DW_MACRO_define_sup, DW_MACRO_undef_sup,
+	DW_MACRO_import_sup, DW_MACRO_define_strx and DW_MACRO_undef_strx.
+
+2017-07-26  Mark Wielaard  <mark@klomp.org>
+
+	* readelf.c (dwarf_defaulted_string): New function.
+	(dwarf_defaulted_name): Likewise.
+	(attr_callback): Use dwarf_defaulted_name to get value of
+	DW_AT_defaulted.
+
+2017-07-20  Mark Wielaard  <mark@klomp.org>
+
+	* strip.c (handle_elf): Deal with data marker symbols pointing to
+	debug sections (they can be removed).
+
+2017-07-14  Mark Wielaard  <mark@klomp.org>
+
+	* strip (OPT_KEEP_SECTION): New define.
+	(options): Add documentation for remove-section. Add keep-section.
+	(struct section_pattern): New data type.
+	(keep_secs, remove_secs): New globals.
+	(add_pattern, free_sec_patterns, free_patterns, section_name_matches):
+	New functions.
+	(main): Call free_patterns.
+	(parse_opt): Handle 'R' and OPT_KEEP_SECTION. Check remove_comment
+	on ARGP_KEY_SUCCESS.
+	(handle_elf): Handle and sanity check keep_secs and remove_secs.
+
+2017-06-07  Mark Wielaard  <mark@klomp.org>
+
+	* strip.c (handle_elf): Introduce new handle_elf boolean. Use it to
+	determine whether to create an output and/or debug file. Remove new
+	output file on error.
+
+2017-06-06  Mark Wielaard  <mark@klomp.org>
+
+	* strip.c (handle_elf): Assume e_shstrndx section can be removed.
+
 2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
 
 	* readelf.c: Include strings.h.

@@ -1,4 +1,5 @@
-/* Register names and numbers for BPF DWARF.
+/* Check whether a symbol is a special data marker.
+   Copyright (C) 2017 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -29,32 +30,15 @@
 # include <config.h>
 #endif
 
-#include <stdio.h>
-#include <string.h>
+#include <inttypes.h>
+#include <libeblP.h>
 
-#include "bpf.h"
 
-#define BACKEND bpf_
-#include "libebl_CPU.h"
-
-ssize_t
-bpf_register_info (Ebl *ebl __attribute__ ((unused)),
-		   int regno, char *name, size_t namelen,
-		   const char **prefix, const char **setname,
-		   int *bits, int *type)
+bool
+ebl_data_marker_symbol (Ebl *ebl, const GElf_Sym *sym, const char *sname)
 {
-  ssize_t len;
+  if (ebl == NULL)
+    return false;
 
-  if (name == NULL)
-    return MAX_BPF_REG;
-  if (regno < 0 || regno >= MAX_BPF_REG)
-    return -1;
-
-  *prefix = "";
-  *setname = "integer";
-  *bits = 64;
-  *type = DW_ATE_signed;
-
-  len = snprintf(name, namelen, "r%d", regno);
-  return ((size_t)len < namelen ? len : -1);
+  return ebl->data_marker_symbol (sym, sname);
 }
