@@ -1,6 +1,6 @@
 ## Process this file with automake to create Makefile.in
 ##
-## Copyright (C) 2002-2010, 2012, 2014, 2016 Red Hat, Inc.
+## Copyright (C) 2002-2010, 2012, 2014, 2016, 2018 Red Hat, Inc.
 ## This file is part of elfutils.
 ##
 ## This file is free software; you can redistribute it and/or modify
@@ -29,9 +29,9 @@
 ##
 include $(top_srcdir)/config/eu.am
 if BUILD_STATIC
-AM_CFLAGS += -fPIC
+AM_CFLAGS += $(fpic_CFLAGS)
 endif
-AM_CPPFLAGS += -I$(srcdir)/../libelf
+AM_CPPFLAGS += -I$(srcdir)/../libelf -I$(srcdir)/../libdwelf
 VERSION = 1
 
 lib_LIBRARIES = libdw.a
@@ -90,7 +90,10 @@ libdw_a_SOURCES = dwarf_begin.c dwarf_begin_elf.c dwarf_end.c dwarf_getelf.c \
 		  dwarf_aggregate_size.c dwarf_getlocation_implicit_pointer.c \
 		  dwarf_getlocation_die.c dwarf_getlocation_attr.c \
 		  dwarf_getalt.c dwarf_setalt.c dwarf_cu_getdwarf.c \
-		  dwarf_cu_die.c dwarf_peel_type.c dwarf_default_lower_bound.c
+		  dwarf_cu_die.c dwarf_peel_type.c dwarf_default_lower_bound.c \
+		  dwarf_die_addr_die.c dwarf_get_units.c \
+		  libdw_find_split_unit.c dwarf_cu_info.c \
+		  dwarf_next_lines.c
 
 # Minimal library with symbols needed by those libebl backends that we
 # ship statically.  This is so that e.g. strip doesn't end up bringing
@@ -105,7 +108,11 @@ libdw_static_pic_a_SOURCES = libdw_form.c dwarf_child.c dwarf_attr.c \
 		dwarf_aggregate_size.c dwarf_siblingof.c dwarf_formsdata.c \
 		dwarf_srclang.c dwarf_formflag.c dwarf_diecu.c \
 		dwarf_bytesize.c dwarf_bitsize.c dwarf_peel_type.c \
-		dwarf_default_lower_bound.c
+		dwarf_default_lower_bound.c libdw_find_split_unit.c \
+		dwarf_getalt.c dwarf_haschildren.c \
+		dwarf_begin.c dwarf_begin_elf.c dwarf_end.c frame-cache.c \
+		dwarf_get_units.c dwarf_formstring.c \
+		../libdwelf/dwelf_dwarf_gnu_debugaltlink.c
 
 if MAINTAINER_MODE
 BUILT_SOURCES = $(srcdir)/known-dwarf.h
@@ -129,8 +136,8 @@ libdw_so_SOURCES =
 libdw.so$(EXEEXT): $(srcdir)/libdw.map $(libdw_so_LIBS) $(libdw_so_DEPS)
 # The rpath is necessary for libebl because its $ORIGIN use will
 # not fly in a setuid executable that links in libdw.
-	$(AM_V_CCLD)$(LINK) -shared -o $@ \
-		-Wl,--soname,$@.$(VERSION),-z,defs,-z,relro \
+	$(AM_V_CCLD)$(LINK) $(dso_LDFLAGS) -o $@ \
+		-Wl,--soname,$@.$(VERSION) \
 		-Wl,--enable-new-dtags,-rpath,$(pkglibdir) \
 		-Wl,--version-script,$<,--no-undefined \
 		-Wl,--whole-archive $(libdw_so_LIBS) -Wl,--no-whole-archive \

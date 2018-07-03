@@ -1,3 +1,48 @@
+2018-06-11  Mark Wielaard  <mark@klomp.org>
+
+	* configure.ac: Set version to 0.172.
+	* NEWS: Mention bug fixes.
+
+2018-06-01  Mark Wielaard  <mark@klomp.org>
+
+	* configure.ac: Set version to 0.171.
+	* NEWS: Mention DWARF5, split-dwarf and GNU DebugFission support.
+
+2018-03-17  Mark Wielaard  <mark@klomp.org>
+
+	* configure.ac (CHECK_FUNCS): Check for process_vm_readv.
+
+2018-02-09  Joshua Watt  <JPEWhacker@gmail.com>
+
+	* configure.ac (HAVE_FALLTHROUGH): New define.
+
+2017-10-16  Mark Wielaard  <mark@klomp.org>
+
+	* .gitignore: Remove tests/md5-sha1-test.
+
+2017-08-18  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* configure.ac: Check if the compiler supports
+	__attribute__((gcc_struct)).
+
+2017-09-19  Mark Wielaard  <mark@klomp.org>
+
+	* README: Add basic build instructions.
+
+2017-05-03  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* configure.ac: Test if symbol versioning is supported.
+
+2017-04-27  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* configure.ac: Check if the compiler supports
+	__attribute__((visibility(...))).
+
+2017-04-27  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* configure.ac: Check if -fPIC, -fPIE, -Wl,-z,defs,
+	and -Wl,-z,relro are supported by the compiler.
+
 2017-08-02  Mark Wielaard  <mark@klomp.org>
 
 	* configure.ac: Set version to 0.170.

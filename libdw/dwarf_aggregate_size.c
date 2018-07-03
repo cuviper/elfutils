@@ -46,13 +46,17 @@ get_type (Dwarf_Die *die, Dwarf_Attribute *attr_mem, Dwarf_Die *type_mem)
   return type;
 }
 
+static int aggregate_size (Dwarf_Die *die, Dwarf_Word *size,
+			   Dwarf_Die *type_mem, int depth);
+
 static int
 array_size (Dwarf_Die *die, Dwarf_Word *size,
-	    Dwarf_Attribute *attr_mem, Dwarf_Die *type_mem)
+	    Dwarf_Attribute *attr_mem, int depth)
 {
   Dwarf_Word eltsize;
-  if (INTUSE(dwarf_aggregate_size) (get_type (die, attr_mem, type_mem),
-				    &eltsize) != 0)
+  Dwarf_Die type_mem, aggregate_type_mem;
+  if (aggregate_size (get_type (die, attr_mem, &type_mem), &eltsize,
+		      &aggregate_type_mem, depth) != 0)
       return -1;
 
   /* An array can have DW_TAG_subrange_type or DW_TAG_enumeration_type
@@ -63,7 +67,7 @@ array_size (Dwarf_Die *die, Dwarf_Word *size,
     return -1;
 
   bool any = false;
-  Dwarf_Word total = 0;
+  Dwarf_Word count_total = 1;
   do
     {
       Dwarf_Word count;
@@ -134,41 +138,48 @@ array_size (Dwarf_Die *die, Dwarf_Word *size,
 	  continue;
 	}
 
-      /* This is a subrange_type or enumeration_type and we've set COUNT.
-	 Now determine the stride for this array dimension.  */
-      Dwarf_Word stride = eltsize;
-      if (INTUSE(dwarf_attr_integrate) (&child, DW_AT_byte_stride,
-					attr_mem) != NULL)
-	{
-	  if (INTUSE(dwarf_formudata) (attr_mem, &stride) != 0)
-	    return -1;
-	}
-      else if (INTUSE(dwarf_attr_integrate) (&child, DW_AT_bit_stride,
-					     attr_mem) != NULL)
-	{
-	  if (INTUSE(dwarf_formudata) (attr_mem, &stride) != 0)
-	    return -1;
-	  if (stride % 8) 	/* XXX maybe compute in bits? */
-	    return -1;
-	  stride /= 8;
-	}
+      count_total *= count;
 
       any = true;
-      total += stride * count;
     }
   while (INTUSE(dwarf_siblingof) (&child, &child) == 0);
 
   if (!any)
     return -1;
 
-  *size = total;
+  /* This is a subrange_type or enumeration_type and we've set COUNT.
+     Now determine the stride for this array.  */
+  Dwarf_Word stride = eltsize;
+  if (INTUSE(dwarf_attr_integrate) (die, DW_AT_byte_stride,
+                                    attr_mem) != NULL)
+    {
+      if (INTUSE(dwarf_formudata) (attr_mem, &stride) != 0)
+        return -1;
+    }
+  else if (INTUSE(dwarf_attr_integrate) (die, DW_AT_bit_stride,
+                                         attr_mem) != NULL)
+    {
+      if (INTUSE(dwarf_formudata) (attr_mem, &stride) != 0)
+        return -1;
+      if (stride % 8) 	/* XXX maybe compute in bits? */
+        return -1;
+      stride /= 8;
+    }
+
+  *size = count_total * stride;
   return 0;
 }
 
 static int
-aggregate_size (Dwarf_Die *die, Dwarf_Word *size, Dwarf_Die *type_mem)
+aggregate_size (Dwarf_Die *die, Dwarf_Word *size,
+		Dwarf_Die *type_mem, int depth)
 {
   Dwarf_Attribute attr_mem;
+
+/* Arrays of arrays of subrange types of arrays... Don't recurse too deep.  */
+#define MAX_DEPTH 256
+  if (die == NULL || depth++ >= MAX_DEPTH)
+    return -1;
 
   if (INTUSE(dwarf_attr_integrate) (die, DW_AT_byte_size, &attr_mem) != NULL)
     return INTUSE(dwarf_formudata) (&attr_mem, size);
@@ -176,11 +187,14 @@ aggregate_size (Dwarf_Die *die, Dwarf_Word *size, Dwarf_Die *type_mem)
   switch (INTUSE(dwarf_tag) (die))
     {
     case DW_TAG_subrange_type:
-      return aggregate_size (get_type (die, &attr_mem, type_mem),
-			     size, type_mem); /* Tail call.  */
+      {
+	Dwarf_Die aggregate_type_mem;
+	return aggregate_size (get_type (die, &attr_mem, type_mem),
+			       size, &aggregate_type_mem, depth);
+      }
 
     case DW_TAG_array_type:
-      return array_size (die, size, &attr_mem, type_mem);
+      return array_size (die, size, &attr_mem, depth);
 
     /* Assume references and pointers have pointer size if not given an
        explicit DW_AT_byte_size.  */
@@ -198,12 +212,12 @@ aggregate_size (Dwarf_Die *die, Dwarf_Word *size, Dwarf_Die *type_mem)
 int
 dwarf_aggregate_size (Dwarf_Die *die, Dwarf_Word *size)
 {
-  Dwarf_Die type_mem;
+  Dwarf_Die die_mem, type_mem;
 
-  if (INTUSE (dwarf_peel_type) (die, die) != 0)
+  if (INTUSE (dwarf_peel_type) (die, &die_mem) != 0)
     return -1;
 
-  return aggregate_size (die, size, &type_mem);
+  return aggregate_size (&die_mem, size, &type_mem, 0);
 }
 INTDEF (dwarf_aggregate_size)
 OLD_VERSION (dwarf_aggregate_size, ELFUTILS_0.144)

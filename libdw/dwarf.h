@@ -1,5 +1,5 @@
 /* This file defines standard DWARF types, structures, and macros.
-   Copyright (C) 2000-2011, 2014, 2016, 2017 Red Hat, Inc.
+   Copyright (C) 2000-2011, 2014, 2016, 2017, 2018 Red Hat, Inc.
    This file is part of elfutils.
 
    This file is free software; you can redistribute it and/or modify
@@ -28,6 +28,20 @@
 
 #ifndef _DWARF_H
 #define	_DWARF_H 1
+
+/* DWARF Unit Header Types.  */
+enum
+  {
+    DW_UT_compile = 0x01,
+    DW_UT_type = 0x02,
+    DW_UT_partial = 0x03,
+    DW_UT_skeleton = 0x04,
+    DW_UT_split_compile = 0x05,
+    DW_UT_split_type = 0x06,
+
+    DW_UT_lo_user = 0x80,
+    DW_UT_hi_user = 0xff
+  };
 
 /* DWARF tags.  */
 enum
@@ -325,8 +339,17 @@ enum
     DW_AT_GNU_all_tail_call_sites = 0x2116,
     DW_AT_GNU_all_call_sites = 0x2117,
     DW_AT_GNU_all_source_call_sites = 0x2118,
+    DW_AT_GNU_locviews = 0x2137,
+    DW_AT_GNU_entry_view = 0x2138,
     DW_AT_GNU_macros = 0x2119,
     DW_AT_GNU_deleted = 0x211a,
+    /* GNU Debug Fission extensions.  */
+    DW_AT_GNU_dwo_name = 0x2130,
+    DW_AT_GNU_dwo_id = 0x2131,
+    DW_AT_GNU_ranges_base = 0x2132,
+    DW_AT_GNU_addr_base = 0x2133,
+    DW_AT_GNU_pubnames = 0x2134,
+    DW_AT_GNU_pubtypes = 0x2135,
 
     DW_AT_hi_user = 0x3fff
   };
@@ -368,7 +391,29 @@ enum
     DW_FORM_sec_offset = 0x17,
     DW_FORM_exprloc = 0x18,
     DW_FORM_flag_present = 0x19,
+    DW_FORM_strx = 0x1a,
+    DW_FORM_addrx = 0x1b,
+    DW_FORM_ref_sup4 = 0x1c,
+    DW_FORM_strp_sup = 0x1d,
+    DW_FORM_data16 = 0x1e,
+    DW_FORM_line_strp = 0x1f,
     DW_FORM_ref_sig8 = 0x20,
+    DW_FORM_implicit_const = 0x21,
+    DW_FORM_loclistx = 0x22,
+    DW_FORM_rnglistx = 0x23,
+    DW_FORM_ref_sup8 = 0x24,
+    DW_FORM_strx1 = 0x25,
+    DW_FORM_strx2 = 0x26,
+    DW_FORM_strx3 = 0x27,
+    DW_FORM_strx4 = 0x28,
+    DW_FORM_addrx1 = 0x29,
+    DW_FORM_addrx2 = 0x2a,
+    DW_FORM_addrx3 = 0x2b,
+    DW_FORM_addrx4 = 0x2c,
+
+    /* GNU Debug Fission extensions.  */
+    DW_FORM_GNU_addr_index = 0x1f01,
+    DW_FORM_GNU_str_index = 0x1f02,
 
     DW_FORM_GNU_ref_alt = 0x1f20, /* offset in alternate .debuginfo.  */
     DW_FORM_GNU_strp_alt = 0x1f21 /* offset in alternate .debug_str. */
@@ -533,6 +578,17 @@ enum
     DW_OP_implicit_value = 0x9e, /* DW_FORM_block follows opcode.  */
     DW_OP_stack_value = 0x9f,	 /* No operands, special like DW_OP_piece.  */
 
+    DW_OP_implicit_pointer = 0xa0,
+    DW_OP_addrx = 0xa1,
+    DW_OP_constx = 0xa2,
+    DW_OP_entry_value = 0xa3,
+    DW_OP_const_type = 0xa4,
+    DW_OP_regval_type = 0xa5,
+    DW_OP_deref_type = 0xa6,
+    DW_OP_xderef_type = 0xa7,
+    DW_OP_convert = 0xa8,
+    DW_OP_reinterpret = 0xa9,
+
     /* GNU extensions.  */
     DW_OP_GNU_push_tls_address = 0xe0,
     DW_OP_GNU_uninit = 0xf0,
@@ -545,6 +601,12 @@ enum
     DW_OP_GNU_convert = 0xf7,
     DW_OP_GNU_reinterpret = 0xf9,
     DW_OP_GNU_parameter_ref = 0xfa,
+
+    /* GNU Debug Fission extensions.  */
+    DW_OP_GNU_addr_index = 0xfb,
+    DW_OP_GNU_const_index = 0xfc,
+
+    DW_OP_GNU_variable_value = 0xfd,
 
     DW_OP_lo_user = 0xe0,	/* Implementation-defined range start.  */
     DW_OP_hi_user = 0xff	/* Implementation-defined range end.  */
@@ -737,6 +799,17 @@ enum
     DW_DEFAULTED_out_of_class = 2
   };
 
+/* DWARF line content descriptions.  */
+enum
+  {
+    DW_LNCT_path = 0x1,
+    DW_LNCT_directory_index = 0x2,
+    DW_LNCT_timestamp = 0x3,
+    DW_LNCT_size = 0x4,
+    DW_LNCT_MD5 = 0x5,
+    DW_LNCT_lo_user = 0x2000,
+    DW_LNCT_hi_user = 0x3fff
+  };
 
 /* DWARF standard opcode encodings.  */
 enum
@@ -811,6 +884,45 @@ enum
 #define DW_MACRO_GNU_transparent_include DW_MACRO_import
 #define DW_MACRO_GNU_lo_user		 DW_MACRO_lo_user
 #define DW_MACRO_GNU_hi_user		 DW_MACRO_hi_user
+
+
+/* Range list entry encoding.  */
+enum
+  {
+    DW_RLE_end_of_list = 0x0,
+    DW_RLE_base_addressx = 0x1,
+    DW_RLE_startx_endx = 0x2,
+    DW_RLE_startx_length = 0x3,
+    DW_RLE_offset_pair = 0x4,
+    DW_RLE_base_address = 0x5,
+    DW_RLE_start_end = 0x6,
+    DW_RLE_start_length = 0x7
+  };
+
+
+/* Location list entry encoding.  */
+enum
+  {
+    DW_LLE_end_of_list = 0x0,
+    DW_LLE_base_addressx = 0x1,
+    DW_LLE_startx_endx = 0x2,
+    DW_LLE_startx_length = 0x3,
+    DW_LLE_offset_pair = 0x4,
+    DW_LLE_default_location = 0x5,
+    DW_LLE_base_address = 0x6,
+    DW_LLE_start_end = 0x7,
+    DW_LLE_start_length = 0x8
+  };
+
+
+/* GNU DebugFission list entry encodings (.debug_loc.dwo).  */
+enum
+  {
+    DW_LLE_GNU_end_of_list_entry = 0x0,
+    DW_LLE_GNU_base_address_selection_entry = 0x1,
+    DW_LLE_GNU_start_end_entry = 0x2,
+    DW_LLE_GNU_start_length_entry = 0x3
+  };
 
 
 /* DWARF call frame instruction encodings.  */

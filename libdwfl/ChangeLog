@@ -1,3 +1,79 @@
+2018-06-04  Mark Wielaard  <mark@klomp.org>
+
+	* libdwflP.h (__libdwfl_addrsym): Remove function declaration.
+	* dwfl_module_addrsym.c (__libdwfl_addrsym): Make a static function.
+
+2018-05-27  Mark Wielaard  <mark@klomp.org>
+
+	* relocate.c (__libdwfl_relocate): Always call relocate_section with
+	partial true.
+
+2018-05-17  Mark Wielaard  <mark@klomp.org>
+
+	* dwfl_module (__libdwfl_module_free): Free elfdir.
+	* dwfl_module_getdwarf.c (load_dw): Close file descriptors after
+	dwarf_begin_elf call. Set Dwarf debugdir if it is NULL, this is the
+	main module file and we recorded the elfdir.
+	* libdwflP.h (struct Dwfl_Module): Add elfdir field.
+	* offline.c (process_elf): Record the elfdir before we close the
+	main ELF file descriptor.
+
+2018-04-10  Mark Wielaard  <mark@klomp.org>
+
+	* frame_unwind.c (unwind): If __libdwfl_frame_reg_get fails for
+	the return address either set an error or mark the pc undefined.
+
+2018-03-17  Mark Wielaard  <mark@klomp.org>
+
+	* libdwflP.h (struct __libdwfl_remote_mem_cache): New.
+	(struct __libdwfl_pid_arg): Add mem_cache field.
+	* linux-pid-attach.c (read_cached_memory): New function.
+	(clear_cached_memory): Likewise.
+	(pid_memory_read): Call read_cached_memory.
+	(pid_detach): Free mem_cache.
+	(pid_thread_detach): Call clear_cached_memory.
+	(dwfl_linux_proc_attach): Initialize mem_cache to NULL.
+
+2018-03-05  Mark Wielaard  <mark@klomp.org>
+
+	* dwfl_build_id_find_elf.c (__libdwfl_open_by_build_id): Use
+	realpath (name, NULL) instead of canonicalize_file_name (name).
+	* find-debuginfo.c (dwfl_standard_find_debuginfo): Likewise.
+
+2018-01-29  Mark Wielaard  <mark@klomp.org>
+
+	* cu.c (cudie_offset): Use __libdw_first_die_off_from_cu instead of
+	DIE_OFFSET_FROM_CU_OFFSET.
+	(intern_cu): Simply use a copy of the given die CU as key instead of
+	trying to construct a dummy one by hand.
+
+2018-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* linux-pid-attach.c: Include sys/wait.h after sys/ptrace.h.
+
+2018-02-09  Joshua Watt  <JPEWhacker@gmail.com>
+
+	* dwfl_report_elf.c (__libdwfl_elf_address_range): Use FALLTHROUGH
+	macro instead of comment.
+	* frame_unwind.c (expr_eval): Likewise.
+
+2017-11-20  Mark Wielaard  <mark@klomp.org>
+
+	* link_map.c (do_check64): Take a char * and calculate type and val
+	offsets before reading, possibly unaligned, values.
+	(do_check32): Likewise.
+	(check64): Remove define.
+	(check32): Likewise.
+	(auxv_format_probe): Call do_check32 and do_check64 directly with
+	a, possibly unaligned, auxv entry pointer.
+	(dwfl_link_map_report): Redefine AUXV_SCAN to not dereference a
+	possibly unaligned auxv entry pointer.
+
+2017-10-16  Mark Wielaard  <mark@klomp.org>
+
+	* argp-std.c (parse_opt): For -k call argp_failure not failure to
+	keep dwfl around.
+
 2017-07-26  Yunlian Jiang  <yunlian@google.com>
 
 	* argp-std.c (failure): Move to file scope.

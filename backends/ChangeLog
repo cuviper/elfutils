@@ -1,3 +1,76 @@
+2018-06-16  Yonghong Song  <yhs@fb.com>
+
+	* Makefile.am (bpf_SRCS): Add bpf_symbol.c.
+	* bpf_init.c (bpf_init): Add reloc_simple_type HOOK.
+	* bpf_reloc.def: Add RELOC_TYPE 64_64 and 64_32.
+	* bpf_symbol.c: New file.
+
+2018-06-21  Mark Wielaard  <mark@klomp.org>
+
+	* bpf_reloc.def: Remove MAP_FD.
+
+2018-06-13  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.am (riscv_SRCS): Add riscv_cfi.c and riscv_regs.c.
+	* riscv_cfi.c: New file.
+	* riscv_regs.c: Likewise.
+	* riscv_init.c (riscv_init): Hook register_info and abi_cfi.
+
+2018-05-15  Andreas Schwab  <schwab@suse.de>
+
+	* riscv_init.c (riscv_init): Hook check_special_symbol.
+	* riscv_symbol.c (riscv_check_special_symbol): New function.
+
+2018-04-19  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.am (modules): Add riscv.
+	* riscv_init.c: New file.
+	* riscv_reloc.def: New file.
+	* riscv_symbol.c: New file.
+
+2018-04-11  Mark Wielaard  <mark@klomp.org>
+
+	* aarch64_cfi.c (aarch64_abi_cfi): Add rule for restoring SP from
+	CFA address.
+
+2018-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* ppc_initreg.c: Include ptrace.h before system.h and sys/user.h.
+
+2018-02-09  Joshua Watt  <JPEWhacker@gmail.com>
+
+	* aarch64_retval.c (aarch64_return_value_location): Use FALLTHROUGH
+	macro instead of comment.
+	* alpha_retval.c (alpha_return_value_location): Likewise.
+	* arm_regs.c (arm_register_info): Likewise.
+	* arm_retval.c (arm_return_value_location): Likewise.
+	* i386_regs.c (i386_register_info): Likewise.
+	* i386_retval.c (i386_return_value_location): Likewise.
+	* ia64_retval.c (ia64_return_value_location): Likewise.
+	* linux-core-note.c (core_note): Likewise.
+	* m68k_retval.c (m68k_return_value_location): Likewise.
+	* ppc64_retval.c (ppc64_return_value_location): Likewise.
+	* ppc_regs.c (ppc_register_info): Likewise.
+	* ppc_retval.c (ppc_return_value_location): Likewise.
+	* s390_retval.c (s390_return_value_location): Likewise.
+	* sh_retval.c (sh_return_value_location): Likewise.
+	* sparc_retval.c (sparc_return_value_location): Likewise.
+	* tilegx_retval.c (tilegx_return_value_location): Likewise.
+	* x86_64_regs.c (x86_64_register_info): Likewise.
+	* x86_64_retval.c (x86_64_return_value_location): Likewise.
+
+2017-10-24  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (m68k_corenote_no_Wpacked_not_aligned): New variable.
+
+2017-08-18  Ulf Hermann <ulf.hermann@qt.io>
+
+	* linux-core-note.c: Use attribute_packed.
+
+2017-04-27  Ulf Hermann <ulf.hermann@qt.io>
+
+	* Makefile.am: Use dso_LDFLAGS.
+
 2017-07-27  Mark Wielaard  <mark@klomp.org>
 
 	* sparc_reloc.def: GOTDATA_OP_HIX22, GOTDATA_OP_LOX10 and

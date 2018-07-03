@@ -1,3 +1,16 @@
+2018-02-09  Joshua Watt  <JPEWhacker@gmail.com>
+
+	* i386_disasm.c (i386_disasm): Use FALLTHOUGH macro instead of
+	comment.
+
+2017-08-18  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* memory-access.h: Use attribute_packed.
+
+2017-02-27  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* Makefile.am: Use fpic_CFLAGS.
+
 2017-07-18  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am: Don't check HAVE_LINUX_BPF_H, just define libcpu_bpf.

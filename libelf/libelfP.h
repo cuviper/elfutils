@@ -102,6 +102,7 @@ enum
   ELF_E_INVALID_ENCODING,
   ELF_E_NOMEM,
   ELF_E_INVALID_FILE,
+  ELF_E_INVALID_ELF,
   ELF_E_INVALID_OP,
   ELF_E_NO_VERSION,
   ELF_E_INVALID_CMD,
@@ -442,15 +443,11 @@ extern int __libelf_version_initialized attribute_hidden;
 # define LIBELF_EV_IDX	(__libelf_version - 1)
 #endif
 
-#if !ALLOW_UNALIGNED
 /* Array with alignment requirements of the internal types indexed by ELF
    version, binary class, and type. */
 extern const uint_fast8_t __libelf_type_aligns[EV_NUM - 1][ELFCLASSNUM - 1][ELF_T_NUM] attribute_hidden;
 # define __libelf_type_align(class, type)	\
     (__libelf_type_aligns[LIBELF_EV_IDX][class - 1][type] ?: 1)
-#else
-# define __libelf_type_align(class, type)	1
-#endif
 
 /* Given an Elf handle and a section type returns the Elf_Data d_type.
    Should not be called when SHF_COMPRESSED is set, the d_type should
@@ -578,7 +575,7 @@ extern Elf_Data *__elf64_xlatetof_internal (Elf_Data *__dest,
 extern unsigned int __elf_version_internal (unsigned int __version)
      attribute_hidden;
 extern unsigned long int __elf_hash_internal (const char *__string)
-       __attribute__ ((__pure__, visibility ("hidden")));
+       __attribute__ ((__pure__)) attribute_hidden;
 extern long int __elf32_checksum_internal (Elf *__elf) attribute_hidden;
 extern long int __elf64_checksum_internal (Elf *__elf) attribute_hidden;
 

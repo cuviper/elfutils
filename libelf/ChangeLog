@@ -1,3 +1,63 @@
+2018-06-19  Mark Wielaard  <mark@klomp.org>
+
+	* libelfP.h (__libelf_type_align): Remove !ALLOW_UNALIGNED guard.
+	* elf_getdata.c (__libelf_type_aligns): Likewise.
+	(convert_data): Remove ALLOW_UNALIGNED check.
+	* elf_getdata_rawchunk.c (elf_getdata_rawchunk): Likewise.
+
+2018-06-21  Mark Wielaard  <mark@klomp.org>
+
+	* elf.h: Update from glibc.
+
+2018-04-19  Andreas Schwab  <schwab@suse.de>
+
+	* elf.h: Update from glibc.
+
+2018-02-16  Mark Wielaard  <mark@klomp.org>
+
+	* elf.h: Update from glibc.
+
+2018-02-09  Joshua Watt  <JPEWhacker@gmail.com>
+
+	* elf32_updatenull.c (updatenull_wrlock): Use FALLTHROUGH macro
+	instead of comment.
+	* elf_begin.c (read_unmmaped_file): Likewise.
+	(elf_begin): Likewise.
+	* elf_cntl.c (elf_cntl): Likewise.
+
+2017-10-04  Mark Wielaard  <mark@klomp.org>
+
+	* elf_begin.c (file_read_elf): Skip sanity checking e_shoff if scncnt
+	is zero, we won't use it then.
+
+2017-10-04  Mark Wielaard  <mark@klomp.org>
+
+	* libelfP.h: Add ELF_E_INVALID_ELF to error values enum.
+	* elf_error.c (ELF_E_INVALID_ELF_IDX): New define. Use it as value
+	for ELF_E_INVALID_ELF in msgidx.
+	* elf_getshdrstrndx.c (elf_getshdrstrndx): Distinquish between pread
+	failing and not having enough data.
+	* elf_begin.c (get_shnum): Likewise. Explicitly set libelf errno on
+	too large value.
+	(file_read_elf): Make sure to always set libelf errno when returning
+	NULL. Distinquish between i/o file and elf data errors.
+
+2017-08-18  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* gelf_xlate.c: Use attribute_packed.
+
+2017-04-27  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* libelfP.h: Use attribute_hidden.
+
+2017-04-27  Ulf Hermann  <ulf.hermann@qt.io>
+
+	* Makefile.am: Use fpic_CFLAGS and dso_LDFLAGS.
+
+2017-08-15  Mark Wielaard  <mark@klomp.org>
+
+	* elf.h: Update from glibc. Add new powerpc note descriptors.
+
 2017-07-19  Gustavo Romero <gromero@linux.vnet.ibm.com>
 
 	* elf.h: Add known type in notes segment descriptor for HTM SPRs.

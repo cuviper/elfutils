@@ -331,7 +331,7 @@ static const int valid_e_machine[] =
     EM_CRIS, EM_JAVELIN, EM_FIREPATH, EM_ZSP, EM_MMIX, EM_HUANY, EM_PRISM,
     EM_AVR, EM_FR30, EM_D10V, EM_D30V, EM_V850, EM_M32R, EM_MN10300,
     EM_MN10200, EM_PJ, EM_OPENRISC, EM_ARC_A5, EM_XTENSA, EM_ALPHA,
-    EM_TILEGX, EM_TILEPRO, EM_AARCH64, EM_BPF
+    EM_TILEGX, EM_TILEPRO, EM_AARCH64, EM_BPF, EM_RISCV
   };
 #define nvalid_e_machine \
   (sizeof (valid_e_machine) / sizeof (valid_e_machine[0]))
@@ -376,9 +376,9 @@ check_elf_header (Ebl *ebl, GElf_Ehdr *ehdr, size_t size)
 	   EI_OSABI,
 	   ebl_osabi_name (ebl, ehdr->e_ident[EI_OSABI], buf, sizeof (buf)));
 
-  /* No ABI versions other than zero supported either.  */
+  /* No ABI versions other than zero are supported either.  */
   if (ehdr->e_ident[EI_ABIVERSION] != 0)
-    ERROR (gettext ("unsupport ABI version e_ident[%d] == %d\n"),
+    ERROR (gettext ("unsupported ABI version e_ident[%d] == %d\n"),
 	   EI_ABIVERSION, ehdr->e_ident[EI_ABIVERSION]);
 
   for (cnt = EI_PAD; cnt < EI_NIDENT; ++cnt)
@@ -1764,7 +1764,7 @@ section [%2d] '%s': entry %zu: pointer does not match address of section [%2d] '
 	  if (dyn->d_tag < DT_ADDRRNGLO || dyn->d_tag > DT_ADDRRNGHI)
 	    /* Value is no pointer.  */
 	    break;
-	  /* FALLTHROUGH */
+	  FALLTHROUGH;
 
 	case DT_AUXILIARY:
 	case DT_FILTER:
@@ -2713,7 +2713,7 @@ section [%2d] '%s': section group with only one member\n"),
 	ERROR (gettext ("section [%2d] '%s': unknown section group flags\n"),
 	       idx, section_name (ebl, idx));
 
-      for (cnt = elsize; cnt < data->d_size; cnt += elsize)
+      for (cnt = elsize; cnt + elsize <= data->d_size; cnt += elsize)
 	{
 #if ALLOW_UNALIGNED
 	  val = *((Elf32_Word *) ((char *) data->d_buf + cnt));
@@ -3993,7 +3993,7 @@ section [%2zu] '%s': merge flag set but entry size is zero\n"),
 	    case SHT_NOBITS:
 	      if (is_debuginfo)
 		break;
-	      /* Fallthrough */
+	      FALLTHROUGH;
 	    default:
 	      ERROR (gettext ("\
 section [%2zu] '%s' has unexpected type %d for an executable section\n"),
@@ -4137,7 +4137,7 @@ section [%2zu] '%s': ELF header says this is the section header string table but
 	    ERROR (gettext ("\
 section [%2zu] '%s': relocatable files cannot have dynamic symbol tables\n"),
 		   cnt, section_name (ebl, cnt));
-	  /* FALLTHROUGH */
+	  FALLTHROUGH;
 	case SHT_SYMTAB:
 	  check_symtab (ebl, ehdr, shdr, cnt);
 	  break;
@@ -4336,7 +4336,7 @@ section [%2d] '%s': unknown core file note type %" PRIu32
 	    if (nhdr.n_namesz == sizeof "Linux"
 		&& !memcmp (data->d_buf + name_offset, "Linux", sizeof "Linux"))
 	      break;
-	    /* Fallthrough */
+	    FALLTHROUGH;
 	  default:
 	    if (shndx == 0)
 	      ERROR (gettext ("\

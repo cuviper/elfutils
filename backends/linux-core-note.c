@@ -111,7 +111,7 @@ struct EBLHOOK(prstatus)
   FIELD (INT, pr_fpvalid);
 }
 #ifdef ALIGN_PRSTATUS
-  __attribute__ ((packed, aligned (ALIGN_PRSTATUS)))
+  attribute_packed __attribute__ ((aligned (ALIGN_PRSTATUS)))
 #endif
 ;
 
@@ -226,7 +226,7 @@ EBLHOOK(core_note) (const GElf_Nhdr *nhdr, const char *name,
       if (memcmp (name, "CORE", nhdr->n_namesz) == 0)
 	break;
       /* Buggy old Linux kernels didn't terminate "LINUX".  */
-      /* Fall through. */
+      FALLTHROUGH;
 
     case sizeof "LINUX":
       if (memcmp (name, "LINUX", nhdr->n_namesz) == 0)
